@@ -37,7 +37,7 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 
 
 
-![Mobile 2](mobile2.jpg)
+![PC View](pc7.png)
 
 
 
