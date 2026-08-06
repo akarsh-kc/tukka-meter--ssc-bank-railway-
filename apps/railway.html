@@ -917,9 +917,14 @@
                         This saves all your mocks and progress into one file on your phone or computer, like taking a photo of everything you've logged so far. Keep this file safe (Google Drive, email to yourself, etc.) so you never lose your data — even if you clear your browser or switch devices.
                     </p>
                 </div>
-                <button onclick="exportDataJSON()" class="w-full sm:w-auto shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-download"></i> Export Backup
-                </button>
+                <div class="w-full sm:w-auto shrink-0 flex flex-col sm:flex-row gap-2">
+                    <button onclick="exportDataJSON()" class="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-download"></i> Export Backup
+                    </button>
+                    <button onclick="shareBackupJSON()" class="w-full sm:w-auto px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-share-nodes"></i> Share
+                    </button>
+                </div>
             </div>
 
             <!-- Import card -->
@@ -2479,6 +2484,35 @@
                 recordBackupDone();
                 showToast('Backup downloaded — keep it safe!', 'success');
             } catch (e) { showToast('Export failed. Please try again.', 'error'); }
+        }
+
+        // Shares the same backup JSON via the device's native share sheet
+        // (WhatsApp, Email, Drive, Bluetooth, etc.) on browsers that support
+        // the Web Share API with files (mostly mobile Chrome/Edge/Safari).
+        // Falls back to a normal download on browsers/laptops that don't.
+        async function shareBackupJSON() {
+            try {
+                const payload = { app: 'Tukka Meter - Railway', version: 2, examId: currentExamId, examName: currentExam().name, exportedAt: new Date().toISOString(), mockData: mockData };
+                const stamp = new Date().toISOString().slice(0, 10);
+                const filename = `railway-${currentExamId}-mock-tracker-backup-${stamp}.json`;
+                const file = new File([JSON.stringify(payload, null, 2)], filename, { type: 'application/json' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Tukka Meter Backup',
+                        text: 'My Railway mock tracker backup — import this in the Backup & Restore section.'
+                    });
+                    recordBackupDone();
+                } else {
+                    // Sharing files isn't supported here (common on laptops) — fall back to a normal download.
+                    exportDataJSON();
+                    showToast('Sharing isn\'t supported on this device — downloaded instead.', 'success');
+                }
+            } catch (e) {
+                if (e && e.name === 'AbortError') return; // user cancelled the share sheet, not an error
+                showToast('Share failed. Please try again.', 'error');
+            }
         }
 
         function triggerImportJSON() {
