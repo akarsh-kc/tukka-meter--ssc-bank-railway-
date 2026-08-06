@@ -1,9 +1,3 @@
-<!--
-  Tukka Meter (SSC/Bank/Railway Mock Analyser)
-  © Akarsh KC — github.com/akarsh-kc
-  Licensed under CC BY-NC 4.0 — free to use, credit required, no commercial use.
-  https://akarsh-kc.github.io/tukka-meter--ssc-bank-railway-/
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,6 +156,34 @@
 
         .fade-in { animation: fadeIn .25s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ---- Announcement popup (reusable — see ANNOUNCEMENT config in script) ---- */
+        #announce-overlay {
+            position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center;
+            padding: 16px; background: rgba(15,18,35,0.55); backdrop-filter: blur(6px);
+        }
+        #announce-overlay.open { display: flex; }
+        .announce-panel {
+            width: 100%; max-width: 400px; background: #ffffff; border-radius: 1.5rem;
+            box-shadow: 0 0 0 1px rgba(99,102,241,0.12), 0 24px 60px -20px rgba(30,27,75,0.45);
+            padding: 22px 20px 20px; text-align: center;
+        }
+        html.dark .announce-panel { background: #0b0f20; box-shadow: 0 0 0 1px rgba(99,102,241,0.25), 0 24px 60px -20px rgba(0,0,0,0.6); }
+        .announce-icon {
+            width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 21px; background: linear-gradient(135deg, #4f46e5, #818cf8);
+            box-shadow: 0 8px 20px -8px rgba(79,70,229,0.55);
+        }
+        .announce-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15.5px; color: #1e293b; margin-bottom: 6px; }
+        html.dark .announce-title { color: #f1f5f9; }
+        .announce-message { font-size: 12.5px; color: #64748b; font-weight: 500; line-height: 1.5; margin-bottom: 18px; }
+        html.dark .announce-message { color: #94a3b8; }
+        .announce-btn {
+            width: 100%; padding: 11px; border-radius: 0.9rem; border: none; cursor: pointer;
+            background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff; font-weight: 700; font-size: 13px;
+            font-family: 'Inter', sans-serif; transition: transform .15s ease;
+        }
+        .announce-btn:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
@@ -208,6 +230,16 @@
         </div>
     </div>
 
+    <!-- Announcement popup (reusable — content comes from ANNOUNCEMENT config below) -->
+    <div id="announce-overlay">
+        <div class="announce-panel fade-in">
+            <div class="announce-icon"><i class="fa-solid fa-bullhorn"></i></div>
+            <div id="announce-title" class="announce-title"></div>
+            <div id="announce-message" class="announce-message"></div>
+            <button class="announce-btn" onclick="closeAnnouncement()">Got it</button>
+        </div>
+    </div>
+
     <script>
         // ===================================================================
         // Tukka Meter — hub shell
@@ -218,6 +250,47 @@
         // ===================================================================
 
         const LAST_CATEGORY_KEY = 'tukka_last_category';
+
+        // ===================================================================
+        // ANNOUNCEMENT — reusable popup for updates, new features, or notices.
+        // To post a new announcement: just change the 4 values below and commit.
+        // - id: change this to any new short text every time (so a dismissed
+        //   old announcement doesn't block a new one on the same day)
+        // - date: format YYYY-MM-DD — the popup ONLY shows on this exact date
+        //   (the user's device today), automatically nothing before or after
+        // - title / message: whatever you want to tell users
+        // Never duplicate this block for a new announcement — just overwrite
+        // these 4 values each time, so the file size never grows.
+        // ===================================================================
+        const ANNOUNCEMENT = {
+            id: 'railway-launch-2026-08-10',
+            date: '2026-08-10',
+            title: 'New: Railway exams added! 🚆',
+            message: 'You can now track RRB NTPC, Group D, ALP, JE, RPF and more — right alongside SSC and Bank. Tap the switch icon to explore.'
+        };
+
+        function getLocalDateStr() {
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function maybeShowAnnouncement() {
+            try {
+                if (getLocalDateStr() !== ANNOUNCEMENT.date) return;
+                if (localStorage.getItem('tukka_announcement_seen') === ANNOUNCEMENT.id) return;
+                document.getElementById('announce-title').textContent = ANNOUNCEMENT.title;
+                document.getElementById('announce-message').textContent = ANNOUNCEMENT.message;
+                document.getElementById('announce-overlay').classList.add('open');
+            } catch (e) {}
+        }
+
+        function closeAnnouncement() {
+            try { localStorage.setItem('tukka_announcement_seen', ANNOUNCEMENT.id); } catch (e) {}
+            document.getElementById('announce-overlay').classList.remove('open');
+        }
 
         const CATEGORIES = {
             ssc: {
@@ -409,6 +482,7 @@
             } else {
                 openSwitcher(true);
             }
+            setTimeout(maybeShowAnnouncement, 500);
         }
         boot();
 
@@ -419,6 +493,5 @@
             });
         }
     </script>
-    
 </body>
 </html>
