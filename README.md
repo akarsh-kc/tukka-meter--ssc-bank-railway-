@@ -13,14 +13,15 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 
 - The only permission the app may ever ask for is to import a JSON file, if you choose to use that feature — completely optional, never required.
 
-![Mobile 3](mobile3.jpg)
+![PC View](pc1.png)
 
 📱 **Install as an app (Android):** Download the APK from the [Releases](../../releases) section.
 
 ⚠️ **Note on installing the APK:** since this isn't from the Google Play Store, Android will show a warning like *"Install blocked"* or *"Unknown app installed for your security"* when you first try to install it. This is normal for any APK shared outside the Play Store — just tap **"Install anyway"** or enable **"Allow from this source"** when prompted. The app itself is safe; this warning appears for any APK not downloaded from the Play Store.
 
 ### 📱 Screenshots
-![PC View](pc1.png)
+
+![Mobile 3](mobile3.jpg)
 
 🔗 **Use it now (no install needed):** [akarsh-kc.github.io/tukka--meter-ssc-bank-railway](https://akarsh-kc.github.io/tukka-meter--ssc-bank-railway-/)
 
