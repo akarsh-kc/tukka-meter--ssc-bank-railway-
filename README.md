@@ -27,10 +27,15 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 ### 📱 Screenshots
 
 ### 📱 Mobile View
+
+![Mobile 6](mobile6.png)
 ![Mobile 3](mobile3.jpg)
-![Mobile 3](mobile6.png)
+
+
 
 🔗 **Use it now (no install needed):** [akarsh-kc.github.io/tukka--meter-ssc-bank-railway](https://akarsh-kc.github.io/tukka-meter--ssc-bank-railway-/)
+
+
 
 ![Mobile 2](mobile2.jpg)
 
