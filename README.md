@@ -6,7 +6,7 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 ![PC View](pc2.png)
 ![PC View](pc4.png)
 
-🔒 **Your data stays on your own device.** Nothing is uploaded, tracked, or shared with anyone. No login, no account, no data collection.
+🔒 **Your data stays on your own device.** Nothing is uploaded, tracked, or shared with anyone. No login, no account, no data collection. 
 
 📱 **Install as an app (Android):** Download the APK from the [Releases](../../releases) section. *(Select Tukka Meter - SSC, Bank, Railway APK.)*
 
