@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tukka Meter - SSC | Mock Performance Analytics</title>
+
+    <!-- PWA setup -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="color-scheme" content="light dark">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tukka Meter">
+    <link rel="icon" href="../icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="../icon-192.png">
+
+    <script>
+        (function () {
+            try {
+                // Default is light mode. Dark mode only activates if the user has
+                // explicitly turned it on before (stored 'true') — never based on
+                // OS/browser preference, so first-time loads are always light.
+                if (localStorage.getItem('tukka_dark_mode') === null) {
+                    localStorage.setItem('tukka_dark_mode', 'false');
+                }
+                if (localStorage.getItem('tukka_dark_mode') === 'true') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#2e2a6b',
+                        },
+                        accent: { amber: '#f59e0b', rose: '#fb3d68', emerald: '#10d9a3', purple: '#a855f7', cyan: '#22d3ee' }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif']
+                    },
+                    boxShadow: {
+                        glow: '0 0 0 1px rgba(99,102,241,0.15), 0 8px 24px -8px rgba(99,102,241,0.35)',
+                        'glow-lg': '0 0 40px -8px rgba(99,102,241,0.45)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6fb;
+            background-image:
+                radial-gradient(circle at 15% 0%, rgba(99,102,241,0.10), transparent 40%),
+                radial-gradient(circle at 85% 8%, rgba(34,211,238,0.10), transparent 38%),
+                linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+            background-size: auto, auto, 42px 42px, 42px 42px;
+            background-attachment: fixed;
+        }
+        h1, h2, h3, h4, .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; }
+        .font-mono-tech { font-family: 'JetBrains Mono', monospace; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #818cf8, #22d3ee); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #6366f1, #06b6d4); }
+
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            bottom: 8px;
+            left: 7px;
+            width: 2px;
+            background: linear-gradient(180deg, #6366f1, #22d3ee);
+            opacity: 0.35;
+            z-index: 0;
+        }
+        html.dark .timeline-line::before { background: linear-gradient(180deg, #818cf8, #22d3ee); opacity: 0.5; }
+
+        #resolve-timeline-container {
+            scrollbar-width: thin;
+            scrollbar-color: #818cf8 transparent;
+        }
+        #resolve-timeline-container::-webkit-scrollbar { width: 6px; }
+        #resolve-timeline-container::-webkit-scrollbar-track { background: rgba(148,163,184,0.08); border-radius: 999px; }
+        #resolve-timeline-container::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #818cf8, #22d3ee); border-radius: 999px; }
+        #resolve-timeline-container::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #6366f1, #06b6d4); }
+        html.dark #resolve-timeline-container::-webkit-scrollbar-track { background: rgba(148,163,184,0.12); }
+
+        .resolve-item-card {
+            background: #ffffff;
+            box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 10px 22px -12px rgba(30, 41, 59, 0.18);
+        }
+        html.dark .resolve-item-card {
+            background: #151f32;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 10px 20px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 12px 28px -12px rgba(30, 41, 59, 0.10);
+            position: relative;
+            transition: box-shadow 0.35s ease, transform 0.35s ease, border-color 0.35s ease;
+        }
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            .glass-panel { background: rgba(255, 255, 255, 0.98); }
+        }
+        .glass-panel::before {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+            background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(34,211,238,0.05) 35%, rgba(168,85,247,0.25) 100%);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0.55; pointer-events: none;
+        }
+        .glass-panel:hover {
+            box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05), 0 20px 40px -14px rgba(79, 70, 229, 0.22);
+            transform: translateY(-2px); border-color: rgba(99, 102, 241, 0.35);
+        }
+        @media (max-width: 768px) { .glass-panel:hover { transform: none; } }
+
+        .gradient-flow-bg {
+            background: linear-gradient(270deg, #6366f1, #22d3ee, #a855f7, #6366f1);
+            background-size: 300% 300%;
+            background-position: 35% 50%;
+        }
+        .pulse-dot { box-shadow: 0 0 0 3px rgba(16,185,129,0.18); }
+
+        .app-sidebar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(22px) saturate(180%);
+            -webkit-backdrop-filter: blur(22px) saturate(180%);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            box-shadow: 0 1px 2px 0 rgba(15,23,42,0.04), 0 24px 48px -20px rgba(79,70,229,0.22), 0 8px 20px -10px rgba(30,41,59,0.10);
+            transition: background .4s ease, border-color .4s ease, box-shadow .4s ease;
+        }
+        html.dark .app-sidebar {
+            background: linear-gradient(180deg, rgba(9, 13, 28, 0.96) 0%, rgba(7, 10, 22, 0.98) 100%);
+            border-color: rgba(99, 102, 241, 0.18);
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4), 0 24px 48px -18px rgba(0,0,0,0.6), 0 0 30px -12px rgba(99,102,241,0.25);
+        }
+
+        .nav-rail { position: relative; }
+        .nav-pill {
+            position: relative; width: 100%; display: flex; align-items: center; gap: 0.7rem;
+            padding: 0.65rem 0.8rem; border-radius: 0.85rem; font-size: 0.72rem; font-weight: 600;
+            letter-spacing: 0.01em; color: #3b4a63; background: rgba(99, 102, 241, 0.07);
+            border: 1px solid rgba(99, 102, 241, 0.14); cursor: pointer; overflow: hidden; isolation: isolate;
+            will-change: transform;
+            transition: background .45s ease, border-color .45s ease, color .4s ease, transform .38s cubic-bezier(.34,1.2,.64,1), box-shadow .45s ease;
+        }
+        .nav-pill .nav-icon-wrap {
+            width: 1.6rem; height: 1.6rem; border-radius: 0.5rem; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(99, 102, 241, 0.14); color: var(--pill-a, #6366f1);
+            transition: background .45s ease, color .4s ease, transform .4s cubic-bezier(.34,1.2,.64,1);
+        }
+        .nav-pill:hover { background: rgba(99, 102, 241, 0.14); border-color: rgba(99,102,241,0.32); }
+        .nav-pill:active { transform: scale(0.97); }
+        .nav-pill.nav-active {
+            color: #fff; background: linear-gradient(120deg, var(--pill-a, #6366f1), var(--pill-b, #22d3ee));
+            border-color: transparent;
+            box-shadow: 0 10px 24px -10px var(--pill-glow, rgba(99,102,241,.65)), 0 0 0 1px rgba(255,255,255,0.08) inset;
+        }
+        .nav-pill.nav-active .nav-icon-wrap { background: rgba(255,255,255,0.22); color: #fff; }
+        .nav-pill.nav-active .nav-active-dot {
+            position: absolute; right: 0.65rem; top: 50%; transform: translateY(-50%);
+            width: 6px; height: 6px; border-radius: 999px; background: #fff; box-shadow: 0 0 6px 1px rgba(255,255,255,0.8);
+        }
+        .nav-cta {
+            background: linear-gradient(120deg, #6366f1, #4f46e5 45%, #22d3ee); background-size: 200% auto;
+            box-shadow: 0 10px 24px -10px rgba(79,70,229,0.55);
+        }
+        .nav-cta:hover { background-position: right center; transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(79,70,229,0.7); }
+        .nav-cta:active { transform: translateY(0) scale(0.97); }
+        .nav-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(148,163,184,0.35), transparent); margin: 0.5rem 0.25rem; }
+        html.dark .nav-divider { background: linear-gradient(90deg, transparent, rgba(99,102,241,0.3), transparent); }
+        html.dark .nav-pill { color: #a6b3cc; background: rgba(99, 102, 241, 0.09); border-color: rgba(99, 102, 241, 0.18); }
+        html.dark .nav-pill .nav-icon-wrap { background: rgba(99, 102, 241, 0.16); }
+        html.dark .nav-pill:hover { background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.4); color: #e6ebf5; }
+        html.dark .nav-pill.nav-active { box-shadow: 0 10px 28px -8px var(--pill-glow, rgba(99,102,241,.55)), 0 0 0 1px rgba(255,255,255,0.06) inset; }
+
+        html { color-scheme: light; }
+        html.dark { color-scheme: dark; }
+        html.dark body {
+            background-color: #060a17; color: #e2e8f0;
+            background-image:
+                radial-gradient(circle at 12% 0%, rgba(99,102,241,0.20), transparent 42%),
+                radial-gradient(circle at 88% 12%, rgba(34,211,238,0.16), transparent 40%),
+                radial-gradient(circle at 50% 100%, rgba(168,85,247,0.12), transparent 45%),
+                linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148,163,184,0.06) 1px, transparent 1px);
+            background-size: auto, auto, auto, 42px 42px, 42px 42px;
+        }
+        html.dark ::-webkit-scrollbar-track { background: #0a0f1e; }
+        html.dark ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #6366f1, #0891b2); }
+        html.dark ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8, #22d3ee); }
+        html.dark .glass-panel {
+            background: rgba(15, 21, 40, 0.92); border-color: rgba(99, 102, 241, 0.18);
+            backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.4), 0 12px 32px -14px rgba(0, 0, 0, 0.55);
+        }
+        @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+            html.dark .glass-panel { background: rgba(10, 14, 28, 0.99); }
+        }
+        html.dark .glass-panel::before { opacity: 0.9; }
+        html.dark .glass-panel:hover {
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4), 0 24px 48px -16px rgba(99, 102, 241, 0.35); border-color: rgba(99, 102, 241, 0.5);
+        }
+        html.dark aside { background-color: rgba(6, 10, 23, 0.85) !important; border-color: rgba(99,102,241,0.18) !important; }
+        html.dark [class~="bg-white"] { background-color: #151f32 !important; }
+        html.dark [class~="bg-slate-50"] { background-color: #0f172a !important; }
+        html.dark [class~="bg-slate-50/70"] { background-color: #0f172a !important; }
+        html.dark [class~="bg-slate-50/80"] { background-color: #0f172a !important; }
+        html.dark body[class~="bg-slate-50"] { background-color: #0b1220 !important; }
+        html.dark [class~="bg-slate-100"] { background-color: #1e293b !important; }
+        html.dark [class~="bg-slate-100/80"] { background-color: #1e293b !important; }
+        html.dark [class~="bg-slate-200"] { background-color: #334155 !important; }
+        html.dark [class~="bg-slate-300"] { background-color: #475569 !important; }
+        html.dark [class~="bg-slate-900/40"] { background-color: rgba(2, 6, 23, 0.7) !important; }
+        html.dark [class~="text-slate-900"] { color: #f1f5f9 !important; }
+        html.dark [class~="text-slate-800"] { color: #e2e8f0 !important; }
+        html.dark [class~="text-slate-700"] { color: #cbd5e1 !important; }
+        html.dark [class~="text-slate-600"] { color: #94a3b8 !important; }
+        html.dark [class~="text-slate-500"] { color: #94a3b8 !important; }
+        html.dark [class~="text-slate-400"] { color: #64748b !important; }
+        html.dark [class~="text-slate-300"] { color: #64748b !important; }
+        html.dark [class~="border-slate-100"] { border-color: #1e293b !important; }
+        html.dark [class~="border-slate-200"] { border-color: #26344a !important; }
+        html.dark [class~="border-slate-300"] { border-color: #334155 !important; }
+        html.dark [class~="border-slate-500"] { border-color: #475569 !important; }
+        html.dark [class~="divide-slate-100"] > * + * { border-color: #1e293b !important; }
+        html.dark [class~="divide-slate-200"] > * + * { border-color: #1e293b !important; }
+        html.dark [class*="hover:bg-slate-"]:hover { background-color: #1e293b !important; }
+        html.dark [class~="hover:bg-white"]:hover { background-color: #1e293b !important; }
+        html.dark [class~="bg-brand-50"] { background-color: rgba(59, 130, 246, 0.15) !important; }
+        html.dark [class~="bg-brand-100"] { background-color: rgba(59, 130, 246, 0.18) !important; }
+        html.dark [class~="bg-emerald-50"] { background-color: rgba(16, 185, 129, 0.15) !important; }
+        html.dark [class~="bg-emerald-100"] { background-color: rgba(16, 185, 129, 0.18) !important; }
+        html.dark [class~="bg-rose-50"] { background-color: rgba(244, 63, 94, 0.15) !important; }
+        html.dark [class~="bg-rose-100"] { background-color: rgba(244, 63, 94, 0.18) !important; }
+        html.dark [class~="bg-amber-50"] { background-color: rgba(245, 158, 11, 0.15) !important; }
+        html.dark [class~="bg-amber-100"] { background-color: rgba(245, 158, 11, 0.18) !important; }
+        html.dark [class~="bg-purple-100"] { background-color: rgba(124, 58, 237, 0.18) !important; }
+        html.dark [class~="bg-cyan-100"] { background-color: rgba(8, 145, 178, 0.18) !important; }
+        html.dark [class~="bg-blue-100"] { background-color: rgba(59, 130, 246, 0.18) !important; }
+        html.dark [class~="bg-indigo-50/40"] { background-color: rgba(79,70,229,0.10) !important; }
+        html.dark [class~="border-indigo-100"] { border-color: rgba(99,102,241,0.25) !important; }
+        html.dark [class~="border-indigo-200"] { border-color: rgba(99,102,241,0.3) !important; }
+        html.dark [class~="text-brand-600"] { color: #60a5fa !important; }
+        html.dark [class~="text-brand-700"] { color: #93c5fd !important; }
+        html.dark [class~="text-brand-800"] { color: #bfdbfe !important; }
+        html.dark [class~="text-emerald-600"] { color: #34d399 !important; }
+        html.dark [class~="text-emerald-700"] { color: #6ee7b7 !important; }
+        html.dark [class~="text-emerald-800"] { color: #a7f3d0 !important; }
+        html.dark [class~="text-rose-600"] { color: #fb7185 !important; }
+        html.dark [class~="text-rose-700"] { color: #fda4af !important; }
+        html.dark [class~="text-rose-800"] { color: #fecdd3 !important; }
+        html.dark [class~="text-amber-600"] { color: #fbbf24 !important; }
+        html.dark [class~="text-amber-700"] { color: #fcd34d !important; }
+        html.dark [class~="text-purple-600"] { color: #c084fc !important; }
+        html.dark [class~="text-purple-700"] { color: #d8b4fe !important; }
+        html.dark [class~="text-indigo-600"] { color: #a5b4fc !important; }
+        html.dark [class~="text-indigo-800"] { color: #c7d2fe !important; }
+        html.dark [class~="text-indigo-900"] { color: #e0e7ff !important; }
+        html.dark [class~="border-brand-200"] { border-color: rgba(59, 130, 246, 0.35) !important; }
+        html.dark [class~="border-emerald-200"] { border-color: rgba(16, 185, 129, 0.35) !important; }
+        html.dark [class~="border-rose-200"] { border-color: rgba(244, 63, 94, 0.35) !important; }
+        html.dark [class~="border-amber-200"] { border-color: rgba(245, 158, 11, 0.35) !important; }
+        html.dark [class~="border-purple-200"] { border-color: rgba(124, 58, 237, 0.35) !important; }
+        html.dark #insights-banner { background: linear-gradient(to right, rgba(37, 99, 235, 0.14), rgba(79, 70, 229, 0.08), transparent) !important; }
+        html.dark #dark-mode-toggle { background-color: #4f46e5 !important; }
+        html.dark #dark-mode-knob { transform: translateX(20px); }
+
+        .mobile-topbar { display: none; }
+        #nav-overlay { display: none; }
+        @media (max-width: 1023.98px) {
+            .mobile-topbar {
+                display: flex; position: fixed; top: 0; left: 0; right: 0; z-index: 9990;
+                align-items: center; gap: 0.6rem; padding: 0.6rem 0.9rem;
+                background: #ffffff; border-bottom: 1px solid rgba(148,163,184,0.25);
+            }
+            html.dark .mobile-topbar { background: #090d1c; border-bottom-color: rgba(99,102,241,0.2); }
+            #mobile-menu-btn {
+                width: 2.4rem; height: 2.4rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+                border-radius: 0.7rem; background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.22);
+                color: #4f46e5; font-size: 1.05rem;
+            }
+            html.dark #mobile-menu-btn { color: #a5b4fc; background: rgba(99,102,241,0.18); }
+            #mobile-menu-btn:active { transform: scale(0.94); }
+            .mobile-topbar h1 { color: #1e293b; }
+            html.dark .mobile-topbar h1 { color: #f1f5f9; }
+            .app-sidebar {
+                position: fixed !important; left: 0 !important; top: 0 !important; bottom: 0 !important;
+                width: 78vw !important; max-width: 300px; border-radius: 0 1.25rem 1.25rem 0 !important;
+                transform: translateX(-105%); transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+                z-index: 9995 !important; background: #ffffff !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+                box-shadow: 0 0 0 1px rgba(148,163,184,0.25); pointer-events: auto; will-change: transform;
+            }
+            html.dark .app-sidebar { background: #0b1020 !important; }
+            body.nav-open .app-sidebar { transform: translateX(0); }
+            .app-sidebar, .app-sidebar * { touch-action: manipulation; }
+            .app-sidebar .hidden.lg\:inline { display: inline !important; }
+            .app-sidebar .hidden.lg\:block { display: block !important; }
+            .app-sidebar .lg\:justify-start { justify-content: flex-start !important; }
+            .app-sidebar .lg\:justify-between { justify-content: space-between !important; }
+            #nav-overlay {
+                display: block; position: fixed; inset: 0; background: rgba(10,14,28,0.55); z-index: 9992;
+                opacity: 0; pointer-events: none; transition: opacity 0.36s ease;
+            }
+            body.nav-open #nav-overlay { opacity: 1; pointer-events: auto; }
+            body.nav-open { overflow: hidden; }
+            #app-content-wrap { margin-left: 0 !important; padding-top: 3.6rem; }
+        }
+        @media (max-width: 1023.98px) {
+            body { background-attachment: scroll; }
+            .glass-panel { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(255,255,255,0.98); }
+            html.dark .glass-panel { background: rgba(15,21,40,0.98); }
+            .glass-panel::before { display: none; }
+            .glass-panel:hover { transform: none; box-shadow: 0 1px 2px 0 rgba(15,23,42,0.04), 0 12px 28px -12px rgba(30,41,59,0.10); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+        }
+        html.theme-transition, html.theme-transition body, html.theme-transition .glass-panel, html.theme-transition .app-sidebar,
+        html.theme-transition .mobile-topbar, html.theme-transition #dark-mode-toggle, html.theme-transition #dark-mode-knob {
+            transition: background-color .35s ease, color .35s ease, border-color .35s ease, box-shadow .35s ease !important;
+        }
+        .table-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+        .status-badge { padding: 0.125rem 0.625rem; font-size: 10px; font-weight: 700; border-radius: 9999px; }
+        .radar-scan-wrap { position: relative; }
+        .radar-scan-wrap::after {
+            content: ''; position: absolute; inset: 8%; border-radius: 9999px; pointer-events: none;
+            border: 1px solid rgba(34,211,238,0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex selection:bg-brand-500 selection:text-white">
+
+    <div id="app-loading-screen" class="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-[#05070f] transition-opacity duration-500 ease-out">
+        <div class="rounded-2xl shadow-glow overflow-hidden w-16 h-16">
+            <img src="../icon-512.png" alt="Tukka Meter - SSC" class="w-full h-full object-contain">
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Made by Akarsh K C❤️</p>
+        <h1 class="text-sm font-bold font-display text-slate-800 dark:text-slate-100 text-center">Tukka Meter - SSC</h1>
+        <i class="fa-solid fa-spinner fa-spin text-brand-500 text-base mt-1"></i>
+    </div>
+
+    <header class="mobile-topbar">
+        <button id="mobile-menu-btn" onclick="toggleMobileNav()" aria-label="Open menu"><i class="fa-solid fa-bars"></i></button>
+        <div class="flex items-center gap-2 min-w-0">
+            <div class="rounded-lg overflow-hidden shrink-0 w-7 h-7"><img src="../icon-512.png" alt="Logo" class="w-full h-full object-contain"></div>
+            <h1 class="text-sm font-bold font-display text-slate-800 dark:text-slate-100 truncate">Tukka Meter - SSC</h1>
+        </div>
+        <button onclick="openExamSwitchModal()" class="ml-auto shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-brand-50 dark:bg-brand-900/30 border border-brand-100 dark:border-brand-800 text-brand-700 dark:text-brand-300 text-[11px] font-bold">
+            <i class="fa-solid fa-graduation-cap js-exam-icon"></i><span class="js-exam-short">CGL Tier 1</span><i class="fa-solid fa-chevron-down text-[9px] opacity-60"></i>
+        </button>
+    </header>
+
+    <div id="nav-overlay" onclick="closeMobileNav()"></div>
+
+    <aside class="app-sidebar fixed left-2 top-2 bottom-2 lg:left-4 lg:top-4 lg:bottom-4 w-[64px] lg:w-64 rounded-[1.75rem] z-40 flex flex-col transition-all duration-300 overflow-hidden">
+        <div class="absolute top-0 right-0 bottom-0 w-[2px] gradient-flow-bg"></div>
+        <div class="px-3 lg:px-5 py-5 flex items-center gap-3 border-b border-slate-200/70 dark:border-transparent justify-center lg:justify-start">
+            <div class="rounded-xl shadow-glow overflow-hidden shrink-0 w-11 h-11"><img src="../icon-512.png" alt="Logo" class="w-full h-full object-contain"></div>
+            <div class="hidden lg:block min-w-0">
+                <h1 class="text-base font-bold font-display bg-gradient-to-r from-brand-700 via-brand-600 to-indigo-600 bg-clip-text text-transparent leading-tight">Tukka Meter - SSC</h1>
+                <p class="text-[11px] text-slate-500 font-medium flex items-center gap-2 mt-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot inline-block shrink-0"></span>
+                    <span>Made by Akarsh K C❤️</span>
+                </p>
+            </div>
+            <button onclick="closeMobileNav()" class="lg:hidden ml-auto w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 shrink-0" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <nav class="nav-rail flex-1 overflow-y-auto px-2 lg:px-3 py-4 space-y-1.5">
+            <button onclick="goHome()" id="nav-home-btn" class="nav-pill nav-active" style="--pill-a:#3b82f6;--pill-b:#22d3ee;--pill-glow:rgba(59,130,246,.5)" title="Home">
+                <span class="nav-icon-wrap"><i class="fa-solid fa-house"></i></span><span class="hidden lg:inline">Home</span><span class="nav-active-dot hidden lg:block"></span>
+            </button>
+            <button onclick="tukkaSwitchCategory()" id="nav-category-btn" class="nav-pill" style="--pill-a:#e11d48;--pill-b:#fb7185;--pill-glow:rgba(225,29,72,.55)" title="Exam Category (SSC / Railway / Bank)">
+                <span class="nav-icon-wrap"><i class="fa-solid fa-shapes"></i></span><span class="hidden lg:inline truncate">Exam Category</span>
+                <i class="fa-solid fa-toggle-on hidden lg:block absolute right-[0.65rem] top-1/2 -translate-y-1/2 text-amber-500 text-xs" title="Switch between SSC / Railway / Bank category"></i>
+            </button>
+            <button onclick="openExamSwitchModal()" id="nav-exam-btn" class="nav-pill" style="--pill-a:#7c3aed;--pill-b:#a855f7;--pill-glow:rgba(124,58,237,.55)" title="Exam Type">
+                <span class="nav-icon-wrap"><i class="fa-solid fa-right-left"></i></span><span class="hidden lg:inline truncate">Exam Type &middot; <span class="js-exam-short">CGL Tier 1</span></span>
+            </button>
+            <div class="nav-divider"></div>
+            <button onclick="openMockModal()" class="nav-cta w-full px-3 py-2.5 text-white text-xs font-semibold rounded-xl transition-all duration-400 flex items-center justify-center lg:justify-start gap-3" title="Add New Mock">
+                <span class="nav-icon-wrap !bg-white/20 !text-white"><i class="fa-solid fa-plus"></i></span><span class="hidden lg:inline">Add New Mock</span>
+            </button>
+            <button onclick="showIndividualView()" id="nav-individual-btn" class="nav-pill" style="--pill-a:#a855f7;--pill-b:#ec4899;--pill-glow:rgba(168,85,247,.55)" title="Individual Mock Analyzer">
+                <span class="nav-icon-wrap"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="hidden lg:inline">Individual Mock Analyzer</span><span class="nav-active-dot hidden lg:block"></span>
+            </button>
+            <div class="nav-divider"></div>
+            <button onclick="openSyncModal()" id="sync-status-btn" class="nav-pill" title="Cloud Sync Settings">
+                <span class="nav-icon-wrap"><i id="sync-status-icon" class="fa-solid fa-cloud"></i></span><span id="sync-status-text" class="hidden lg:inline">Sync Off</span>
+            </button>
+            <button onclick="showBackupView()" id="nav-backup-btn" class="nav-pill" style="--pill-a:#059669;--pill-b:#f59e0b;--pill-glow:rgba(5,150,105,.5)" title="Backup & Restore your data">
+                <span class="nav-icon-wrap"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="hidden lg:inline">Backup &amp; Restore</span><span class="nav-active-dot hidden lg:block"></span>
+            </button>
+            <p id="last-backup-status" class="hidden lg:block px-3 pt-0.5 pb-0.5 text-[10px] font-medium text-slate-400 leading-tight truncate" title="Time since your last downloaded backup file">Backup: —</p>
+            <input type="file" id="import-json-input" accept=".json,application/json" class="hidden" onchange="handleImportFile(event)">
+            <div class="nav-divider"></div>
+            <button onclick="showAboutView()" id="nav-about-btn" class="nav-pill" style="--pill-a:#ec4899;--pill-b:#f59e0b;--pill-glow:rgba(236,72,153,.55)" title="About Me">
+                <span class="nav-icon-wrap"><i class="fa-solid fa-circle-user"></i></span><span class="hidden lg:inline">About Me</span><span class="nav-active-dot hidden lg:block"></span>
+            </button>
+        </nav>
+
+        <div class="px-3 lg:px-5 py-4 border-t border-slate-200/70 dark:border-transparent flex items-center justify-center lg:justify-between">
+            <span class="hidden lg:inline text-xs font-semibold text-slate-500">Dark Mode</span>
+            <button onclick="toggleDarkMode()" id="dark-mode-toggle" class="relative w-11 h-6 rounded-full bg-slate-200 transition-colors duration-300 shrink-0" title="Toggle dark mode" aria-label="Toggle dark mode">
+                <span id="dark-mode-knob" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 flex items-center justify-center">
+                    <i id="dark-mode-icon" class="fa-solid fa-sun text-amber-500 text-[10px]"></i>
+                </span>
+            </button>
+        </div>
+    </aside>
+
+    <div id="app-content-wrap" class="flex-1 flex flex-col min-w-0 ml-0 lg:ml-[296px] pb-12 pr-2 lg:pr-0 transition-all duration-300">
+    <!-- HOME DASHBOARD VIEW -->
+    <main id="dashboard-main" class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-6">
+
+        <section class="glass-panel p-4 rounded-2xl flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl gradient-flow-bg flex items-center justify-center text-white shrink-0 shadow-glow"><i class="fa-solid fa-graduation-cap js-exam-icon text-lg"></i></div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-slate-500 font-semibold uppercase tracking-wide">Currently Tracking</p>
+                    <h2 class="text-sm font-bold text-slate-900 font-display truncate js-exam-name">SSC CGL Tier 1</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="text-xs font-bold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 border border-brand-100 js-exam-total">200 Marks Total</span>
+                <button onclick="openExamSwitchModal()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 transition"><i class="fa-solid fa-right-left text-[11px]"></i> Switch</button>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+            <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-brand-500 to-accent-cyan opacity-70"></div>
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Mocks Tracked</p>
+                <h3 id="kpi-total-mocks" class="text-2xl font-extrabold font-display text-slate-800 mt-1">0</h3>
+                <p id="kpi-mocks-sub" class="text-[10px] text-slate-500 mt-1 flex items-center gap-1 font-medium"><i class="fa-solid fa-bullseye text-brand-600"></i> CGL Tier 1 Target</p>
+            </div>
+            <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 to-accent-cyan opacity-70"></div>
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Avg Score</p>
+                <h3 id="kpi-avg-score" class="text-2xl font-extrabold font-display text-emerald-600 mt-1">0.0</h3>
+                <p class="text-[10px] text-slate-500 mt-1 font-medium"><span id="kpi-max-score">Peak: 0</span></p>
+            </div>
+            <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-brand-500 opacity-70"></div>
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Avg Percentile</p>
+                <h3 id="kpi-avg-percentile" class="text-2xl font-extrabold font-display text-indigo-600 mt-1">0.0%</h3>
+                <p class="text-[10px] text-slate-500 mt-1 font-medium">Target: 95%+</p>
+            </div>
+            <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-500 to-rose-400 opacity-70"></div>
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Accuracy</p>
+                <h3 id="kpi-avg-accuracy" class="text-2xl font-extrabold font-display text-amber-600 mt-1">0.0%</h3>
+                <p class="text-[10px] text-slate-500 mt-1 font-medium">Attempt precision</p>
+            </div>
+            <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-500 to-purple-500 opacity-70"></div>
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Avg Negatives</p>
+                <h3 id="kpi-avg-negatives" class="text-2xl font-extrabold font-display text-rose-600 mt-1">0.0</h3>
+                <p class="text-[10px] text-slate-500 mt-1 font-medium">Marks lost / mock</p>
+            </div>
+            <div class="glass-panel p-4 rounded-xl relative overflow-hidden group">
+                <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 opacity-70"></div>
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Weakest Subject</p>
+                <h3 id="kpi-weak-subject" class="text-lg font-extrabold font-display text-purple-600 mt-1">N/A</h3>
+                <p id="kpi-weak-subject-sub" class="text-[10px] text-slate-500 mt-1 font-medium">Focus area</p>
+            </div>
+        </section>
+
+        <section id="sample-data-banner" class="hidden glass-panel p-4 rounded-2xl border-l-4 border-l-amber-400 bg-gradient-to-r from-amber-50/70 via-white to-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-start gap-3">
+                <div class="p-2 bg-amber-100 text-amber-600 rounded-lg shrink-0 mt-0.5"><i class="fa-solid fa-flask text-lg"></i></div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-900">You're looking at sample data</h4>
+                    <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">These mocks are just here so the charts and insights have something to show. Tap <span class="font-semibold">Add New Mock</span> to start logging your own — the sample entries can be deleted any time from the Individual Mock Analyzer. And since everything's saved only in this browser, grab a quick <span class="font-semibold">Export Backup</span> before switching phones or clearing your cache.</p>
+                </div>
+            </div>
+            <button onclick="dismissSampleDataBanner()" class="shrink-0 text-xs px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 rounded-lg font-semibold transition-all self-start sm:self-center">Got it</button>
+        </section>
+
+        <section id="insights-banner" class="glass-panel p-4 rounded-2xl border-l-4 border-l-brand-600 bg-gradient-to-r from-blue-50/50 via-indigo-50/30 to-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-start space-x-3">
+                <div class="p-2 bg-gradient-to-tr from-brand-500 to-accent-cyan text-white rounded-lg shrink-0 mt-0.5 shadow-glow"><i class="fa-solid fa-lightbulb text-lg"></i></div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-900">Quick Insight</h4>
+                    <p id="insight-text" class="text-xs text-slate-600 mt-0.5">Log a few mock tests to see your personalized performance insight here.</p>
+                </div>
+            </div>
+            <button type="button" onclick="showIndividualView()" id="insight-tag" class="shrink-0 text-xs px-3 py-1 bg-brand-100 hover:bg-brand-200 text-brand-800 rounded-full font-semibold border border-brand-200 transition-all cursor-pointer" title="Open Individual Mock Analyzer">Diagnostic Ready</button>
+        </section>
+
+        <section class="glass-panel p-4 lg:p-5 rounded-2xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-gauge-high text-brand-600"></i> Overall Performance</h2>
+                <div id="overall-performance-pill" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 whitespace-nowrap self-start sm:self-center">-</div>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1"><span class="text-slate-500">Percentile</span><span id="bar-percentile-text" class="font-bold text-amber-700">0%</span></div>
+                    <div class="h-2.5 bg-slate-100 rounded-md overflow-hidden"><div id="bar-percentile-fill" class="h-full bg-amber-500 rounded-md transition-all duration-500" style="width:0%"></div></div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1"><span class="text-slate-500">Marks</span><span id="bar-marks-text" class="font-bold text-blue-700">0 / 200 (0%)</span></div>
+                    <div class="h-2.5 bg-slate-100 rounded-md overflow-hidden"><div id="bar-marks-fill" class="h-full bg-blue-600 rounded-md transition-all duration-500" style="width:0%"></div></div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1"><span class="text-slate-500">Accuracy</span><span id="bar-accuracy-text" class="font-bold text-emerald-700">0%</span></div>
+                    <div class="h-2.5 bg-slate-100 rounded-md overflow-hidden"><div id="bar-accuracy-fill" class="h-full bg-emerald-500 rounded-md transition-all duration-500" style="width:0%"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <!-- Resolve These Before Next Mock -->
+            <div class="lg:col-span-7 glass-panel p-4 lg:p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-white/10">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-emerald-600 dark:text-emerald-400"></i> Resolve These Before Next Mock
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Key concept fixes & mistake targets to address before your next attempt</p>
+                        </div>
+                        <button onclick="toggleAddResolveInput()" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-400/10 dark:hover:bg-emerald-400/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-400/30 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Add Task
+                        </button>
+                    </div>
+
+                    <!-- Hidden Add New Item Form -->
+                    <div id="add-resolve-container" class="hidden mb-4 p-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-100">Add Concept Fix Target</span>
+                            <button onclick="toggleAddResolveInput()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <input type="text" id="new-resolve-title" placeholder="Title (e.g., Revise Circle Tangent Theorems)" class="w-full text-xs p-2 border border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 rounded-lg focus:outline-none focus:border-brand-500">
+                        <textarea id="new-resolve-desc" rows="2" placeholder="Notes / Details (e.g., Confused direct vs transverse tangent formula in Mock 06)" class="w-full text-xs p-2 border border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 rounded-lg focus:outline-none focus:border-brand-500"></textarea>
+                        <div class="flex justify-end gap-2 pt-1">
+                            <button onclick="toggleAddResolveInput()" class="px-3 py-1 bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg">Cancel</button>
+                            <button onclick="addNewResolveItem()" class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-emerald-700">Save Task</button>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Timeline Items List -->
+                    <div id="resolve-timeline-container" class="relative timeline-line space-y-4 max-h-[290px] overflow-y-scroll pr-2 pl-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                    <span id="resolve-items-count"><i class="fa-solid fa-spinner fa-spin"></i> Loading targets...</span>
+                    <span class="italic text-slate-400 dark:text-slate-500"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Delete or check off items as you resolve them</span>
+                </div>
+            </div>
+
+            <!-- Small Monthly Calendar Card: Days Mocks Attended -->
+            <div class="lg:col-span-5 glass-panel p-4 lg:p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 dark:border-white/10">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-days text-brand-600 dark:text-brand-400"></i> Mock Days Attended
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Monthly attendance heatmap of mock tests taken</p>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button onclick="changeCalendarMonth(-1)" class="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors" title="Previous Month">
+                                <i class="fa-solid fa-chevron-left text-xs"></i>
+                            </button>
+                            <span id="calendar-month-year" class="text-xs font-bold text-slate-800 dark:text-slate-100 px-1 min-w-[90px] text-center"></span>
+                            <button onclick="changeCalendarMonth(1)" class="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors" title="Next Month">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Days of Week Header -->
+                    <div class="grid grid-cols-7 gap-1 text-center font-bold text-[11px] text-slate-400 dark:text-slate-500 mb-2">
+                        <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div id="calendar-days-grid" class="grid grid-cols-7 gap-1 text-center text-xs">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px]">
+                    <div class="flex items-center space-x-3">
+                        <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-medium">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Mock Day
+                        </span>
+                        <span class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-white/10 inline-block"></span> Rest Day
+                        </span>
+                    </div>
+                    <span id="calendar-month-count" class="font-bold text-brand-700 dark:text-brand-300">0 Mocks</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-panel p-4 lg:p-5 rounded-2xl">
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2 mb-4"><i class="fa-solid fa-layer-group text-brand-600"></i> Subject-Wise Averages</h2>
+            <div id="subject-cards-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="glass-panel p-4 lg:p-5 rounded-2xl">
+                <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-3"><i class="fa-solid fa-chart-column text-brand-600"></i> Subject-Wise Average Score</h3>
+                <div class="h-64"><canvas id="subjectBarChart"></canvas></div>
+            </div>
+            <div class="glass-panel p-4 lg:p-5 rounded-2xl">
+                <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-3"><i class="fa-solid fa-chart-line text-brand-600"></i> Subject Progression (Last 10)</h3>
+                <div class="h-64"><canvas id="subjectTrendChart"></canvas></div>
+            </div>
+        </section>
+
+        <section class="glass-panel p-4 lg:p-5 rounded-2xl">
+            <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-3"><i class="fa-solid fa-chart-area text-brand-600"></i> Score & Percentile Progression</h3>
+            <div class="h-72"><canvas id="scoreTrendChart"></canvas></div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="glass-panel p-4 lg:p-5 rounded-2xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-brand-600"></i> Attempt Breakdown</h3>
+                    <span id="donut-accuracy-badge" class="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">0% Accuracy</span>
+                </div>
+                <div class="relative h-56">
+                    <canvas id="attemptsPieChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span id="center-accuracy-val" class="text-xl font-extrabold text-slate-800">0%</span>
+                        <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Accuracy</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-4 text-xs">
+                    <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-100">
+                        <p class="text-emerald-700 font-semibold flex items-center gap-1"><i class="fa-solid fa-check"></i> Correct</p>
+                        <span id="dist-correct-cnt" class="font-bold text-slate-900 text-sm">0</span>
+                        <span id="dist-correct-pct" class="text-[10px] font-semibold text-emerald-700 ml-1">0%</span>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-rose-50 border border-rose-100">
+                        <p class="text-rose-700 font-semibold flex items-center gap-1"><i class="fa-solid fa-xmark"></i> Wrong</p>
+                        <span id="dist-wrong-cnt" class="font-bold text-slate-900 text-sm">0</span>
+                        <span id="dist-wrong-loss" class="text-[10px] font-semibold text-rose-700 ml-1">-0 pts</span>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-100 border border-slate-200">
+                        <p class="text-slate-600 font-semibold flex items-center gap-1"><i class="fa-solid fa-minus"></i> Skipped</p>
+                        <span id="dist-skipped-cnt" class="font-bold text-slate-900 text-sm">0</span>
+                        <span id="dist-skipped-pct" class="text-[10px] font-semibold text-slate-500 ml-1">0%</span>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-indigo-50 border border-indigo-100">
+                        <p class="text-indigo-700 font-semibold flex items-center gap-1"><i class="fa-solid fa-scale-balanced"></i> Attempt Rate</p>
+                        <span id="dist-attempt-rate" class="font-bold text-indigo-900 text-sm">0%</span>
+                        <span id="dist-precision-ratio" class="text-[10px] font-semibold text-indigo-600 ml-1">0 : 1</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col gap-4">
+                <div class="glass-panel relative overflow-hidden rounded-2xl p-4 lg:p-5 flex-1">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2"><i class="fa-solid fa-satellite-dish text-cyan-600 dark:text-cyan-400"></i> Subject Strength Radar</h3>
+                        <span id="radar-mock-badge" class="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-cyan-400/10 dark:text-cyan-300 dark:border-cyan-400/30 tracking-wide uppercase">Last 10 Mocks</span>
+                    </div>
+                    <div class="relative h-52 radar-scan-wrap">
+                        <canvas id="subjectRadarChart"></canvas>
+                    </div>
+                    <p id="radar-empty-hint" class="hidden text-center text-[11px] text-slate-400 mt-2">Log a mock to see your subject strength map.</p>
+                </div>
+                <div class="glass-panel p-4 lg:p-5 rounded-2xl flex-1">
+                    <h3 class="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-3"><i class="fa-solid fa-triangle-exclamation text-brand-600"></i> Accuracy vs Negative Marks</h3>
+                    <div class="h-52"><canvas id="accuracyNegativeChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- INDIVIDUAL MOCK ANALYZER VIEW -->
+    <section id="individual-view" class="hidden flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6">
+        <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <div class="flex items-center gap-3">
+                <button onclick="goHome()" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all"><i class="fa-solid fa-arrow-left"></i></button>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-chart text-brand-600"></i> Individual Mock Analyzer</h2>
+                    <p class="text-xs text-slate-500 font-medium">Deep-dive into a single mock's subject-wise breakdown.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="navigateIndividualMock(-1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all" title="Previous mock"><i class="fa-solid fa-chevron-left"></i></button>
+                <span id="individual-nav-label" class="text-xs font-semibold text-slate-500 px-2 whitespace-nowrap">-</span>
+                <button onclick="navigateIndividualMock(1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all" title="Next mock"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-3 glass-panel rounded-2xl p-3 h-fit lg:sticky lg:top-4">
+                <div class="flex items-center justify-between px-2 pb-2">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">All Mocks</p>
+                    <span id="individual-count-badge" class="shrink-0 text-[10px] font-bold text-brand-700 bg-brand-50 border border-brand-200 rounded px-1.5 py-0.5 whitespace-nowrap">0</span>
+                </div>
+                <div class="relative mb-2">
+                    <i class="fa-solid fa-magnifying-glass w-4 h-4 absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="individual-search" placeholder="Search test name or notes..." oninput="renderIndividualSidebar()" class="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div id="individual-mock-sidebar" class="flex flex-col gap-1 lg:max-h-[65vh] lg:overflow-y-auto pr-1"></div>
+            </div>
+            <div id="individual-mock-content" class="lg:col-span-9 space-y-4">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT ME VIEW -->
+    <section id="about-view" class="hidden flex-1 max-w-4xl w-full mx-auto p-4 lg:p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <button onclick="goHome()" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all"><i class="fa-solid fa-arrow-left"></i></button>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-circle-user text-brand-600"></i> About Me</h2>
+                    <p class="text-xs text-slate-500 font-medium">The story (and the laziness) behind this dashboard.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel p-6 lg:p-8 rounded-2xl space-y-5">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl gradient-flow-bg flex items-center justify-center text-white shadow-glow shrink-0"><i class="fa-solid fa-user-astronaut text-2xl"></i></div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 font-display">Akarsh K C</h3>
+                    <p class="text-xs text-slate-500 font-medium">Kerala, India</p>
+                </div>
+            </div>
+            <div class="text-sm leading-relaxed text-slate-700 space-y-4 border-t border-slate-200/70 pt-5">
+                <p>Hi, I'm the guy who built this (mostly AI) for one simple reason&mdash;I was too lazy to manually track my own mock analysis on paper. I searched everywhere but couldn't find a tool that did exactly what I needed, so I decided to build one myself. </p>
+                <p>Now stop reading my bio and go attempt a mock, my friend 🏃‍♂️💨</p>
+                <p>Word of advice: Consistency beats intensity every single time. Show up, grind, and trust the process.</p>
+                <p class="font-semibold text-slate-900">Thank you &mdash; Akarsh K C </p>
+            </div>
+
+            <div class="border-t border-slate-200/70 pt-5">
+                <div id="support-banner" class="bg-gradient-to-r from-purple-50 via-brand-50 to-white border border-purple-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+                        <i class="fa-solid fa-utensils text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-slate-900">Do I deserve a samosa for pulling this off overnight? 🌙🥟 </p>
+                        <p class="text-xs text-slate-500 mt-0.5"> Help the dev out 🙃✨</p>
+                    </div>
+                    <!-- Mobile: UPI Payment Button -->
+                    <button id="upi-mobile-btn" onclick="initiateUPIPayment()" class="sm:hidden shrink-0 w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-brand-600 hover:from-purple-700 hover:to-brand-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-mobile"></i> Send via UPI
+                    </button>
+                    <!-- Mobile fallback: shown only if no UPI app picks up the payment link -->
+                    <div id="upi-mobile-fallback" class="hidden sm:hidden shrink-0 w-full flex flex-col items-center gap-2 bg-white/70 border border-purple-200 rounded-xl p-3">
+                        <p class="text-[11px] text-slate-500 text-center">No UPI app found. Scan the QR code, or copy the ID instead.</p>
+                        <img id="upi-qr-mobile" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=CGL%20Maths%20Analytics&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
+                        <button onclick="copyUPIId()" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-all">
+                            <i class="fa-solid fa-copy"></i> Copy UPI ID
+                        </button>
+                    </div>
+
+                    <!-- Desktop: QR Code & UPI ID -->
+                    <div id="upi-desktop" class="hidden sm:flex sm:shrink-0 flex-col items-center gap-3">
+                        <img id="upi-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=CGL%20Maths%20Analytics&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
+                        <div class="text-center">
+                            <p class="text-xs text-slate-600 font-semibold mb-1.5">tukka-meter@ptaxis</p>
+                            <button onclick="copyUPIId()" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-all">
+                                <i class="fa-solid fa-copy"></i> Copy ID
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-200/70 pt-5">
+                <p class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-share-nodes text-brand-600"></i> Share with your friends, let them cook too 👨‍🍳
+                </p>
+                <p class="text-xs text-slate-500 mt-1 mb-3">Know someone grinding for SSC/Bank exams? Send them this link.</p>
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 pl-4">
+                    <i class="fa-brands fa-github text-slate-500 shrink-0"></i>
+                    <input id="github-share-link" type="text" readonly value="https://www.google.com"
+                        class="flex-1 min-w-0 bg-transparent text-xs text-slate-600 font-medium truncate outline-none">
+                    <button onclick="copyGithubLink()" id="github-copy-btn" class="shrink-0 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-copy"></i> Copy
+                    </button>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-200/70 pt-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold text-slate-900">App Version</p>
+                    <p class="text-[11px] text-slate-500">Works fully offline. Updates only need internet to check.</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">If SSC exam patterns change, I update this app to match — tap Check for Updates to grab the latest version.</p>
+                </div>
+                <button onclick="checkForAppUpdate()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm"><i class="fa-solid fa-rotate"></i> Check for Updates</button>
+            </div>
+
+            <div class="border-t border-slate-200/70 pt-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold text-slate-900">Feedback</p>
+                    <p class="text-[11px] text-slate-500">Found a bug or have an idea? I'd genuinely love to hear it.</p>
+                </div>
+                <a href="mailto:sample@gmail.com?subject=Tukka%20Meter%20SSC%20Feedback" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm"><i class="fa-solid fa-envelope"></i> Send Feedback</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BACKUP & RESTORE VIEW (merged export/import) -->
+    <section id="backup-view" class="hidden flex-1 max-w-4xl w-full mx-auto p-4 lg:p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <button onclick="hideBackupView()" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-brand-600"></i> Backup &amp; Restore
+                    </h2>
+                    <p class="text-xs text-slate-500 font-medium">Save a copy of your data, or bring it back from a saved file.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-5">
+            <!-- Export card -->
+            <div class="glass-panel p-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                    <i class="fa-solid fa-file-export text-2xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-sm font-bold text-slate-900">Export as Backup Data</h3>
+                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                        This saves all your mocks and progress into one file on your phone or computer, like taking a photo of everything you've logged so far. Keep this file safe (Google Drive, email to yourself, etc.) so you never lose your data — even if you clear your browser or switch devices.
+                    </p>
+                </div>
+                <button onclick="exportDataJSON()" class="w-full sm:w-auto shrink-0 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-download"></i> Export Backup
+                </button>
+            </div>
+
+            <!-- Import card -->
+            <div class="glass-panel p-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                    <i class="fa-solid fa-file-import text-2xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-sm font-bold text-slate-900">Import from Backup File</h3>
+                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                        Already have a backup file? Use this to bring all that data back into the app, useful after reinstalling, switching devices, or if something got accidentally deleted. <span class="font-semibold text-slate-700">Note:</span> this replaces whatever is currently in the app, so make sure it's the right file.
+                    </p>
+                </div>
+                <button onclick="triggerImportJSON()" class="w-full sm:w-auto shrink-0 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-upload"></i> Import Backup
+                </button>
+            </div>
+        </div>
+    </section>
+
+    </div><!-- /app-content-wrap -->
+    <!-- ADD / EDIT MOCK MODAL -->
+    <div id="mock-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+            <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl sticky top-0 z-10">
+                <h3 id="modal-title" class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-brand-600"></i> Add New Mock Record</h3>
+                <button onclick="closeMockModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="mock-form" onsubmit="saveMock(event)" class="p-6 space-y-4">
+                <input type="hidden" id="field-id">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Mock #</label>
+                        <input type="number" id="field-mockNo" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Test Name</label>
+                        <input type="text" id="field-testName" placeholder="e.g. Testbook Tier 1 Live Mock 05" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Date</label>
+                        <input type="date" id="field-date" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Max Score</label>
+                        <input type="number" id="field-maxScore" value="200" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Total Score Obtained</label>
+                        <input type="number" step="0.25" id="field-score" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="p-3 bg-indigo-50/40 rounded-xl border border-indigo-100 space-y-2">
+                    <span class="text-xs font-bold text-indigo-900 block flex items-center gap-1.5"><i class="fa-solid fa-book-open text-indigo-600"></i> Subject Breakdown Scores &mdash; <span class="js-exam-name font-semibold">SSC CGL Tier 1</span> (Optional / Auto-Sums Total)</span>
+                    <div id="subject-fields-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Correct</label>
+                        <input type="number" id="field-correct" oninput="autoCalculateForm()" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Wrong</label>
+                        <input type="number" id="field-wrong" oninput="autoCalculateForm()" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Total Questions</label>
+                        <input type="number" id="field-totalQ" value="100" oninput="autoCalculateForm()" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Negative Factor</label>
+                        <input type="number" step="0.25" id="field-negFactor" value="0.5" oninput="autoCalculateForm()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <p class="text-[10px] text-slate-400 mt-1 leading-snug">Auto-fills per exam. CGL Tier 2 &amp; MTS mix negative-marking rates across sections — adjust manually if needed.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-4 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px]">
+                    <div><span class="text-slate-500 block">Attempted:</span><span id="calc-attempted" class="font-bold text-slate-800">0</span></div>
+                    <div><span class="text-slate-500 block">Unattempted:</span><span id="calc-unattempted" class="font-bold text-slate-800">0</span></div>
+                    <div><span class="text-slate-500 block">Accuracy %:</span><span id="calc-accuracy" class="font-bold text-blue-600">0%</span></div>
+                    <div><span class="text-slate-500 block">Negatives:</span><span id="calc-negatives" class="font-bold text-rose-600">0</span></div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Percentile (%)</label>
+                    <input type="number" step="0.01" id="field-percentile" placeholder="e.g. 94.5" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Notes & Improvement Strategy</label>
+                    <textarea id="field-notes" rows="2" placeholder="e.g. Worked well on Algebra; lost marks in GS static GK and Reasoning syllogism..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+                    <button type="button" onclick="closeMockModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">Save Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Exam Switch Modal -->
+    <div id="exam-switch-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[85vh] overflow-y-auto border border-slate-200">
+            <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl sticky top-0 z-10">
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-right-left text-brand-600"></i> Exam Type</h3>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Each exam keeps its own mocks, total marks & subject split.</p>
+                </div>
+                <button onclick="closeExamSwitchModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="exam-switch-options" class="p-4 space-y-2"></div>
+        </div>
+    </div>
+
+    <!-- Cloud Sync Settings Modal -->
+    <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-cloud text-brand-600"></i> Cloud Sync (Google Sheets)</h3>
+                <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex items-start gap-2 px-3 py-2.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800">
+                <i class="fa-solid fa-circle-info mt-0.5 shrink-0 text-[11px]"></i>
+                <p class="text-[11px] leading-relaxed font-medium">Cloud sync is completely optional — the dashboard works fully offline using your device's local storage. Turn this on only if you want your mock data backed up and available across multiple devices via a Google Sheet.</p>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-snug">Paste your Google Apps Script Web App URL below. Once connected, this dashboard will save and load data from the same Google Sheet on any device — phone, laptop, anywhere.</p>
+            <div class="text-[11px] text-slate-500 leading-relaxed bg-slate-50 border border-slate-200 rounded-lg p-2.5 space-y-1">
+                <p class="font-semibold text-slate-700"><i class="fa-solid fa-book text-[10px] mr-1"></i>How to set it up: (If anything is unclear, ask AI for help).</p>
+                <p>1. Create a new Google Sheet to store your mock data.</p>
+                <p>2. In the Sheet, go to Extensions → Apps Script and paste a small script that handles GET (read) and POST (write) requests, returning/saving JSON.</p>
+                <p>3. Deploy it as a Web App (Execute as: Me, Access: Anyone), then copy the generated URL.</p>
+                <p>4. Paste that URL below and hit "Save & Connect" — your data will sync automatically from then on.</p>
+            </div>
+            <input type="text" id="sync-url-input" placeholder="https://script.google.com/macros/s/XXXX/exec" class="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-brand-500">
+            <div class="flex items-center justify-between gap-2 pt-1">
+                <button onclick="pullFromCloud(true)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"><i class="fa-solid fa-arrows-rotate text-[11px]"></i> Sync Now</button>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeSyncModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors">Cancel</button>
+                    <button onclick="saveSyncUrl()" class="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors">Save & Connect</button>
+                </div>
+            </div>
+            <p id="sync-modal-status" class="text-[11px] font-medium"></p>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3">
+            <h3 id="confirm-modal-title" class="text-base font-bold text-slate-900">Confirm Action</h3>
+            <p id="confirm-modal-message" class="text-xs text-slate-500 leading-relaxed"></p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeConfirmModal(false)" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Cancel</button>
+                <button onclick="closeConfirmModal(true)" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <script>
+        // ================= DATA MODEL =================
+        const DARK_KEY = 'tukka_dark_mode';
+        const SYNC_URL_KEY = 'cgl_mock_sync_url';
+        const CURRENT_EXAM_KEY = 'cgl_current_exam';
+        const LEGACY_STORAGE_KEY = 'cgl_mock_data';
+        const LAST_BACKUP_KEY = 'cgl_last_backup_at';
+
+        // ================= EXAM DEFINITIONS =================
+        // Each exam has its own total marks + subject-wise mark division.
+        // Switching exams swaps the whole dashboard (marks, subjects, storage) to match.
+        const EXAMS = {
+            cgl_tier1: {
+                id: 'cgl_tier1', name: 'SSC CGL Tier 1', short: 'CGL Tier 1', icon: 'fa-graduation-cap',
+                pillA: '#3b82f6', pillB: '#22d3ee', totalMarks: 200, totalQuestions: 100, negFactor: 0.5,
+                subjects: [
+                    { key: 'reasoning', label: 'Reasoning', max: 50, color: 'indigo', hex: '#6366f1' },
+                    { key: 'quant', label: 'Quant', max: 50, color: 'blue', hex: '#2563eb' },
+                    { key: 'english', label: 'English', max: 50, color: 'emerald', hex: '#10b981' },
+                    { key: 'gs', label: 'GS', max: 50, color: 'amber', hex: '#f59e0b' }
+                ]
+            },
+            cgl_tier2: {
+                id: 'cgl_tier2', name: 'SSC CGL Tier 2', short: 'CGL Tier 2', icon: 'fa-layer-group',
+                pillA: '#a855f7', pillB: '#ec4899', totalMarks: 450, totalQuestions: 150, negFactor: 1,
+                // Note: Section I & II are -1/wrong, Computer Knowledge module is -0.5/wrong.
+                // We default to -1 since Sections I+II carry the bulk of the marks (390/450);
+                // adjust the Neg. Marking field manually if most of your wrongs were in Computer Knowledge.
+                subjects: [
+                    { key: 'maths', label: 'Maths Ability', max: 90, color: 'indigo', hex: '#6366f1' },
+                    { key: 'reasoning', label: 'Reasoning & GI', max: 90, color: 'blue', hex: '#2563eb' },
+                    { key: 'english', label: 'English', max: 135, color: 'emerald', hex: '#10b981' },
+                    { key: 'ga', label: 'Gen. Awareness', max: 75, color: 'amber', hex: '#f59e0b' },
+                    { key: 'computer', label: 'Computer Knowledge', max: 60, color: 'purple', hex: '#a855f7' }
+                ]
+            },
+            chsl_tier1: {
+                id: 'chsl_tier1', name: 'SSC CHSL Tier 1', short: 'CHSL Tier 1', icon: 'fa-school',
+                pillA: '#0891b2', pillB: '#22d3ee', totalMarks: 200, totalQuestions: 100, negFactor: 0.5,
+                subjects: [
+                    { key: 'reasoning', label: 'Gen. Intelligence', max: 50, color: 'indigo', hex: '#6366f1' },
+                    { key: 'ga', label: 'Gen. Awareness', max: 50, color: 'amber', hex: '#f59e0b' },
+                    { key: 'quant', label: 'Quant Aptitude', max: 50, color: 'blue', hex: '#2563eb' },
+                    { key: 'english', label: 'English', max: 50, color: 'emerald', hex: '#10b981' }
+                ]
+            },
+            chsl_tier2: {
+                id: 'chsl_tier2', name: 'SSC CHSL Tier 2', short: 'CHSL Tier 2', icon: 'fa-school-flag',
+                pillA: '#059669', pillB: '#10b981', totalMarks: 405, totalQuestions: 135, negFactor: 1,
+                subjects: [
+                    { key: 'maths', label: 'Maths Ability', max: 90, color: 'indigo', hex: '#6366f1' },
+                    { key: 'reasoning', label: 'Reasoning & GI', max: 90, color: 'blue', hex: '#2563eb' },
+                    { key: 'english', label: 'English', max: 120, color: 'emerald', hex: '#10b981' },
+                    { key: 'ga', label: 'Gen. Awareness', max: 60, color: 'amber', hex: '#f59e0b' },
+                    { key: 'computer', label: 'Computer Knowledge', max: 45, color: 'purple', hex: '#a855f7' }
+                ]
+            },
+            mts: {
+                id: 'mts', name: 'SSC MTS', short: 'MTS', icon: 'fa-people-carry-box',
+                pillA: '#d97706', pillB: '#f59e0b', totalMarks: 270, totalQuestions: 90, negFactor: 1,
+                // Note: Session 1 (Numerical + Reasoning) has NO negative marking; only Session 2
+                // (GA + English) is -1/wrong. We default to -1 since Session 2 decides the merit
+                // score — set Neg. Marking to 0 manually if logging a Session 1-only attempt.
+                subjects: [
+                    { key: 'numerical', label: 'Numerical Aptitude', max: 60, color: 'indigo', hex: '#6366f1' },
+                    { key: 'reasoning', label: 'Reasoning Ability', max: 60, color: 'blue', hex: '#2563eb' },
+                    { key: 'ga', label: 'Gen. Awareness', max: 75, color: 'amber', hex: '#f59e0b' },
+                    { key: 'english', label: 'English', max: 75, color: 'emerald', hex: '#10b981' }
+                ]
+            },
+            cpo: {
+                id: 'cpo', name: 'SSC CPO (SI)', short: 'CPO', icon: 'fa-shield-halved',
+                pillA: '#dc2626', pillB: '#f87171', totalMarks: 200, totalQuestions: 200, negFactor: 0.25,
+                subjects: [
+                    { key: 'reasoning', label: 'Gen. Intelligence', max: 50, color: 'indigo', hex: '#6366f1' },
+                    { key: 'ga', label: 'Gen. Knowledge', max: 50, color: 'amber', hex: '#f59e0b' },
+                    { key: 'quant', label: 'Quant Aptitude', max: 50, color: 'blue', hex: '#2563eb' },
+                    { key: 'english', label: 'English Comp.', max: 50, color: 'emerald', hex: '#10b981' }
+                ]
+            }
+        };
+        const EXAM_ORDER = ['cgl_tier1', 'cgl_tier2', 'chsl_tier1', 'chsl_tier2', 'mts', 'cpo'];
+
+        const SAMPLE_NOTICE_KEY = 'cgl_sample_notice_dismissed';
+        let loadedSampleData = false;
+        let currentExamId = localStorage.getItem(CURRENT_EXAM_KEY);
+        if (!currentExamId) {
+            // No explicit choice saved yet — default to whichever exam has the most
+            // recently dated mock entry, so returning users land where they left off.
+            currentExamId = findMostRecentlyActiveExam() || 'cgl_tier1';
+        }
+        if (!EXAMS[currentExamId]) currentExamId = 'cgl_tier1';
+        function currentExam() { return EXAMS[currentExamId]; }
+        function getStorageKey(examId) { return 'cgl_mock_data__' + examId; }
+
+        const DEFAULT_MOCK_DATA = {
+            cgl_tier1: [
+                { mockNo: 1, testName: "Testbook Tier 1 Live Mock 21", date: "2026-07-08", score: 149.5, maxScore: 200, reasoningScore: 38.5, quantScore: 39.0, englishScore: 47.5, gsScore: 24.5, attempted: 98, correct: 81, wrong: 17, unattempted: 2, negativeMarks: 8.5, percentile: 87.66, notes: "Reasoning was quick today, but lost time on a couple of Puzzle sets." },
+                { mockNo: 2, testName: "Oliveboard Tier 1 National Mock 14", date: "2026-07-15", score: 144.0, maxScore: 200, reasoningScore: 45.5, quantScore: 37.5, englishScore: 42.5, gsScore: 18.5, attempted: 91, correct: 79, wrong: 12, unattempted: 9, negativeMarks: 6.0, percentile: 86.99, notes: "Quant DI took longer than expected — need to drill percentage-based DI faster." },
+                { mockNo: 3, testName: "Testbook Tier 1 Full Length Mock 22", date: "2026-07-22", score: 156.0, maxScore: 200, reasoningScore: 40.0, quantScore: 46.0, englishScore: 43.0, gsScore: 27.0, attempted: 92, correct: 77, wrong: 15, unattempted: 8, negativeMarks: 7.5, percentile: 94.15, notes: "English RC passage was lengthy; para-jumbles cost extra time." },
+                { mockNo: 4, testName: "Oliveboard Tier 1 All India Mock 15", date: "2026-07-29", score: 130.5, maxScore: 200, reasoningScore: 41.5, quantScore: 31.0, englishScore: 32.5, gsScore: 25.5, attempted: 74, correct: 66, wrong: 8, unattempted: 26, negativeMarks: 4.0, percentile: 87.66, notes: "GS static questions felt weak — revise Polity and History timelines." },
+                { mockNo: 5, testName: "Testbook Tier 1 Live Mock 23", date: "2026-08-03", score: 127.0, maxScore: 200, reasoningScore: 34.5, quantScore: 28.5, englishScore: 40.0, gsScore: 24.0, attempted: 87, correct: 71, wrong: 16, unattempted: 13, negativeMarks: 8.0, percentile: 88.27, notes: "Best Quant attempt so far — Algebra and Mensuration went smoothly, GS current affairs also improved." }
+            ],
+            cgl_tier2: [
+                { mockNo: 1, testName: "Testbook CGL Tier 2 Full Length Mock 05", date: "2026-07-12", score: 336.0, maxScore: 450, subjects: { maths: 66, reasoning: 72, english: 102, ga: 51, computer: 45 }, attempted: 140, correct: 116, wrong: 24, unattempted: 10, negativeMarks: 21.0, percentile: 89.40, notes: "Section III computer knowledge went smoothly, but lost time overthinking a couple of Maths DI sets in Section I." },
+                { mockNo: 2, testName: "Oliveboard CGL Tier 2 Sectional+Full Mock 06", date: "2026-07-20", score: 354.0, maxScore: 450, subjects: { maths: 75, reasoning: 69, english: 114, ga: 45, computer: 51 }, attempted: 145, correct: 122, wrong: 23, unattempted: 5, negativeMarks: 19.5, percentile: 92.10, notes: "English comprehension was strong this attempt; GA current affairs needs another revision pass." },
+                { mockNo: 3, testName: "Testbook CGL Tier 2 Live Mock 07", date: "2026-07-28", score: 336.0, maxScore: 450, subjects: { maths: 60, reasoning: 78, english: 96, ga: 60, computer: 42 }, attempted: 135, correct: 108, wrong: 27, unattempted: 15, negativeMarks: 24.0, percentile: 87.75, notes: "Reasoning was the best section today; Maths speed dropped due to a couple of lengthy Mensuration questions." }
+            ],
+            chsl_tier1: [
+                { mockNo: 1, testName: "Testbook CHSL Tier 1 Live Mock 11", date: "2026-07-09", score: 151.5, maxScore: 200, subjects: { reasoning: 40, ga: 35, quant: 38, english: 42 }, attempted: 92, correct: 79, wrong: 13, unattempted: 8, negativeMarks: 6.5, percentile: 85.40, notes: "Quant arithmetic questions were quick, but GA current affairs section felt weak." },
+                { mockNo: 2, testName: "Oliveboard CHSL Tier 1 National Mock 09", date: "2026-07-18", score: 146.0, maxScore: 200, subjects: { reasoning: 44, ga: 30, quant: 34, english: 40 }, attempted: 88, correct: 76, wrong: 12, unattempted: 12, negativeMarks: 6.0, percentile: 83.10, notes: "Reasoning puzzles went well; need to work on Quant DI speed." },
+                { mockNo: 3, testName: "Testbook CHSL Tier 1 Full Mock 12", date: "2026-07-27", score: 160.5, maxScore: 200, subjects: { reasoning: 42, ga: 39, quant: 41, english: 41 }, attempted: 95, correct: 82, wrong: 13, unattempted: 5, negativeMarks: 6.5, percentile: 90.75, notes: "Best all-round attempt so far — GA static revision is paying off." }
+            ],
+            chsl_tier2: [
+                { mockNo: 1, testName: "Testbook CHSL Tier 2 Full Mock 03", date: "2026-07-14", score: 285.0, maxScore: 405, subjects: { maths: 60, reasoning: 66, english: 84, ga: 39, computer: 36 }, attempted: 120, correct: 98, wrong: 22, unattempted: 15, negativeMarks: 22.0, percentile: 88.60, notes: "English comprehension passage was lengthy; Computer Knowledge module was straightforward." },
+                { mockNo: 2, testName: "Oliveboard CHSL Tier 2 Mock 04", date: "2026-07-23", score: 294.0, maxScore: 405, subjects: { maths: 54, reasoning: 72, english: 90, ga: 45, computer: 33 }, attempted: 118, correct: 100, wrong: 18, unattempted: 17, negativeMarks: 18.0, percentile: 90.15, notes: "Reasoning & GI module was the highlight; Maths Ability needs more speed drills." },
+                { mockNo: 3, testName: "Testbook CHSL Tier 2 Live Mock 05", date: "2026-08-01", score: 276.0, maxScore: 405, subjects: { maths: 66, reasoning: 60, english: 78, ga: 33, computer: 39 }, attempted: 112, correct: 92, wrong: 20, unattempted: 23, negativeMarks: 20.0, percentile: 85.90, notes: "Ran out of time in the GA module; Maths Ability was the strongest section today." }
+            ],
+            mts: [
+                { mockNo: 1, testName: "Testbook MTS Mock 08", date: "2026-07-11", score: 198.0, maxScore: 270, subjects: { numerical: 48, reasoning: 45, ga: 51, english: 54 }, attempted: 82, correct: 70, wrong: 12, unattempted: 8, negativeMarks: 9.0, percentile: 86.20, notes: "Session 1 (no negative marking) was attempted fully; Session 2 GA needs more current-affairs revision." },
+                { mockNo: 2, testName: "Oliveboard MTS Mock 09", date: "2026-07-19", score: 198.0, maxScore: 270, subjects: { numerical: 51, reasoning: 54, ga: 45, english: 48 }, attempted: 85, correct: 73, wrong: 9, unattempted: 6, negativeMarks: 6.75, percentile: 88.40, notes: "Reasoning & Numerical Ability in Session 1 went smoothly; English vocabulary section needs work." },
+                { mockNo: 3, testName: "Testbook MTS Full Mock 10", date: "2026-07-30", score: 228.0, maxScore: 270, subjects: { numerical: 54, reasoning: 57, ga: 57, english: 60 }, attempted: 88, correct: 79, wrong: 7, unattempted: 3, negativeMarks: 5.25, percentile: 93.10, notes: "Best attempt yet — accuracy in Session 2 (negative marking) has clearly improved." }
+            ],
+            cpo: [
+                { mockNo: 1, testName: "Testbook CPO Paper 1 Mock 06", date: "2026-07-13", score: 140.0, maxScore: 200, subjects: { reasoning: 36, ga: 32, quant: 34, english: 38 }, attempted: 170, correct: 148, wrong: 15, unattempted: 7, negativeMarks: 3.75, percentile: 87.90, notes: "Quant Aptitude speed was solid; General Knowledge current affairs needs another revision round." },
+                { mockNo: 2, testName: "Oliveboard CPO Paper 1 Mock 07", date: "2026-07-21", score: 143.0, maxScore: 200, subjects: { reasoning: 40, ga: 30, quant: 38, english: 35 }, attempted: 178, correct: 152, wrong: 18, unattempted: 4, negativeMarks: 4.5, percentile: 89.55, notes: "Reasoning was the strongest section; English Comprehension RC passage cost extra time." },
+                { mockNo: 3, testName: "Testbook CPO Paper 1 Full Mock 08", date: "2026-07-31", score: 150.0, maxScore: 200, subjects: { reasoning: 38, ga: 36, quant: 36, english: 40 }, attempted: 182, correct: 160, wrong: 14, unattempted: 4, negativeMarks: 3.5, percentile: 92.30, notes: "Well-balanced attempt across all four sections — accuracy is trending up." }
+            ]
+        };
+
+        let mockData = [];
+        let chartInstances = {};
+        let selectedIndividualId = null;
+        let pendingConfirmAction = null;
+        let syncDebounceTimer = null;
+
+        function genId() { return 'mock-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8); }
+
+        // ---------- Security: escape untrusted text before inserting as HTML ----------
+        function escapeHtml(str) {
+            return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // ---------- Last backup status (quiet indicator, like the sync status) ----------
+        function updateLastBackupStatus() {
+            const el = document.getElementById('last-backup-status');
+            if (!el) return;
+            const iso = localStorage.getItem(LAST_BACKUP_KEY);
+            const then = iso ? new Date(iso).getTime() : NaN;
+            let text, stale;
+            if (!iso || isNaN(then)) {
+                text = 'No backup yet';
+                stale = true;
+            } else {
+                const days = Math.floor((Date.now() - then) / 86400000);
+                if (days <= 0) text = 'Backup: today';
+                else if (days === 1) text = 'Backup: 1 day ago';
+                else text = `Backup: ${days} days ago`;
+                stale = days >= 30;
+            }
+            el.textContent = text;
+            el.classList.toggle('text-amber-600', stale);
+            el.classList.toggle('text-slate-400', !stale);
+        }
+
+        function recordBackupDone() {
+            localStorage.setItem(LAST_BACKUP_KEY, new Date().toISOString());
+            updateLastBackupStatus();
+        }
+
+        // Backfill ids, and migrate old flat subject fields (reasoningScore, quantScore...)
+        // into a generic `subjects: { key: score }` object used across all exams.
+        // Returns true if anything on `mockData` was changed.
+        function migrateMockSubjects() {
+            let changed = false;
+            const legacyFieldMap = { reasoning: 'reasoningScore', quant: 'quantScore', english: 'englishScore', gs: 'gsScore' };
+            mockData.forEach(m => {
+                if (!m.id) { m.id = genId(); changed = true; }
+                if (!m.subjects) {
+                    m.subjects = {};
+                    currentExam().subjects.forEach(s => {
+                        const legacyKey = legacyFieldMap[s.key];
+                        if (legacyKey && m[legacyKey] !== undefined && m[legacyKey] !== null) m.subjects[s.key] = m[legacyKey];
+                    });
+                    changed = true;
+                }
+            });
+            return changed;
+        }
+
+        function initData() {
+            const key = getStorageKey(currentExamId);
+            let saved = localStorage.getItem(key);
+            // One-time migration: the very first version of this app only tracked
+            // CGL Tier 1 under a single un-namespaced key. Carry that data forward.
+            if (!saved && currentExamId === 'cgl_tier1') {
+                const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+                if (legacy) { saved = legacy; localStorage.setItem(key, legacy); }
+            }
+            if (saved) {
+                try { mockData = JSON.parse(saved); } catch (e) { mockData = []; }
+                loadedSampleData = false;
+            } else if (DEFAULT_MOCK_DATA[currentExamId]) {
+                mockData = JSON.parse(JSON.stringify(DEFAULT_MOCK_DATA[currentExamId])).map(m => ({ id: genId(), ...m }));
+                localStorage.setItem(key, JSON.stringify(mockData));
+                loadedSampleData = true;
+            } else {
+                mockData = [];
+                loadedSampleData = false;
+            }
+
+            if (migrateMockSubjects()) saveDataToStorage();
+            loadResolveItems();
+
+            if (mockData.length > 0) {
+                selectedIndividualId = mockData[mockData.length - 1].id;
+            } else {
+                selectedIndividualId = null;
+            }
+        }
+
+        const DEFAULT_RESOLVE_ITEMS = {
+            cgl_tier1: [
+                { title: "Revise Trigonometric Maxima & Minima", desc: "Formula forgotten in Mock 08 (Q24). Practice min/max value forms for a sin\u00b2\u03b8 + b cos\u00b2\u03b8.", timeTag: "Target: Before Mock 09" },
+                { title: "Practice Speed Math for Decimal Simplification", desc: "Took >2.5 minutes in Mock 04 recasting solids. Focus on quick fractional division shortcuts.", timeTag: "Target: Before Mock 09" },
+                { title: "Review Direct vs Transverse Tangent Formulas", desc: "Confused \u221a(d\u00b2 - (r1+r2)\u00b2) in Mock 06. Write down circle tangent formulas on flashcards.", timeTag: "Target: Before Mock 09" }
+            ]
+        };
+
+        let resolveItems = [];
+        let calendarCurrentDate = new Date();
+
+        function getResolveStorageKey(examId) { return getStorageKey(examId) + '__resolve'; }
+
+        function loadResolveItems() {
+            try {
+                const key = getResolveStorageKey(currentExamId);
+                const saved = localStorage.getItem(key);
+                if (saved) {
+                    resolveItems = JSON.parse(saved);
+                    if (!Array.isArray(resolveItems)) resolveItems = [];
+                } else if (DEFAULT_RESOLVE_ITEMS[currentExamId]) {
+                    // First time on this exam with no saved targets — seed with a
+                    // couple of sample fix-it items so the card isn't empty. These
+                    // save into normal storage immediately, so deleting/editing them
+                    // behaves exactly like any user-added task from then on.
+                    resolveItems = DEFAULT_RESOLVE_ITEMS[currentExamId].map((item, i) => ({ id: `res-sample-${currentExamId}-${i}`, ...item }));
+                    localStorage.setItem(key, JSON.stringify(resolveItems));
+                } else {
+                    resolveItems = [];
+                }
+            } catch (e) { resolveItems = []; }
+        }
+
+        function saveResolveItems() {
+            localStorage.setItem(getResolveStorageKey(currentExamId), JSON.stringify(resolveItems));
+        }
+
+        function renderResolveTimeline() {
+            const container = document.getElementById('resolve-timeline-container');
+            const countEl = document.getElementById('resolve-items-count');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (countEl) {
+                countEl.innerHTML = `<span class="font-bold text-slate-800 dark:text-slate-100">${resolveItems.length}</span> actionable target${resolveItems.length === 1 ? '' : 's'} pending`;
+            }
+
+            if (resolveItems.length === 0) {
+                container.innerHTML = `
+                    <div class="py-8 text-center text-slate-400 dark:text-slate-500 text-xs font-medium">
+                        <i class="fa-solid fa-circle-check text-emerald-500 text-2xl mb-1 block"></i>
+                        All targets resolved! Click "+ Add Task" to log new items before your next mock.
+                    </div>
+                `;
+                return;
+            }
+
+            resolveItems.forEach((item) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "relative pl-6 group transition-all";
+                itemDiv.innerHTML = `
+                    <div class="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full border-2 border-emerald-500 bg-white dark:bg-[#0b0f20] group-hover:bg-emerald-500 transition-colors z-10 flex items-center justify-center">
+                        <div class="w-1 h-1 rounded-full bg-emerald-500 group-hover:bg-white"></div>
+                    </div>
+                    <div class="resolve-item-card border border-slate-200 dark:border-white/10 group-hover:border-slate-300 dark:group-hover:border-white/20 rounded-xl p-3 transition-all flex items-start justify-between gap-3">
+                        <div class="space-y-1 min-w-0">
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">${escapeHtml(item.title)}</h4>
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">${escapeHtml(item.desc)}</p>
+                            <p class="text-[10px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1 pt-0.5">
+                                <i class="fa-regular fa-clock text-[9px]"></i> ${escapeHtml(item.timeTag || 'Pending Next Mock')}
+                            </p>
+                        </div>
+                        <button onclick="deleteResolveItem('${item.id}')" title="Delete / Mark Resolved" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors shrink-0">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function toggleAddResolveInput() {
+            const container = document.getElementById('add-resolve-container');
+            if (container) {
+                container.classList.toggle('hidden');
+                if (!container.classList.contains('hidden')) {
+                    document.getElementById('new-resolve-title').focus();
+                }
+            }
+        }
+
+        function addNewResolveItem() {
+            const titleInput = document.getElementById('new-resolve-title');
+            const descInput = document.getElementById('new-resolve-desc');
+            const title = titleInput ? titleInput.value.trim() : '';
+            const desc = descInput ? descInput.value.trim() : '';
+
+            if (!title) {
+                showToast("Please enter a target title.", "error");
+                return;
+            }
+
+            resolveItems.unshift({ id: 'res-' + Date.now(), title, desc: desc || "Action item logged for next mock preparation.", timeTag: 'Added Recently' });
+            saveResolveItems();
+            renderResolveTimeline();
+            toggleAddResolveInput();
+            if (titleInput) titleInput.value = '';
+            if (descInput) descInput.value = '';
+            showToast("New resolve target added!", "success");
+        }
+
+        function deleteResolveItem(id) {
+            const item = resolveItems.find(r => r.id === id);
+            const title = item ? item.title : "item";
+            resolveItems = resolveItems.filter(r => r.id !== id);
+            saveResolveItems();
+            renderResolveTimeline();
+            showToast(`Resolved: "${title}"`, "info");
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-days-grid');
+            const monthYearEl = document.getElementById('calendar-month-year');
+            const countEl = document.getElementById('calendar-month-count');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+            const year = calendarCurrentDate.getFullYear();
+            const month = calendarCurrentDate.getMonth();
+            const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            if (monthYearEl) monthYearEl.textContent = `${monthNames[month]} ${year}`;
+
+            const mockDatesMap = {};
+            mockData.forEach(m => { if (m.date) mockDatesMap[m.date] = m; });
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            let mocksThisMonthCount = 0;
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "p-1.5 text-transparent";
+                grid.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dayStr = day < 10 ? `0${day}` : `${day}`;
+                const monthStr = (month + 1) < 10 ? `0${month + 1}` : `${month + 1}`;
+                const formattedDate = `${year}-${monthStr}-${dayStr}`;
+                const hasMock = mockDatesMap.hasOwnProperty(formattedDate);
+                const mockInfo = mockDatesMap[formattedDate];
+                if (hasMock) mocksThisMonthCount++;
+
+                const cell = document.createElement('div');
+                cell.className = `p-1.5 rounded-lg border text-xs font-semibold relative flex flex-col items-center justify-center transition-all cursor-pointer ${
+                    hasMock
+                    ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm hover:bg-emerald-600'
+                    : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10'
+                }`;
+                cell.innerHTML = `<span>${day}</span>${hasMock ? `<span class="w-1.5 h-1.5 rounded-full bg-white mt-0.5"></span>` : ''}`;
+
+                if (hasMock && mockInfo) {
+                    cell.title = `Mock-${mockInfo.mockNo}: ${mockInfo.testName}\nScore: ${mockInfo.score}${mockInfo.maxScore ? '/' + mockInfo.maxScore : ''} (${mockInfo.percentile}%ile)`;
+                    cell.onclick = () => {
+                        selectedIndividualId = mockInfo.id;
+                        showIndividualView();
+                        renderIndividualSidebar();
+                        renderIndividualContent();
+                        showToast(`Selected Mock-${mockInfo.mockNo}`, "info");
+                    };
+                }
+                grid.appendChild(cell);
+            }
+
+            if (countEl) countEl.textContent = `${mocksThisMonthCount} Mock${mocksThisMonthCount === 1 ? '' : 's'} Attended`;
+        }
+
+        function changeCalendarMonth(delta) {
+            calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function saveDataToStorage() {
+            localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
+            pushToCloud();
+        }
+
+        // Which exam has the most recently dated mock across ALL exams — used to
+        // auto-open the dashboard on whichever exam the user last actually logged.
+        function findMostRecentlyActiveExam() {
+            let bestExam = null, bestDate = null;
+            EXAM_ORDER.forEach(examId => {
+                const raw = localStorage.getItem(getStorageKey(examId)) || (examId === 'cgl_tier1' ? localStorage.getItem(LEGACY_STORAGE_KEY) : null);
+                if (!raw) return;
+                try {
+                    const arr = JSON.parse(raw);
+                    if (!Array.isArray(arr) || !arr.length) return;
+                    arr.forEach(m => {
+                        const d = new Date(m.date);
+                        if (!isNaN(d) && (!bestDate || d > bestDate)) { bestDate = d; bestExam = examId; }
+                    });
+                } catch (e) {}
+            });
+            return bestExam;
+        }
+
+        function getAccuracy(correct, attempted) {
+            return attempted > 0 ? parseFloat(((correct / attempted) * 100).toFixed(1)) : 0;
+        }
+
+        function sortedMocks() {
+            return [...mockData].sort((a, b) => (a.mockNo - b.mockNo) || new Date(a.date) - new Date(b.date));
+        }
+
+        // ================= NAVIGATION / SHELL =================
+        function toggleMobileNav() { document.body.classList.toggle('nav-open'); }
+
+        // Tell the Tukka Meter hub shell (parent window) to open the
+        // category/exam switcher overlay. If this page is opened standalone
+        // (no parent hub, e.g. someone bookmarked apps/xyz.html directly),
+        // fall back to just closing the mobile nav — the in-app "Switch Exam"
+        // still covers exam switching within this category.
+        function tukkaSwitchCategory() {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'tukka:openSwitcher' }, '*');
+                closeMobileNav();
+            } else {
+                window.location.href = '../index.html';
+            }
+        }
+        function openMobileNav() { document.body.classList.add('nav-open'); }
+        function closeMobileNav() { document.body.classList.remove('nav-open'); }
+
+        function setActiveNav(id) {
+            document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('nav-active'));
+            const btn = document.getElementById(id);
+            if (btn) btn.classList.add('nav-active');
+        }
+
+        function hideAllViews() {
+            ['dashboard-main', 'individual-view', 'about-view', 'backup-view'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+        }
+
+        function goHome() {
+            hideAllViews();
+            document.getElementById('dashboard-main').classList.remove('hidden');
+            setActiveNav('nav-home-btn');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showIndividualView() {
+            hideAllViews();
+            document.getElementById('individual-view').classList.remove('hidden');
+            setActiveNav('nav-individual-btn');
+            if (!selectedIndividualId && mockData.length) selectedIndividualId = sortedMocks()[sortedMocks().length - 1].id;
+            renderIndividualSidebar();
+            renderIndividualContent();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showAboutView() {
+            hideAllViews();
+            document.getElementById('about-view').classList.remove('hidden');
+            setActiveNav('nav-about-btn');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ---------- Backup & Restore (merged export/import) ----------
+        function showBackupView() {
+            hideAllViews();
+            document.getElementById('backup-view').classList.remove('hidden');
+            setActiveNav('nav-backup-btn');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideBackupView() {
+            goHome();
+        }
+
+        // ================= DARK MODE =================
+        function isDarkMode() { return document.documentElement.classList.contains('dark'); }
+        function applyDarkModeIcon() {
+            const icon = document.getElementById('dark-mode-icon');
+            const toggle = document.getElementById('dark-mode-toggle');
+            const knob = document.getElementById('dark-mode-knob');
+            if (isDarkMode()) {
+                icon.className = 'fa-solid fa-moon text-indigo-400 text-[10px]';
+                toggle.classList.add('bg-brand-600'); toggle.classList.remove('bg-slate-200');
+                knob.classList.add('translate-x-5');
+            } else {
+                icon.className = 'fa-solid fa-sun text-amber-500 text-[10px]';
+                toggle.classList.remove('bg-brand-600'); toggle.classList.add('bg-slate-200');
+                knob.classList.remove('translate-x-5');
+            }
+        }
+        function toggleDarkMode() {
+            document.documentElement.classList.add('theme-transition');
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem(DARK_KEY, isDarkMode() ? 'true' : 'false');
+            applyDarkModeIcon();
+            renderDashboard();
+            // Tell the Tukka Meter hub shell (parent window) to mirror this theme —
+            // the shell's own switcher modal lives outside this iframe, so it won't
+            // pick up the change on its own otherwise.
+            if (window.parent && window.parent !== window) {
+                try { window.parent.postMessage({ type: 'tukka:darkModeChanged', dark: isDarkMode() }, '*'); } catch (e) {}
+            }
+            setTimeout(() => document.documentElement.classList.remove('theme-transition'), 400);
+        }
+
+        function chartTextColor() { return isDarkMode() ? '#94a3b8' : '#334155'; }
+        function chartGridColor() { return isDarkMode() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'; }
+        function radarColors() {
+            return isDarkMode()
+                ? { border: '#22d3ee', bg: 'rgba(34,211,238,0.18)', pointBorder: '#0f172a', pointHover: '#67e8f9', angle: 'rgba(148,163,255,0.18)', grid: 'rgba(148,163,255,0.14)', label: '#cbd5e1' }
+                : { border: '#0891b2', bg: 'rgba(8,145,178,0.14)', pointBorder: '#ffffff', pointHover: '#0e7490', angle: 'rgba(51,65,85,0.14)', grid: 'rgba(51,65,85,0.08)', label: '#475569' };
+        }
+
+        // ================= HOME DASHBOARD =================
+        function renderSubjectCardsGrid() {
+            const grid = document.getElementById('subject-cards-grid');
+            if (!grid) return;
+            const subjects = currentExam().subjects;
+            grid.className = subjects.length >= 5 ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3' : 'grid grid-cols-2 lg:grid-cols-4 gap-3';
+            grid.innerHTML = subjects.map(s => `
+                <div class="p-3 rounded-xl border border-${s.color}-100 bg-${s.color}-50/40 text-center">
+                    <span class="text-[11px] font-bold text-${s.color}-800 uppercase tracking-wide">${s.label}</span>
+                    <span id="subj-avg-${s.key}" class="text-xl font-extrabold text-${s.color}-700 block mt-1">0.0</span>
+                    <span id="subj-status-${s.key}" class="status-badge mt-1 inline-block bg-slate-100 text-slate-600">-</span>
+                    <span id="subj-pct-${s.key}" class="text-[10px] text-${s.color}-500 font-medium block mt-1">0% of max</span>
+                </div>
+            `).join('');
+        }
+
+        function updateSubjectCard(subj, data) {
+            const validEntries = data.filter(m => m.subjects && m.subjects[subj.key] !== null && m.subjects[subj.key] !== undefined);
+            const valEl = document.getElementById(`subj-avg-${subj.key}`);
+            const statusEl = document.getElementById(`subj-status-${subj.key}`);
+            const pctEl = document.getElementById(`subj-pct-${subj.key}`);
+            if (!valEl) return 0;
+
+            if (validEntries.length === 0) {
+                valEl.textContent = "N/A";
+                statusEl.textContent = "-";
+                statusEl.className = "status-badge mt-1 inline-block bg-slate-100 text-slate-600";
+                pctEl.textContent = "0% of max";
+                return 0;
+            }
+            const avg = validEntries.reduce((acc, m) => acc + m.subjects[subj.key], 0) / validEntries.length;
+            valEl.textContent = avg.toFixed(1);
+            const pctOfMax = (avg / subj.max) * 100;
+            pctEl.textContent = `${pctOfMax.toFixed(0)}% of max`;
+
+            if (pctOfMax >= 70) {
+                statusEl.textContent = "GOOD";
+                statusEl.className = "status-badge mt-1 inline-block bg-emerald-100 text-emerald-800";
+            } else if (pctOfMax >= 45) {
+                statusEl.textContent = "AVG";
+                statusEl.className = "status-badge mt-1 inline-block bg-amber-100 text-amber-800";
+            } else {
+                statusEl.textContent = "POOR";
+                statusEl.className = "status-badge mt-1 inline-block bg-rose-100 text-rose-800";
+            }
+            return avg;
+        }
+
+        function updateKPIs() {
+            const data = mockData;
+            const totalMocks = data.length;
+            document.getElementById('kpi-total-mocks').textContent = totalMocks;
+
+            if (totalMocks === 0) {
+                ['kpi-avg-score','kpi-avg-accuracy','kpi-avg-percentile','kpi-avg-negatives'].forEach(id => document.getElementById(id).textContent = '0');
+                document.getElementById('kpi-max-score').textContent = 'Peak: 0';
+                document.getElementById('kpi-weak-subject').textContent = 'N/A';
+                document.getElementById('insight-text').textContent = `Log a few ${currentExam().name} mocks to see your personalized performance insight here.`;
+                document.getElementById('insight-tag').textContent = 'Awaiting Data';
+                currentExam().subjects.forEach(s => updateSubjectCard(s, []));
+                document.getElementById('overall-performance-pill').textContent = 'No data yet';
+                document.getElementById('overall-performance-pill').className = 'shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 whitespace-nowrap self-start sm:self-center';
+                document.getElementById('bar-marks-text').textContent = `0 / ${currentExam().totalMarks} (0%)`;
+                document.getElementById('bar-marks-fill').style.width = '0%';
+                return;
+            }
+
+            const totalScore = data.reduce((a, m) => a + m.score, 0);
+            const maxScore = Math.max(...data.map(m => m.score));
+            const avgScore = (totalScore / totalMocks);
+
+            const totalCorrect = data.reduce((a, m) => a + m.correct, 0);
+            const totalAttempted = data.reduce((a, m) => a + m.attempted, 0);
+            const avgAccuracy = totalAttempted > 0 ? (totalCorrect / totalAttempted) * 100 : 0;
+
+            const avgPercentile = data.reduce((a, m) => a + m.percentile, 0) / totalMocks;
+            const avgNegatives = data.reduce((a, m) => a + m.negativeMarks, 0) / totalMocks;
+
+            document.getElementById('kpi-avg-score').textContent = avgScore.toFixed(1);
+            document.getElementById('kpi-max-score').textContent = `Peak: ${maxScore}`;
+            document.getElementById('kpi-avg-accuracy').textContent = `${avgAccuracy.toFixed(1)}%`;
+            document.getElementById('kpi-avg-percentile').textContent = `${avgPercentile.toFixed(1)}%`;
+            document.getElementById('kpi-avg-negatives').textContent = avgNegatives.toFixed(1);
+
+            const totalMarks = currentExam().totalMarks;
+            const scorePct = (avgScore / totalMarks) * 100;
+
+            const perfPill = document.getElementById('overall-performance-pill');
+            let perfLabel, perfClass;
+            if (scorePct >= 75) { perfLabel = `EXCELLENT PERFORMANCE (${avgScore.toFixed(1)})`; perfClass = 'bg-purple-100 text-purple-800'; }
+            else if (scorePct >= 65) { perfLabel = `GOOD PERFORMANCE (${avgScore.toFixed(1)})`; perfClass = 'bg-emerald-100 text-emerald-800'; }
+            else if (scorePct >= 57.5) { perfLabel = `AVERAGE PERFORMANCE (${avgScore.toFixed(1)})`; perfClass = 'bg-amber-100 text-amber-800'; }
+            else { perfLabel = `NEEDS IMPROVEMENT (${avgScore.toFixed(1)})`; perfClass = 'bg-rose-100 text-rose-800'; }
+            perfPill.textContent = perfLabel;
+            perfPill.className = `shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg ${perfClass} whitespace-nowrap self-start sm:self-center`;
+
+            document.getElementById('bar-percentile-text').textContent = `${avgPercentile.toFixed(1)}%`;
+            document.getElementById('bar-percentile-fill').style.width = `${Math.min(100, avgPercentile)}%`;
+            const marksPct = scorePct.toFixed(1);
+            document.getElementById('bar-marks-text').textContent = `${avgScore.toFixed(1)} / ${totalMarks} (${marksPct}%)`;
+            document.getElementById('bar-marks-fill').style.width = `${Math.min(100, marksPct)}%`;
+            document.getElementById('bar-accuracy-text').textContent = `${avgAccuracy.toFixed(1)}%`;
+            document.getElementById('bar-accuracy-fill').style.width = `${Math.min(100, avgAccuracy)}%`;
+
+            const subjects = currentExam().subjects;
+            const subjAverages = {};
+            subjects.forEach(s => { subjAverages[s.key] = updateSubjectCard(s, data); });
+            const validSubjEntries = subjects.filter(s => subjAverages[s.key] > 0).map(s => [s.key, subjAverages[s.key], s]);
+            if (validSubjEntries.length) {
+                validSubjEntries.sort((a, b) => a[1] - b[1]);
+                const [, weakVal, weakSubj] = validSubjEntries[0];
+                document.getElementById('kpi-weak-subject').textContent = weakSubj.label;
+                document.getElementById('kpi-weak-subject-sub').textContent = `Avg ${weakVal.toFixed(1)} / ${weakSubj.max}`;
+
+                const [, strongVal, strongSubj] = validSubjEntries[validSubjEntries.length - 1];
+                const recent = sortedMocks().slice(-3);
+                const older = sortedMocks().slice(-6, -3);
+                let trendNote = '';
+                if (recent.length >= 2 && older.length >= 2) {
+                    const recentAvg = recent.reduce((a, m) => a + m.score, 0) / recent.length;
+                    const olderAvg = older.reduce((a, m) => a + m.score, 0) / older.length;
+                    if (recentAvg > olderAvg + 2) trendNote = ` Your last few mocks trend upward — keep it up!`;
+                    else if (recentAvg < olderAvg - 2) trendNote = ` Your last few mocks dipped a bit — worth a quick revision push.`;
+                }
+                document.getElementById('insight-text').textContent =
+                    `${strongSubj.label} is your strongest subject (avg ${strongVal.toFixed(1)}/${strongSubj.max}), while ${weakSubj.label} needs the most attention (avg ${weakVal.toFixed(1)}/${weakSubj.max}).${trendNote}`;
+                document.getElementById('insight-tag').textContent = 'Diagnostic Ready';
+            }
+        }
+
+        function initCharts() {
+            // Disable all Chart.js animations globally (perf on mobile / low-end devices)
+            Chart.defaults.animation = false;
+            Chart.defaults.animations = false;
+            Chart.defaults.transitions.active.animation.duration = 0;
+            Chart.defaults.transitions.resize.animation.duration = 0;
+
+            const gridColor = chartGridColor(), textColor = chartTextColor();
+
+            const subjects = currentExam().subjects;
+            const subjMaxAxis = Math.max(...subjects.map(s => s.max));
+
+            chartInstances.subjectBar = new Chart(document.getElementById('subjectBarChart').getContext('2d'), {
+                type: 'bar',
+                data: { labels: subjects.map(s => s.label), datasets: [{ label: 'Average Score', data: subjects.map(() => 0), backgroundColor: subjects.map(s => s.hex + 'd9'), borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: subjMaxAxis, ticks: { color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { display: false } } } }
+            });
+
+            chartInstances.subjectTrend = new Chart(document.getElementById('subjectTrendChart').getContext('2d'), {
+                type: 'line',
+                data: { labels: [], datasets: subjects.map(s => ({ label: s.label, data: [], borderColor: s.hex, backgroundColor: s.hex, tension: 0.3 })) },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 }, color: textColor } } }, scales: { y: { beginAtZero: true, max: subjMaxAxis, ticks: { color: textColor }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { display: false } } } }
+            });
+
+            const scoreTrendCtx = document.getElementById('scoreTrendChart').getContext('2d');
+            const scoreTrendGradient = scoreTrendCtx.createLinearGradient(0, 0, 0, 280);
+            scoreTrendGradient.addColorStop(0, 'rgba(99,102,241,0.30)');
+            scoreTrendGradient.addColorStop(1, 'rgba(99,102,241,0.02)');
+            chartInstances.scoreTrend = new Chart(scoreTrendCtx, {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: `Score (/${currentExam().totalMarks})`, data: [], borderColor: '#6366f1', backgroundColor: scoreTrendGradient, fill: true, tension: 0.4, borderWidth: 2.5, pointBackgroundColor: '#6366f1', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 3, pointHoverRadius: 6, yAxisID: 'y' },
+                    { label: 'Percentile (%)', data: [], borderColor: '#10b981', backgroundColor: 'transparent', borderDash: [4,4], tension: 0.4, borderWidth: 2.5, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 3, pointHoverRadius: 6, yAxisID: 'y1' }
+                ] },
+                options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: textColor, boxWidth: 10, font: { size: 10 } } } }, scales: {
+                    y: { type: 'linear', position: 'left', min: 0, max: currentExam().totalMarks, ticks: { color: textColor }, grid: { color: gridColor } },
+                    y1: { type: 'linear', position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false }, ticks: { color: textColor } },
+                    x: { ticks: { color: textColor }, grid: { display: false } }
+                } }
+            });
+
+            chartInstances.attemptsPie = new Chart(document.getElementById('attemptsPieChart').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: ['Correct', 'Wrong', 'Unattempted'], datasets: [{ data: [0,0,0], backgroundColor: ['#10b981','#f43f5e','#cbd5e1'] }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
+            });
+
+            const rc0 = radarColors();
+            chartInstances.subjectRadar = new Chart(document.getElementById('subjectRadarChart').getContext('2d'), {
+                type: 'radar',
+                data: { labels: subjects.map(s => s.label), datasets: [{
+                    label: 'Last 10 Mocks', data: subjects.map(() => 0),
+                    backgroundColor: rc0.bg, borderColor: rc0.border, borderWidth: 2,
+                    pointBackgroundColor: rc0.border, pointBorderColor: rc0.pointBorder,
+                    pointHoverBackgroundColor: rc0.pointHover, pointRadius: 3.5, pointHoverRadius: 5, fill: true
+                }] },
+                options: { responsive: true, maintainAspectRatio: false, animation: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed.r.toFixed(1)}% of max` } } },
+                    scales: { r: {
+                        min: 0, max: 100,
+                        angleLines: { color: rc0.angle },
+                        grid: { color: rc0.grid },
+                        pointLabels: { color: rc0.label, font: { size: 10, weight: '600' } },
+                        ticks: { display: false, backdropColor: 'transparent', stepSize: 25 }
+                    } }
+                }
+            });
+
+            chartInstances.accNeg = new Chart(document.getElementById('accuracyNegativeChart').getContext('2d'), {
+                type: 'bar',
+                data: { labels: [], datasets: [
+                    { label: 'Accuracy %', data: [], backgroundColor: 'rgba(99,102,241,0.85)', yAxisID: 'y' },
+                    { label: 'Penalty Marks', data: [], backgroundColor: 'rgba(244,63,94,0.85)', yAxisID: 'y1' }
+                ] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor, boxWidth: 10, font: { size: 10 } } } }, scales: {
+                    y: { position: 'left', min: 0, max: 100, ticks: { color: textColor }, grid: { color: gridColor } },
+                    y1: { position: 'right', min: 0, grid: { drawOnChartArea: false }, ticks: { color: textColor } },
+                    x: { ticks: { color: textColor }, grid: { display: false } }
+                } }
+            });
+        }
+
+        function refreshChartTheme() {
+            const gridColor = chartGridColor(), textColor = chartTextColor();
+            Object.entries(chartInstances).forEach(([key, ch]) => {
+                if (key === 'subjectRadar') {
+                    const rc = radarColors();
+                    const ds = ch.data.datasets[0];
+                    ds.backgroundColor = rc.bg; ds.borderColor = rc.border;
+                    ds.pointBackgroundColor = rc.border; ds.pointBorderColor = rc.pointBorder;
+                    ds.pointHoverBackgroundColor = rc.pointHover;
+                    ch.options.scales.r.angleLines.color = rc.angle;
+                    ch.options.scales.r.grid.color = rc.grid;
+                    ch.options.scales.r.pointLabels.color = rc.label;
+                    return; // data itself is refreshed later in updateCharts()
+                }
+                if (!ch.options.scales) return;
+                Object.values(ch.options.scales).forEach(sc => {
+                    if (sc.ticks) sc.ticks.color = textColor;
+                    if (sc.grid) sc.grid.color = gridColor;
+                });
+                if (ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels) {
+                    ch.options.plugins.legend.labels.color = textColor;
+                }
+            });
+        }
+
+        function updateCharts() {
+            const data = sortedMocks();
+            const lastData = data.slice(-10);
+            refreshChartTheme();
+
+            const subjects = currentExam().subjects;
+            const calcSubjAvg = (key) => {
+                const valid = data.filter(m => m.subjects && m.subjects[key] !== null && m.subjects[key] !== undefined);
+                return valid.length ? valid.reduce((a, b) => a + b.subjects[key], 0) / valid.length : 0;
+            };
+            chartInstances.subjectBar.data.datasets[0].data = subjects.map(s => calcSubjAvg(s.key));
+            chartInstances.subjectBar.update();
+
+            chartInstances.subjectTrend.data.labels = lastData.map(m => `M-${m.mockNo}`);
+            subjects.forEach((s, i) => {
+                chartInstances.subjectTrend.data.datasets[i].data = lastData.map(m => (m.subjects && m.subjects[s.key]) ?? 0);
+            });
+            chartInstances.subjectTrend.update();
+
+            chartInstances.scoreTrend.data.labels = lastData.map(m => `M-${m.mockNo}`);
+            chartInstances.scoreTrend.data.datasets[0].data = lastData.map(m => m.score);
+            chartInstances.scoreTrend.data.datasets[1].data = lastData.map(m => m.percentile);
+            chartInstances.scoreTrend.update();
+
+            const totalCorrect = data.reduce((a, m) => a + (m.correct || 0), 0);
+            const totalWrong = data.reduce((a, m) => a + (m.wrong || 0), 0);
+            const totalUnattempted = data.reduce((a, m) => a + (m.unattempted || 0), 0);
+            const totalAttempted = totalCorrect + totalWrong;
+            const totalQuestions = totalAttempted + totalUnattempted;
+            const overallAccuracy = totalAttempted > 0 ? ((totalCorrect / totalAttempted) * 100).toFixed(1) : "0";
+            const totalPenalty = data.reduce((a, m) => a + (m.negativeMarks || 0), 0).toFixed(1);
+
+            chartInstances.attemptsPie.data.datasets[0].data = [totalCorrect, totalWrong, totalUnattempted];
+            chartInstances.attemptsPie.update();
+
+            document.getElementById('center-accuracy-val').textContent = `${overallAccuracy}%`;
+            document.getElementById('donut-accuracy-badge').textContent = `${overallAccuracy}% Accuracy`;
+            document.getElementById('dist-correct-cnt').textContent = totalCorrect;
+            document.getElementById('dist-correct-pct').textContent = totalQuestions > 0 ? `${((totalCorrect / totalQuestions) * 100).toFixed(1)}%` : '0%';
+            document.getElementById('dist-wrong-cnt').textContent = totalWrong;
+            document.getElementById('dist-wrong-loss').textContent = `-${totalPenalty} pts`;
+            document.getElementById('dist-skipped-cnt').textContent = totalUnattempted;
+            document.getElementById('dist-skipped-pct').textContent = totalQuestions > 0 ? `${((totalUnattempted / totalQuestions) * 100).toFixed(1)}%` : '0%';
+            const attemptRate = totalQuestions > 0 ? ((totalAttempted / totalQuestions) * 100).toFixed(1) : 0;
+            document.getElementById('dist-attempt-rate').textContent = `${attemptRate}%`;
+            document.getElementById('dist-precision-ratio').textContent = `${totalCorrect} : ${totalWrong}`;
+
+            chartInstances.subjectRadar.data.labels = subjects.map(s => s.label);
+            chartInstances.subjectRadar.data.datasets[0].data = subjects.map(s => {
+                const valid = lastData.filter(m => m.subjects && m.subjects[s.key] !== null && m.subjects[s.key] !== undefined);
+                if (!valid.length) return 0;
+                const avg = valid.reduce((a, m) => a + m.subjects[s.key], 0) / valid.length;
+                return Math.max(0, Math.min(100, (avg / s.max) * 100));
+            });
+            chartInstances.subjectRadar.update();
+            const radarBadge = document.getElementById('radar-mock-badge');
+            if (radarBadge) radarBadge.textContent = lastData.length ? `Last ${lastData.length} Mock${lastData.length > 1 ? 's' : ''}` : 'No Data Yet';
+            const radarHint = document.getElementById('radar-empty-hint');
+            if (radarHint) radarHint.classList.toggle('hidden', !!lastData.length);
+
+            chartInstances.accNeg.data.labels = lastData.map(m => `M-${m.mockNo}`);
+            chartInstances.accNeg.data.datasets[0].data = lastData.map(m => getAccuracy(m.correct, m.attempted));
+            chartInstances.accNeg.data.datasets[1].data = lastData.map(m => m.negativeMarks);
+            chartInstances.accNeg.update();
+        }
+
+        function renderDashboard() {
+            renderSubjectCardsGrid();
+            updateKPIs();
+            updateCharts();
+            updateExamUI();
+            maybeShowSampleDataBanner();
+            renderResolveTimeline();
+            renderCalendar();
+        }
+
+        function maybeShowSampleDataBanner() {
+            const el = document.getElementById('sample-data-banner');
+            if (!el) return;
+            const shouldShow = loadedSampleData && localStorage.getItem(SAMPLE_NOTICE_KEY) !== 'true';
+            el.classList.toggle('hidden', !shouldShow);
+        }
+
+        function dismissSampleDataBanner() {
+            localStorage.setItem(SAMPLE_NOTICE_KEY, 'true');
+            const el = document.getElementById('sample-data-banner');
+            if (el) el.classList.add('hidden');
+        }
+
+        function destroyAllCharts() {
+            Object.values(chartInstances).forEach(ch => { try { ch.destroy(); } catch (e) {} });
+            chartInstances = {};
+        }
+
+        // ================= EXAM SWITCHING =================
+        function updateExamUI() {
+            const ex = currentExam();
+            document.querySelectorAll('.js-exam-name').forEach(el => el.textContent = ex.name);
+            document.querySelectorAll('.js-exam-short').forEach(el => el.textContent = ex.short);
+            document.querySelectorAll('.js-exam-icon').forEach(el => el.className = `fa-solid ${ex.icon} js-exam-icon`);
+            document.querySelectorAll('.js-exam-total').forEach(el => el.textContent = `${ex.totalMarks} Marks Total`);
+            const mocksSub = document.getElementById('kpi-mocks-sub');
+            if (mocksSub) mocksSub.innerHTML = `<i class="fa-solid fa-bullseye text-brand-600"></i> ${ex.short} Target`;
+        }
+
+        function openExamSwitchModal() {
+            renderExamSwitchOptions();
+            document.getElementById('exam-switch-modal').classList.remove('hidden');
+            closeMobileNav();
+        }
+        function closeExamSwitchModal() { document.getElementById('exam-switch-modal').classList.add('hidden'); }
+
+        // ---------- Support banner: UPI payment ----------
+        const UPI_ID = 'tukka-meter@ptaxis';
+        const UPI_PAYEE_NAME = 'CGL Maths Analytics';
+        const UPI_NOTE = 'Support overnight project';
+
+        function initiateUPIPayment() {
+            const link = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_PAYEE_NAME)}&tn=${encodeURIComponent(UPI_NOTE)}&cu=INR`;
+            const fallback = document.getElementById('upi-mobile-fallback');
+            if (fallback) fallback.classList.add('hidden');
+            let appOpened = false;
+            const markOpened = () => { appOpened = true; };
+            window.addEventListener('blur', markOpened, { once: true });
+            document.addEventListener('visibilitychange', markOpened, { once: true });
+            try {
+                window.location.href = link;
+            } catch (e) {
+                window.removeEventListener('blur', markOpened);
+                document.removeEventListener('visibilitychange', markOpened);
+                showUPIFallback();
+                return;
+            }
+            setTimeout(() => {
+                window.removeEventListener('blur', markOpened);
+                document.removeEventListener('visibilitychange', markOpened);
+                if (!appOpened) showUPIFallback();
+            }, 1200);
+        }
+
+        function showUPIFallback() {
+            const fallback = document.getElementById('upi-mobile-fallback');
+            if (fallback) fallback.classList.remove('hidden');
+            showToast('No UPI app found — scan the QR or copy the ID below.', 'info');
+        }
+
+        function copyUPIId() {
+            navigator.clipboard.writeText(UPI_ID).then(() => {
+                showToast('UPI ID copied', 'success');
+            }).catch(() => {
+                showToast('Could not copy — copy manually: ' + UPI_ID, 'info');
+            });
+        }
+
+        function renderExamSwitchOptions() {
+            const container = document.getElementById('exam-switch-options');
+            container.innerHTML = EXAM_ORDER.map(id => {
+                const ex = EXAMS[id];
+                const active = id === currentExamId;
+                const count = (() => {
+                    try {
+                        const raw = localStorage.getItem(getStorageKey(id)) || (id === 'cgl_tier1' ? localStorage.getItem(LEGACY_STORAGE_KEY) : null);
+                        const arr = raw ? JSON.parse(raw) : [];
+                        return Array.isArray(arr) ? arr.length : 0;
+                    } catch (e) { return 0; }
+                })();
+                return `
+                <button onclick="switchExam('${id}')" class="w-full text-left p-3.5 rounded-xl border transition-all ${active ? 'border-transparent text-white shadow-glow' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}" style="${active ? `background: linear-gradient(120deg, ${ex.pillA}, ${ex.pillB})` : ''}">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${active ? 'bg-white/20' : 'bg-slate-100'}"><i class="fa-solid ${ex.icon} text-sm ${active ? 'text-white' : 'text-slate-500'}"></i></span>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold truncate">${ex.name}</p>
+                                <p class="text-[10px] ${active ? 'text-white/80' : 'text-slate-400'}">${ex.totalMarks} marks &middot; ${count} mock${count === 1 ? '' : 's'} logged</p>
+                            </div>
+                        </div>
+                        ${active ? '<i class="fa-solid fa-circle-check text-sm"></i>' : '<i class="fa-solid fa-chevron-right text-xs text-slate-300"></i>'}
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        ${ex.subjects.map(s => `<span class="text-[9px] font-semibold px-1.5 py-0.5 rounded ${active ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'}">${s.label} /${s.max}</span>`).join('')}
+                    </div>
+                </button>`;
+            }).join('');
+        }
+
+        function switchExam(examId) {
+            if (!EXAMS[examId]) return;
+            if (examId === currentExamId) { closeExamSwitchModal(); return; }
+            currentExamId = examId;
+            localStorage.setItem(CURRENT_EXAM_KEY, examId);
+            initData();
+            destroyAllCharts();
+            initCharts();
+            renderDashboard();
+            if (!document.getElementById('individual-view').classList.contains('hidden')) { renderIndividualSidebar(); renderIndividualContent(); }
+            closeExamSwitchModal();
+            goHome();
+            showToast(`Switched to ${currentExam().name}`, 'success');
+        }
+
+        // ================= INDIVIDUAL MOCK ANALYZER =================
+        function selectIndividualMock(id) {
+            selectedIndividualId = id;
+            renderIndividualSidebar();
+            renderIndividualContent();
+        }
+
+        function navigateIndividualMock(delta) {
+            const list = sortedMocks();
+            if (!list.length) return;
+            const idx = list.findIndex(m => m.id === selectedIndividualId);
+            let newIdx = (idx === -1 ? 0 : idx + delta);
+            newIdx = Math.max(0, Math.min(list.length - 1, newIdx));
+            selectedIndividualId = list[newIdx].id;
+            renderIndividualSidebar();
+            renderIndividualContent();
+        }
+
+        function getIndividualFiltered() {
+            const term = (document.getElementById('individual-search')?.value || '').toLowerCase();
+            const list = sortedMocks().slice().reverse();
+            if (!term) return list;
+            return list.filter(m => m.testName.toLowerCase().includes(term) || (m.notes && m.notes.toLowerCase().includes(term)));
+        }
+
+        function renderIndividualSidebar() {
+            const container = document.getElementById('individual-mock-sidebar');
+            const badge = document.getElementById('individual-count-badge');
+            if (badge) badge.textContent = `${mockData.length}`;
+            const list = getIndividualFiltered();
+            if (!list.length) {
+                container.innerHTML = `<p class="text-xs text-slate-400 px-2 py-4 text-center">${mockData.length ? 'No mocks found.' : 'No mocks logged yet.'}</p>`;
+                return;
+            }
+            container.innerHTML = list.map(m => `
+                <button onclick="selectIndividualMock('${m.id}')" class="w-full text-left px-3 py-2.5 rounded-xl border transition-all ${m.id === selectedIndividualId ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white border-transparent shadow-glow' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}">
+                    <p class="text-xs font-bold truncate">Mock-${m.mockNo}: ${escapeHtml(m.testName)}</p>
+                    <p class="text-[10px] ${m.id === selectedIndividualId ? 'text-white/80' : 'text-slate-400'} mt-0.5">${m.date} • Score ${m.score.toFixed(1)}</p>
+                </button>
+            `).join('');
+        }
+
+        function subjectDeepCard(label, value, color, maxVal) {
+            const val = (value === null || value === undefined) ? null : value;
+            const pct = val === null ? 0 : Math.min(100, (val / maxVal) * 100);
+            return `
+                <div class="p-4 rounded-xl border border-${color}-100 bg-${color}-50/40">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-${color}-800">${label}</span>
+                        <span class="text-sm font-extrabold text-${color}-700">${val === null ? 'N/A' : val.toFixed(1) + ' / ' + maxVal}</span>
+                    </div>
+                    <div class="h-2 bg-white rounded-md overflow-hidden border border-${color}-100">
+                        <div class="h-full bg-${color}-500 rounded-md" style="width:${pct}%"></div>
+                    </div>
+                </div>`;
+        }
+
+        function renderIndividualContent() {
+            const container = document.getElementById('individual-mock-content');
+            const list = sortedMocks();
+            const label = document.getElementById('individual-nav-label');
+            if (!list.length) {
+                container.innerHTML = `<div class="glass-panel rounded-2xl p-10 text-center text-sm text-slate-400">No mocks logged yet. Tap "Add New Mock" to get started.</div>`;
+                label.textContent = '-';
+                return;
+            }
+            const idx = list.findIndex(m => m.id === selectedIndividualId);
+            const mock = list[idx] || list[list.length - 1];
+            selectedIndividualId = mock.id;
+            label.textContent = `Mock ${idx + 1} of ${list.length}`;
+
+            const accuracy = getAccuracy(mock.correct, mock.attempted);
+            container.innerHTML = `
+                <div class="glass-panel rounded-2xl p-5">
+                    <div class="flex flex-wrap items-start justify-between gap-3 mb-1">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-brand-600 bg-brand-50 border border-brand-100 rounded px-2 py-0.5">Mock-${mock.mockNo}</span>
+                            <h3 class="text-base font-bold text-slate-900 mt-1.5">${escapeHtml(mock.testName)}</h3>
+                            <p class="text-xs text-slate-500">${mock.date}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openMockModal('${mock.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center gap-1.5"><i class="fa-solid fa-pen"></i> Edit</button>
+                            <button onclick="confirmDeleteMock('${mock.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-lg transition flex items-center gap-1.5"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center"><p class="text-[10px] text-slate-500 font-semibold uppercase">Score</p><p class="text-lg font-extrabold text-slate-800">${mock.score.toFixed(1)}<span class="text-xs text-slate-400 font-medium"> / ${mock.maxScore}</span></p></div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center"><p class="text-[10px] text-slate-500 font-semibold uppercase">Percentile</p><p class="text-lg font-extrabold text-amber-600">${mock.percentile}%</p></div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center"><p class="text-[10px] text-slate-500 font-semibold uppercase">Accuracy</p><p class="text-lg font-extrabold text-indigo-600">${accuracy}%</p></div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center"><p class="text-[10px] text-slate-500 font-semibold uppercase">Negatives</p><p class="text-lg font-extrabold text-rose-600">-${mock.negativeMarks.toFixed(1)}</p></div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <h4 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2"><i class="fa-solid fa-book-open text-brand-600"></i> Subject-Wise Breakdown</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${currentExam().subjects.map(s => subjectDeepCard(s.label, mock.subjects ? mock.subjects[s.key] : null, s.color, s.max)).join('')}
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <h4 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2"><i class="fa-solid fa-list-check text-brand-600"></i> Attempt Summary</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100"><p class="text-[10px] text-emerald-700 font-semibold uppercase">Correct</p><p class="text-lg font-extrabold text-emerald-700">${mock.correct}</p></div>
+                        <div class="p-3 rounded-xl bg-rose-50 border border-rose-100"><p class="text-[10px] text-rose-700 font-semibold uppercase">Wrong</p><p class="text-lg font-extrabold text-rose-700">${mock.wrong}</p></div>
+                        <div class="p-3 rounded-xl bg-slate-100 border border-slate-200"><p class="text-[10px] text-slate-600 font-semibold uppercase">Unattempted</p><p class="text-lg font-extrabold text-slate-700">${mock.unattempted}</p></div>
+                        <div class="p-3 rounded-xl bg-indigo-50 border border-indigo-100"><p class="text-[10px] text-indigo-700 font-semibold uppercase">Attempted</p><p class="text-lg font-extrabold text-indigo-700">${mock.attempted}</p></div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5">
+                    <h4 class="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2"><i class="fa-solid fa-note-sticky text-brand-600"></i> Notes & Improvement Strategy</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">${mock.notes ? escapeHtml(mock.notes) : '<span class="text-slate-400">No notes added for this mock.</span>'}</p>
+                </div>
+            `;
+        }
+
+
+        // ================= ADD / EDIT MOCK MODAL =================
+        function renderSubjectFieldsGrid(existingSubjects) {
+            const grid = document.getElementById('subject-fields-grid');
+            grid.innerHTML = currentExam().subjects.map(s => `
+                <div>
+                    <label class="block text-[11px] font-semibold text-indigo-800 mb-1">${s.label} <span class="text-indigo-400 font-normal">/${s.max}</span></label>
+                    <input type="number" step="0.25" id="field-subj-${s.key}" oninput="autoSumSubjects()" placeholder="0" class="w-full px-2.5 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" value="${existingSubjects && existingSubjects[s.key] !== undefined && existingSubjects[s.key] !== null ? existingSubjects[s.key] : ''}">
+                </div>
+            `).join('');
+        }
+
+        function openMockModal(id = null) {
+            const modal = document.getElementById('mock-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const idField = document.getElementById('field-id');
+            closeMobileNav();
+
+            if (id) {
+                const item = mockData.find(m => m.id === id);
+                if (!item) return;
+                modalTitle.innerHTML = `<i class="fa-solid fa-pen text-brand-600"></i> Edit Mock Record #${item.mockNo}`;
+                idField.value = item.id;
+                document.getElementById('field-mockNo').value = item.mockNo;
+                document.getElementById('field-testName').value = item.testName;
+                document.getElementById('field-date').value = item.date;
+                document.getElementById('field-maxScore').value = item.maxScore || currentExam().totalMarks;
+                document.getElementById('field-score').value = item.score;
+                renderSubjectFieldsGrid(item.subjects || {});
+                document.getElementById('field-correct').value = item.correct;
+                document.getElementById('field-wrong').value = item.wrong;
+                document.getElementById('field-totalQ').value = item.correct + item.wrong + item.unattempted;
+                document.getElementById('field-negFactor').value = item.wrong > 0 ? (item.negativeMarks / item.wrong).toFixed(2) : (currentExam().negFactor != null ? currentExam().negFactor : 0.5);
+                document.getElementById('field-percentile').value = item.percentile;
+                document.getElementById('field-notes').value = item.notes || '';
+            } else {
+                modalTitle.innerHTML = `<i class="fa-solid fa-circle-plus text-brand-600"></i> Add New Mock Record`;
+                idField.value = '';
+                document.getElementById('mock-form').reset();
+                document.getElementById('field-mockNo').value = mockData.length > 0 ? Math.max(...mockData.map(m => m.mockNo)) + 1 : 1;
+                document.getElementById('field-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('field-maxScore').value = currentExam().totalMarks;
+                document.getElementById('field-totalQ').value = currentExam().totalQuestions || 100;
+                document.getElementById('field-negFactor').value = currentExam().negFactor != null ? currentExam().negFactor : 0.5;
+                renderSubjectFieldsGrid({});
+            }
+            autoCalculateForm();
+            modal.classList.remove('hidden');
+        }
+
+        function closeMockModal() { document.getElementById('mock-modal').classList.add('hidden'); }
+
+        function autoSumSubjects() {
+            const subjects = currentExam().subjects;
+            let sum = 0, any = false;
+            subjects.forEach(s => {
+                const el = document.getElementById(`field-subj-${s.key}`);
+                if (!el) return;
+                const v = parseFloat(el.value);
+                if (!isNaN(v) && el.value !== '') { sum += v; any = true; }
+            });
+            if (any) document.getElementById('field-score').value = sum.toFixed(2);
+        }
+
+        function autoCalculateForm() {
+            const correct = parseInt(document.getElementById('field-correct').value) || 0;
+            const wrong = parseInt(document.getElementById('field-wrong').value) || 0;
+            const totalQ = parseInt(document.getElementById('field-totalQ').value) || currentExam().totalQuestions || 100;
+            const negFactor = parseFloat(document.getElementById('field-negFactor').value);
+            const negFactorSafe = isNaN(negFactor) ? (currentExam().negFactor != null ? currentExam().negFactor : 0.5) : negFactor;
+            const attempted = correct + wrong;
+            const unattempted = Math.max(0, totalQ - attempted);
+            const accuracy = attempted > 0 ? ((correct / attempted) * 100).toFixed(1) : 0;
+            const negatives = (wrong * negFactorSafe).toFixed(2);
+            document.getElementById('calc-attempted').textContent = attempted;
+            document.getElementById('calc-unattempted').textContent = unattempted;
+            document.getElementById('calc-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('calc-negatives').textContent = negatives;
+        }
+
+        function saveMock(e) {
+            e.preventDefault();
+            const idVal = document.getElementById('field-id').value;
+            const correct = parseInt(document.getElementById('field-correct').value) || 0;
+            const wrong = parseInt(document.getElementById('field-wrong').value) || 0;
+            const totalQ = parseInt(document.getElementById('field-totalQ').value) || currentExam().totalQuestions || 100;
+            const negFactorRaw = parseFloat(document.getElementById('field-negFactor').value);
+            const negFactor = isNaN(negFactorRaw) ? (currentExam().negFactor != null ? currentExam().negFactor : 0.5) : negFactorRaw;
+            const attempted = correct + wrong;
+            const unattempted = Math.max(0, totalQ - attempted);
+            const negativeMarks = wrong * negFactor;
+
+            const subjectsObj = {};
+            currentExam().subjects.forEach(s => {
+                const el = document.getElementById(`field-subj-${s.key}`);
+                const v = el ? el.value : '';
+                subjectsObj[s.key] = v !== '' ? parseFloat(v) : null;
+            });
+
+            const record = {
+                id: idVal || genId(),
+                examId: currentExamId,
+                mockNo: parseInt(document.getElementById('field-mockNo').value) || 1,
+                testName: document.getElementById('field-testName').value,
+                date: document.getElementById('field-date').value,
+                maxScore: parseFloat(document.getElementById('field-maxScore').value) || currentExam().totalMarks,
+                score: parseFloat(document.getElementById('field-score').value) || 0,
+                subjects: subjectsObj,
+                attempted, correct, wrong, unattempted,
+                negativeMarks: parseFloat(negativeMarks.toFixed(2)),
+                percentile: parseFloat(document.getElementById('field-percentile').value) || 0,
+                notes: document.getElementById('field-notes').value || ''
+            };
+
+            const existingIdx = mockData.findIndex(m => m.id === record.id);
+            if (existingIdx !== -1) mockData[existingIdx] = record; else mockData.push(record);
+
+            selectedIndividualId = record.id;
+
+            closeMockModal();
+            if (existingIdx === -1) { loadedSampleData = false; dismissSampleDataBanner(); }
+            saveDataToStorage();
+            renderDashboard();
+            if (!document.getElementById('individual-view').classList.contains('hidden')) { renderIndividualSidebar(); renderIndividualContent(); }
+            showToast(existingIdx !== -1 ? 'Mock record updated!' : 'New mock added!', 'success');
+        }
+
+        function confirmDeleteMock(id) {
+            const mock = mockData.find(m => m.id === id);
+            if (!mock) return;
+            showConfirmModal('Delete Mock?', `This will permanently delete "${mock.testName}" (Mock-${mock.mockNo}). This cannot be undone.`, () => {
+                mockData = mockData.filter(m => m.id !== id);
+                if (selectedIndividualId === id) selectedIndividualId = mockData.length ? sortedMocks()[sortedMocks().length - 1].id : null;
+                saveDataToStorage();
+                renderDashboard();
+                renderIndividualSidebar(); renderIndividualContent();
+                showToast(`Deleted ${mock.testName}`, 'info');
+            });
+        }
+
+        // ================= EXPORT / IMPORT ================
+        function exportDataJSON() {
+            try {
+                const payload = { app: 'Tukka Meter - SSC', version: 2, examId: currentExamId, examName: currentExam().name, exportedAt: new Date().toISOString(), mockData: mockData };
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const stamp = new Date().toISOString().slice(0, 10);
+                a.href = url; a.download = `ssc-${currentExamId}-mock-tracker-backup-${stamp}.json`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                recordBackupDone();
+                showToast('Backup downloaded — keep it safe!', 'success');
+            } catch (e) { showToast('Export failed. Please try again.', 'error'); }
+        }
+
+        function triggerImportJSON() {
+            document.getElementById('import-json-input').value = '';
+            document.getElementById('import-json-input').click();
+        }
+
+        function handleImportFile(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                let parsed;
+                try { parsed = JSON.parse(e.target.result); } catch (err) { showToast('That file is not valid JSON.', 'error'); return; }
+                const incoming = Array.isArray(parsed.mockData) ? parsed.mockData : (Array.isArray(parsed) ? parsed : null);
+                if (!incoming) { showToast("This JSON file doesn't look like a valid backup.", 'error'); return; }
+                const mismatchNote = (parsed.examId && parsed.examId !== currentExamId) ? ` Note: this backup was exported from ${parsed.examName || parsed.examId}, but will be imported into your currently active ${currentExam().name} data.` : '';
+                showConfirmModal('Import Backup?', `This will replace your current ${currentExam().name} data with ${incoming.length} mock(s) from this backup file. This cannot be undone.${mismatchNote}`, () => {
+                    mockData = incoming.map(m => ({ id: m.id || genId(), ...m }));
+                    migrateMockSubjects();
+                    localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
+                    selectedIndividualId = mockData.length ? sortedMocks()[sortedMocks().length - 1].id : null;
+                    renderDashboard();
+                    pushToCloud();
+                    goHome();
+                    showToast('Backup restored successfully!', 'success');
+                });
+            };
+            reader.readAsText(file);
+        }
+
+        // ================= GOOGLE SHEETS CLOUD SYNC ================
+        function getSyncUrl() { return (localStorage.getItem(SYNC_URL_KEY) || '').trim(); }
+        function setSyncUrl(url) { localStorage.setItem(SYNC_URL_KEY, url.trim()); }
+
+        function updateSyncStatus(state, message) {
+            const icon = document.getElementById('sync-status-icon');
+            const text = document.getElementById('sync-status-text');
+            if (!icon || !text) return;
+            icon.className = 'fa-solid fa-cloud';
+            if (state === 'off') { icon.classList.add('text-slate-400'); text.textContent = 'Sync Off'; }
+            else if (state === 'syncing') { icon.className = 'fa-solid fa-cloud-arrow-up fa-fade text-brand-600'; text.textContent = 'Syncing...'; }
+            else if (state === 'synced') { icon.className = 'fa-solid fa-cloud-arrow-up text-emerald-600'; text.textContent = message || 'Synced'; }
+            else if (state === 'error') { icon.className = 'fa-solid fa-triangle-exclamation text-rose-600'; text.textContent = 'Sync Failed'; }
+        }
+
+        function openSyncModal() {
+            document.getElementById('sync-url-input').value = getSyncUrl();
+            document.getElementById('sync-modal-status').textContent = '';
+            document.getElementById('sync-modal').classList.remove('hidden');
+            closeMobileNav();
+        }
+        function closeSyncModal() { document.getElementById('sync-modal').classList.add('hidden'); }
+
+        async function saveSyncUrl() {
+            const url = document.getElementById('sync-url-input').value.trim();
+            setSyncUrl(url);
+            if (!url) { updateSyncStatus('off'); showToast('Cloud sync disabled.', 'info'); closeSyncModal(); return; }
+            const statusEl = document.getElementById('sync-modal-status');
+            statusEl.textContent = 'Connecting...'; statusEl.className = 'text-[11px] font-medium text-slate-500';
+            const ok = await pullFromCloud(false);
+            if (ok) {
+                statusEl.textContent = 'Connected! Data loaded from your Google Sheet.'; statusEl.className = 'text-[11px] font-medium text-emerald-600';
+                showToast('Connected to Google Sheet successfully!', 'success');
+                setTimeout(closeSyncModal, 900);
+            } else {
+                statusEl.textContent = "Couldn't connect. Check the Web App URL & deployment access."; statusEl.className = 'text-[11px] font-medium text-rose-600';
+            }
+        }
+
+        function pushToCloud() {
+            const url = getSyncUrl();
+            if (!url) return;
+            clearTimeout(syncDebounceTimer);
+            syncDebounceTimer = setTimeout(async () => {
+                try {
+                    updateSyncStatus('syncing');
+                    await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ mockData, updatedAt: Date.now() }) });
+                    updateSyncStatus('synced', 'Synced ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                } catch (e) { updateSyncStatus('error'); }
+            }, 800);
+        }
+
+        async function pullFromCloud(showMsg) {
+            const url = getSyncUrl();
+            if (!url) { updateSyncStatus('off'); return false; }
+            try {
+                updateSyncStatus('syncing');
+                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const data = await res.json();
+                if (data && data.mockData) {
+                    mockData = data.mockData.map(m => ({ id: m.id || genId(), ...m }));
+                    migrateMockSubjects();
+                    localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
+                    if (mockData.length) { selectedIndividualId = sortedMocks()[sortedMocks().length - 1].id; }
+                    renderDashboard();
+                }
+                updateSyncStatus('synced', 'Synced just now');
+                if (showMsg) showToast('Data loaded from Google Sheet.', 'success');
+                return true;
+            } catch (e) {
+                updateSyncStatus('error');
+                if (showMsg) showToast('Could not connect. Check the Web App URL & deployment.', 'error');
+                return false;
+            }
+        }
+
+        // ================= CONFIRM MODAL / TOASTS ================
+        function showConfirmModal(title, message, callback) {
+            document.getElementById('confirm-modal-title').textContent = title;
+            document.getElementById('confirm-modal-message').textContent = message;
+            pendingConfirmAction = callback;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+        function closeConfirmModal(confirmed) {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if (confirmed && typeof pendingConfirmAction === 'function') pendingConfirmAction();
+            pendingConfirmAction = null;
+        }
+
+        // ---------- About Me: copy share link ----------
+        function copyGithubLink() {
+            const input = document.getElementById('github-share-link');
+            const btn = document.getElementById('github-copy-btn');
+            const finish = () => {
+                if (btn) {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                    setTimeout(() => { btn.innerHTML = original; }, 1500);
+                }
+                showToast('Link copied!', 'success');
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(input.value).then(finish).catch(() => {
+                    input.select();
+                    document.execCommand('copy');
+                    finish();
+                });
+            } else {
+                input.select();
+                document.execCommand('copy');
+                finish();
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const safeMessage = escapeHtml(message);
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-2.5 rounded-xl shadow-lg border text-xs font-semibold flex items-center space-x-2 pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0`;
+            if (type === 'success') { toast.classList.add('bg-emerald-900','text-white','border-emerald-700'); toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span>${safeMessage}</span>`; }
+            else if (type === 'error') { toast.classList.add('bg-rose-900','text-white','border-rose-700'); toast.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-400"></i> <span>${safeMessage}</span>`; }
+            else { toast.classList.add('bg-slate-900','text-white','border-slate-700'); toast.innerHTML = `<i class="fa-solid fa-circle-info text-brand-400"></i> <span>${safeMessage}</span>`; }
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 3500);
+        }
+
+        // ================= BOOT ================
+        document.addEventListener('DOMContentLoaded', () => {
+            const rail = document.querySelector('.nav-rail');
+            if (rail) rail.addEventListener('click', (e) => { if (e.target.closest('button')) closeMobileNav(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMobileNav(); });
+        });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            initData();
+            applyDarkModeIcon();
+            // Make sure the hub shell (parent window) reflects this app's theme
+            // right away too, not just after the next manual toggle.
+            if (window.parent && window.parent !== window) {
+                try { window.parent.postMessage({ type: 'tukka:darkModeChanged', dark: isDarkMode() }, '*'); } catch (e) {}
+            }
+            initCharts();
+            renderDashboard();
+            if (getSyncUrl()) { await pullFromCloud(false); } else { updateSyncStatus('off'); }
+            updateLastBackupStatus();
+            setInterval(updateLastBackupStatus, 30 * 60 * 1000);
+            hideAppLoadingScreen();
+        });
+
+        function hideAppLoadingScreen() {
+            const loader = document.getElementById('app-loading-screen');
+            if (!loader) return;
+            loader.style.opacity = '0'; loader.style.pointerEvents = 'none';
+            setTimeout(() => loader.remove(), 500);
+        }
+        setTimeout(hideAppLoadingScreen, 4000);
+    </script>
+
+    <!-- PWA: register service worker so the app is installable and works offline -->
+    <script>
+        let swRegistration = null;
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js', { scope: '../' }).then((reg) => { swRegistration = reg; }).catch(() => {});
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (refreshing) return; refreshing = true; window.location.reload();
+                });
+            });
+        }
+        function checkForAppUpdate() {
+            if (!('serviceWorker' in navigator) || !swRegistration) { showToast("Updates aren't supported in this browser.", 'error'); return; }
+            if (!navigator.onLine) { showToast("You're offline — connect to the internet to check for updates.", 'info'); return; }
+            showToast('Checking for updates…', 'info');
+            swRegistration.addEventListener('updatefound', function onUpdateFound() {
+                const newWorker = swRegistration.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showConfirmModal('Update Available', 'A newer version of the app is ready. Reload now to apply it?', () => newWorker.postMessage('SKIP_WAITING'));
+                    }
+                });
+                swRegistration.removeEventListener('updatefound', onUpdateFound);
+            });
+            swRegistration.update().then(() => {
+                setTimeout(() => { if (swRegistration.installing || swRegistration.waiting) return; showToast("You're already on the latest version.", 'success'); }, 1200);
+            }).catch(() => showToast("Couldn't check for updates — try again later.", 'error'));
+        }
+    </script>
+</body>
+</html>
