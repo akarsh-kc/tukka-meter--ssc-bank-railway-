@@ -49,6 +49,7 @@ This is a modified version of the original Tukka Meter project.
 This version is provided for personal and educational use only. It is not intended for commercial purposes.
 
 I am not responsible for any issues, errors, data loss, or damages that may occur while using this modified version. Use it at your own risk.
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 🚫 Do not sell, monetize, or redistribute this modified version as a paid product.
 
