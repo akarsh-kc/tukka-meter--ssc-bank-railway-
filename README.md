@@ -9,7 +9,7 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 🔗 **Use it now (no install needed):** [akarsh-kc.github.io/tukka--meter-ssc-bank-railway](https://akarsh-kc.github.io/tukka-meter--ssc-bank-railway-/)
 
 
-⚠️ **Note:** the app comes preloaded with sample mocks data so you can see how it works. Please delete this sample data first, then start adding your own mocks.
+**Note:** the app comes preloaded with sample mocks data so you can see how it works. Please delete this sample data first, then start adding your own mocks.
 
 - The only permission the app may ever ask for is to import a JSON file, if you choose to use that feature — completely optional, never required.
 
