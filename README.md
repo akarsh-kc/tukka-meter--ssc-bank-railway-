@@ -1,4 +1,4 @@
-<img width="1537" height="562" alt="image" src="https://github.com/user-attachments/assets/f5738685-59d6-4586-8055-26f8fee4b80a" /># 🎯 Tukka Meter - SSC, Bank, Railway
+# 🎯 Tukka Meter - SSC, Bank, Railway
 
 A simple tracker to log your **SSC, Railway, and Bank** exam mock test performance and analyze your mistakes — see where you're guessing right, where you're going wrong, and improve with clarity.
 
