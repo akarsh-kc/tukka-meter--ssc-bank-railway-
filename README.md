@@ -16,7 +16,7 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 ⚠️ **Note on installing the APK:** since this isn't from the Google Play Store, Android will show a warning like *"Install blocked"* or *"Unknown app installed for your security"* when you first try to install it. This is normal for any APK shared outside the Play Store — just tap **"Install anyway"** or enable **"Allow from this source"** when prompted. The app itself is safe; this warning appears for any APK not downloaded from the Play Store.
 
 ### 📱 Screenshots
-
+![PC View](pc1.jpg)
 ![Mobile 2](mobile2.jpg)
 
 ![Mobile 1](mobile4.jpg)
