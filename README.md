@@ -1,9 +1,11 @@
-# 🎯 Tukka Meter - SSC, Bank, Railway
+<img width="1537" height="562" alt="image" src="https://github.com/user-attachments/assets/f5738685-59d6-4586-8055-26f8fee4b80a" /># 🎯 Tukka Meter - SSC, Bank, Railway
 
 A simple tracker to log your **SSC, Railway, and Bank** exam mock test performance and analyze your mistakes — see where you're guessing right, where you're going wrong, and improve with clarity.
 
 ![PC View](pc1.png)
 ![PC View](pc2.png)
+![PC View](pc4.png)
+
 🔒 **Your data stays on your own device.** Nothing is uploaded, tracked, or shared with anyone. No login, no account, no data collection.
 
 📱 **Install as an app (Android):** Download the APK from the [Releases](../../releases) section. *(Select Tukka Meter - SSC, Bank, Railway APK.)*
