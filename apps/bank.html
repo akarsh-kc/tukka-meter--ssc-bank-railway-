@@ -120,10 +120,11 @@
         .glass-panel {
             background: rgba(255, 255, 255, 0.9);
             border: 1px solid rgba(148, 163, 184, 0.25);
-            backdrop-filter: blur(16px) saturate(160%);
-            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            backdrop-filter: blur(10px) saturate(140%);
+            -webkit-backdrop-filter: blur(10px) saturate(140%);
             box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 12px 28px -12px rgba(30, 41, 59, 0.10);
             position: relative;
+            contain: layout style;
             transition: box-shadow 0.35s ease, transform 0.35s ease, border-color 0.35s ease;
         }
         @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -150,8 +151,8 @@
 
         .app-sidebar {
             background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(22px) saturate(180%);
-            -webkit-backdrop-filter: blur(22px) saturate(180%);
+            backdrop-filter: blur(14px) saturate(150%);
+            -webkit-backdrop-filter: blur(14px) saturate(150%);
             border: 1px solid rgba(148, 163, 184, 0.22);
             box-shadow: 0 1px 2px 0 rgba(15,23,42,0.04), 0 24px 48px -20px rgba(79,70,229,0.22), 0 8px 20px -10px rgba(30,41,59,0.10);
             transition: background .4s ease, border-color .4s ease, box-shadow .4s ease;
@@ -219,7 +220,7 @@
         html.dark ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8, #22d3ee); }
         html.dark .glass-panel {
             background: rgba(15, 21, 40, 0.92); border-color: rgba(99, 102, 241, 0.18);
-            backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+            backdrop-filter: blur(11px) saturate(140%); -webkit-backdrop-filter: blur(11px) saturate(140%);
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.4), 0 12px 32px -14px rgba(0, 0, 0, 0.55);
         }
         @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -293,6 +294,62 @@
         html.dark #insights-banner { background: linear-gradient(to right, rgba(37, 99, 235, 0.14), rgba(79, 70, 229, 0.08), transparent) !important; }
         html.dark #dark-mode-toggle { background-color: #4f46e5 !important; }
         html.dark #dark-mode-knob { transform: translateX(20px); }
+        /* --- Dark mode fixes: dynamic subject-color classes (cards use bg-${color}-50/40, border-${color}-100, text-${color}-500/700/800) and other classes the rules above didn't cover --- */
+        html.dark [class~="bg-amber-50/40"] { background-color: rgba(245, 158, 11, 0.12) !important; }
+        html.dark [class~="border-amber-100"] { border-color: rgba(245, 158, 11, 0.25) !important; }
+        html.dark [class~="text-amber-500"] { color: #fbbf24 !important; }
+        html.dark [class~="text-amber-800"] { color: #fde68a !important; }
+
+        html.dark [class~="bg-blue-50"] { background-color: rgba(37, 99, 235, 0.15) !important; }
+        html.dark [class~="bg-blue-50/40"] { background-color: rgba(37, 99, 235, 0.12) !important; }
+        html.dark [class~="border-blue-100"] { border-color: rgba(37, 99, 235, 0.25) !important; }
+        html.dark [class~="text-blue-500"] { color: #60a5fa !important; }
+        html.dark [class~="text-blue-600"] { color: #60a5fa !important; }
+        html.dark [class~="text-blue-700"] { color: #93c5fd !important; }
+        html.dark [class~="text-blue-800"] { color: #bfdbfe !important; }
+
+        html.dark [class~="bg-cyan-50"] { background-color: rgba(8, 145, 178, 0.15) !important; }
+        html.dark [class~="bg-cyan-50/40"] { background-color: rgba(8, 145, 178, 0.12) !important; }
+        html.dark [class~="border-cyan-100"] { border-color: rgba(8, 145, 178, 0.25) !important; }
+        html.dark [class~="text-cyan-500"] { color: #22d3ee !important; }
+        html.dark [class~="text-cyan-600"] { color: #22d3ee !important; }
+        html.dark [class~="text-cyan-700"] { color: #67e8f9 !important; }
+        html.dark [class~="text-cyan-800"] { color: #a5f3fc !important; }
+
+        html.dark [class~="bg-emerald-50/40"] { background-color: rgba(16, 185, 129, 0.12) !important; }
+        html.dark [class~="border-emerald-100"] { border-color: rgba(16, 185, 129, 0.25) !important; }
+        html.dark [class~="text-emerald-500"] { color: #34d399 !important; }
+
+        html.dark [class~="bg-indigo-50"] { background-color: rgba(99, 102, 241, 0.15) !important; }
+        html.dark [class~="text-indigo-500"] { color: #818cf8 !important; }
+        html.dark [class~="text-indigo-700"] { color: #a5b4fc !important; }
+
+        html.dark [class~="bg-purple-50/40"] { background-color: rgba(124, 58, 237, 0.12) !important; }
+        html.dark [class~="border-purple-100"] { border-color: rgba(124, 58, 237, 0.25) !important; }
+        html.dark [class~="text-purple-500"] { color: #c084fc !important; }
+        html.dark [class~="text-purple-800"] { color: #e9d5ff !important; }
+
+        html.dark [class~="bg-rose-50/40"] { background-color: rgba(244, 63, 94, 0.12) !important; }
+        html.dark [class~="border-rose-100"] { border-color: rgba(244, 63, 94, 0.25) !important; }
+        html.dark [class~="text-rose-500"] { color: #fb7185 !important; }
+
+        html.dark [class~="bg-teal-50"] { background-color: rgba(20, 184, 166, 0.15) !important; }
+        html.dark [class~="bg-teal-50/40"] { background-color: rgba(20, 184, 166, 0.12) !important; }
+        html.dark [class~="border-teal-100"] { border-color: rgba(20, 184, 166, 0.25) !important; }
+        html.dark [class~="text-teal-500"] { color: #2dd4bf !important; }
+        html.dark [class~="text-teal-600"] { color: #2dd4bf !important; }
+        html.dark [class~="text-teal-700"] { color: #5eead4 !important; }
+        html.dark [class~="text-teal-800"] { color: #99f6e4 !important; }
+
+        html.dark [class~="bg-brand-200"] { background-color: rgba(59, 130, 246, 0.2) !important; }
+        html.dark [class~="border-brand-100"] { border-color: rgba(59, 130, 246, 0.25) !important; }
+        html.dark [class~="border-slate-200/70"] { border-color: rgba(38, 52, 74, 0.7) !important; }
+        html.dark [class~="bg-white/70"] { background-color: rgba(21, 31, 50, 0.7) !important; }
+
+        /* "Do I deserve a samosa" support banner used an unguarded light gradient (from-purple-50 via-brand-50 to-white),
+           so text-slate-900/500 (which the rules above turn near-white/grey) went invisible against it. */
+        html.dark #support-banner { background: linear-gradient(to right, rgba(124,58,237,0.14), rgba(59,130,246,0.10), transparent) !important; border-color: rgba(124,58,237,0.3) !important; }
+        html.dark #samosa-question { color: #9ca3af !important; }
 
         .mobile-topbar { display: none; }
         #nav-overlay { display: none; }
@@ -500,7 +557,7 @@
                 <div class="p-2 bg-amber-100 text-amber-600 rounded-lg shrink-0 mt-0.5"><i class="fa-solid fa-flask text-lg"></i></div>
                 <div>
                     <h4 class="text-sm font-bold text-slate-900">You're looking at sample data</h4>
-                    <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">These mocks are just here so the charts and insights have something to show. Tap <span class="font-semibold">Add New Mock</span> to start logging your own — the sample entries can be deleted any time from the Individual Mock Analyzer. And since everything's saved only in this browser, grab a quick <span class="font-semibold">Export Backup</span> before switching phones or clearing your cache.</p>
+                    <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">These mocks are just here so the charts and insights have something to show. Tap <span class="font-semibold">Add New Mock</span> to start logging your own — the sample entries can be deleted any time from the Individual Mock Analyzer. And since everything's saved only in this browser, grab a quick <span class="font-semibold">Export Backup</span> before switching phones or clearing your cache. You can switch between SSC, Railway, Bank, and other exam tracks anytime.</p>
                 </div>
             </div>
             <button onclick="dismissSampleDataBanner()" class="shrink-0 text-xs px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 rounded-lg font-semibold transition-all self-start sm:self-center">Got it</button>
@@ -726,7 +783,7 @@
                 </div>
                 <div class="relative mb-2">
                     <i class="fa-solid fa-magnifying-glass w-4 h-4 absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                    <input type="text" id="individual-search" placeholder="Search test name or notes..." oninput="renderIndividualSidebar()" class="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <input type="text" id="individual-search" placeholder="Search test name or notes..." oninput="debouncedRenderIndividualSidebar()" class="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
                 <div id="individual-mock-sidebar" class="flex flex-col gap-1 lg:max-h-[65vh] lg:overflow-y-auto pr-1"></div>
             </div>
@@ -769,7 +826,7 @@
                         <i class="fa-solid fa-utensils text-lg"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-slate-900">Do I deserve a samosa for pulling this off overnight? 🌙🥟 </p>
+                        <p id="samosa-question" class="text-sm font-bold text-slate-900">Do I deserve a samosa for pulling this off overnight? 🌙🥟 </p>
                         <p class="text-xs text-slate-500 mt-0.5"> Help the dev out 🙃✨</p>
                     </div>
                     <!-- Mobile: UPI Payment Button -->
@@ -779,7 +836,7 @@
                     <!-- Mobile fallback: shown only if no UPI app picks up the payment link -->
                     <div id="upi-mobile-fallback" class="hidden sm:hidden shrink-0 w-full flex flex-col items-center gap-2 bg-white/70 border border-purple-200 rounded-xl p-3">
                         <p class="text-[11px] text-slate-500 text-center">No UPI app found. Scan the QR code, or copy the ID instead.</p>
-                        <img id="upi-qr-mobile" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=CGL%20Maths%20Analytics&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
+                        <img id="upi-qr-mobile" loading="lazy" decoding="async" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=CGL%20Maths%20Analytics&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
                         <button onclick="copyUPIId()" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-all">
                             <i class="fa-solid fa-copy"></i> Copy UPI ID
                         </button>
@@ -787,7 +844,7 @@
 
                     <!-- Desktop: QR Code & UPI ID -->
                     <div id="upi-desktop" class="hidden sm:flex sm:shrink-0 flex-col items-center gap-3">
-                        <img id="upi-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=CGL%20Maths%20Analytics&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
+                        <img id="upi-qr" loading="lazy" decoding="async" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=CGL%20Maths%20Analytics&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
                         <div class="text-center">
                             <p class="text-xs text-slate-600 font-semibold mb-1.5">tukka-meter@ptaxis</p>
                             <button onclick="copyUPIId()" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-all">
@@ -805,7 +862,7 @@
                 <p class="text-xs text-slate-500 mt-1 mb-3">Know someone grinding for Bank exams? Send them this link.</p>
                 <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 pl-4">
                     <i class="fa-brands fa-github text-slate-500 shrink-0"></i>
-                    <input id="github-share-link" type="text" readonly value="https://www.google.com"
+                    <input id="github-share-link" type="text" readonly value="https://github.com/akarsh-kc/tukka-meter--ssc-bank-railway-"
                         class="flex-1 min-w-0 bg-transparent text-xs text-slate-600 font-medium truncate outline-none">
                     <button onclick="copyGithubLink()" id="github-copy-btn" class="shrink-0 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5">
                         <i class="fa-solid fa-copy"></i> Copy
@@ -827,7 +884,7 @@
                     <p class="text-xs font-bold text-slate-900">Feedback</p>
                     <p class="text-[11px] text-slate-500">Found a bug or have an idea? I'd genuinely love to hear it.</p>
                 </div>
-                <a href="mailto:sample@gmail.com?subject=Tukka%20Meter%20Bank%20Feedback" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm"><i class="fa-solid fa-envelope"></i> Send Feedback</a>
+                <a href="mailto:randomwork.a@gmail.com?subject=Tukka%20Meter%20Bank%20Feedback" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm"><i class="fa-solid fa-envelope"></i> Send Feedback</a>
             </div>
         </div>
     </section>
@@ -2076,6 +2133,17 @@
             if (!term) return list;
             return list.filter(m => m.testName.toLowerCase().includes(term) || (m.notes && m.notes.toLowerCase().includes(term)));
         }
+
+        // Debounce: wait for a short pause in typing before rebuilding the (potentially long) mock list —
+        // keeps keystrokes snappy on low-end devices instead of re-rendering on every character.
+        function debounce(fn, wait) {
+            let t;
+            return function (...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+        const debouncedRenderIndividualSidebar = debounce(() => renderIndividualSidebar(), 150);
 
         function renderIndividualSidebar() {
             const container = document.getElementById('individual-mock-sidebar');
