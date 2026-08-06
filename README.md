@@ -60,7 +60,7 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 3. Add your own mock tests and track your performance.
 4. Switch between SSC, Railway, and Bank tracks anytime.
 5. 
-![Mobile 1](mobile5.jpg)
+
 ---
 
 ## ⚠️ Disclaimer
