@@ -13,13 +13,15 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 
 📱 **Install as an app (Android):** Download the APK from the [Releases](../../releases) section.
 
-⚠️ **Note on installing the APK:** since this isn't from the Google Play Store, Android will show a warning like *"Install blocked"* or *"Unknown app installed for your security"* when you first try to install it. This is normal for any app shared outside the Play Store — just tap **"Install anyway"** or enable **"Allow from this source"** when prompted. The app itself is safe; this warning appears for any APK not downloaded from the Play Store.
+⚠️ **Note on installing the APK:** since this isn't from the Google Play Store, Android will show a warning like *"Install blocked"* or *"Unknown app installed for your security"* when you first try to install it. This is normal for any APK shared outside the Play Store — just tap **"Install anyway"** or enable **"Allow from this source"** when prompted. The app itself is safe; this warning appears for any APK not downloaded from the Play Store.
 
 ### 📱 Screenshots
 
 ![Mobile 2](mobile2.jpg)
 
-![Mobile 1](mobile1.jpg)
+![Mobile 1](mobile4.jpg)
+
+
 
 ## What it does
 - Log your **SSC, Railway, and Bank** exam mock test scores and track performance over time
@@ -37,6 +39,18 @@ A simple tracker to log your **SSC, Railway, and Bank** exam mock test performan
 2. **Clear the sample/demo data that comes pre-loaded.**
 3. Add your own mock tests and track your performance.
 4. Switch between SSC, Railway, and Bank tracks anytime.
+5. 
+![Mobile 1](mobile5.jpg)
+---
+
+## ⚠️ Disclaimer
+This is a modified version of the original Tukka Meter project.
+
+This version is provided for personal and educational use only. It is not intended for commercial purposes.
+
+I am not responsible for any issues, errors, data loss, or damages that may occur while using this modified version. Use it at your own risk.
+
+🚫 Do not sell, monetize, or redistribute this modified version as a paid product.
 
 ---
 
