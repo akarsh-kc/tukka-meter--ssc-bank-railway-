@@ -837,21 +837,11 @@
                         <p id="samosa-question" class="text-sm font-bold text-slate-900">Do I deserve a samosa for pulling this off overnight? 🌙🥟 </p>
                         <p class="text-xs text-slate-500 mt-0.5"> Help the dev out 🙃✨</p>
                     </div>
-                    <!-- Mobile: UPI Payment Button -->
-                    <button id="upi-mobile-btn" onclick="initiateUPIPayment()" class="sm:hidden shrink-0 w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-brand-600 hover:from-purple-700 hover:to-brand-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-mobile"></i> Send via UPI
-                    </button>
-                    <!-- Mobile fallback: shown only if no UPI app picks up the payment link -->
-                    <div id="upi-mobile-fallback" class="hidden sm:hidden shrink-0 w-full flex flex-col items-center gap-2 bg-white/70 border border-purple-200 rounded-xl p-3">
-                        <p class="text-[11px] text-slate-500 text-center">No UPI app found. Scan the QR code, or copy the ID instead.</p>
-                        <img id="upi-qr-mobile" loading="lazy" decoding="async" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=Tukka%20Meter&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
-                        <button onclick="copyUPIId()" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-all">
-                            <i class="fa-solid fa-copy"></i> Copy UPI ID
-                        </button>
-                    </div>
-
-                    <!-- Desktop: QR Code & UPI ID -->
-                    <div id="upi-desktop" class="hidden sm:flex sm:shrink-0 flex-col items-center gap-3">
+                    <!-- QR Code & UPI ID — same on mobile and desktop. The old "Send via UPI" deep-link
+                         button was removed: it silently failed on many phones/browsers (no UPI app
+                         detected, or the tab-switch got flagged as a popup), so the reliable QR + ID
+                         flow is now shown everywhere instead. -->
+                    <div id="upi-desktop" class="flex shrink-0 flex-col items-center gap-3">
                         <img id="upi-qr" loading="lazy" decoding="async" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=Tukka%20Meter&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
                         <div class="text-center">
                             <p class="text-xs text-slate-600 font-semibold mb-1.5">tukka-meter@ptaxis</p>
@@ -1090,7 +1080,7 @@
 
             <button onclick="connectDrive()" id="sync-connect-btn" class="w-full px-3.5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> Sync with Google Drive</button>
             <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                <button onclick="pullFromCloud(true)" class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"><i class="fa-solid fa-arrows-rotate text-[11px]"></i> Sync Now</button>
+                <button onclick="pullFromCloud(true, true)" class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"><i class="fa-solid fa-arrows-rotate text-[11px]"></i> Sync Now</button>
                 <button onclick="disconnectDrive()" id="sync-disconnect-btn" class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors">Disconnect</button>
                 <button onclick="deleteDriveBackupPrompt()" id="sync-delete-btn" class="px-3 py-1.5 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"><i class="fa-solid fa-trash-can text-[11px]"></i> Delete Cloud Backup</button>
             </div>
@@ -2117,39 +2107,8 @@
         }
         function closeExamSwitchModal() { document.getElementById('exam-switch-modal').classList.add('hidden'); }
 
-        // ---------- Support banner: UPI payment ----------
+        // ---------- Support banner: UPI (QR + ID shown the same on every device) ----------
         const UPI_ID = 'tukka-meter@ptaxis';
-        const UPI_PAYEE_NAME = 'Tukka Meter';
-        const UPI_NOTE = 'Support overnight project';
-
-        function initiateUPIPayment() {
-            const link = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_PAYEE_NAME)}&tn=${encodeURIComponent(UPI_NOTE)}&cu=INR`;
-            const fallback = document.getElementById('upi-mobile-fallback');
-            if (fallback) fallback.classList.add('hidden');
-            let appOpened = false;
-            const markOpened = () => { appOpened = true; };
-            window.addEventListener('blur', markOpened, { once: true });
-            document.addEventListener('visibilitychange', markOpened, { once: true });
-            try {
-                window.location.href = link;
-            } catch (e) {
-                window.removeEventListener('blur', markOpened);
-                document.removeEventListener('visibilitychange', markOpened);
-                showUPIFallback();
-                return;
-            }
-            setTimeout(() => {
-                window.removeEventListener('blur', markOpened);
-                document.removeEventListener('visibilitychange', markOpened);
-                if (!appOpened) showUPIFallback();
-            }, 1200);
-        }
-
-        function showUPIFallback() {
-            const fallback = document.getElementById('upi-mobile-fallback');
-            if (fallback) fallback.classList.remove('hidden');
-            showToast('No UPI app found — scan the QR or copy the ID below.', 'info');
-        }
 
         function copyUPIId() {
             navigator.clipboard.writeText(UPI_ID).then(() => {
@@ -2725,14 +2684,19 @@
             });
         }
 
-        async function driveFetch(url, options) {
+        async function driveFetch(url, options, interactive = false) {
             let token;
-            try { token = await ensureDriveToken(false); } catch (e) { token = await ensureDriveToken(true); }
+            try { token = await ensureDriveToken(false); }
+            catch (e) {
+                if (!interactive) throw e; // background/auto sync never opens an auth popup — browsers block it anyway since it's not a direct click
+                token = await ensureDriveToken(true);
+            }
             const opts = Object.assign({}, options);
             opts.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + token });
             let res = await fetch(url, opts);
             if (res.status === 401) {
                 driveAccessToken = null;
+                if (!interactive) throw new Error('auth-expired');
                 const token2 = await ensureDriveToken(true);
                 opts.headers.Authorization = 'Bearer ' + token2;
                 res = await fetch(url, opts);
@@ -2740,15 +2704,15 @@
             return res;
         }
 
-        async function findDriveFileId() {
+        async function findDriveFileId(interactive = false) {
             const q = encodeURIComponent(`name='${driveFileName()}' and trashed=false`);
-            const res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name,modifiedTime)`);
+            const res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name,modifiedTime)`, undefined, interactive);
             if (!res.ok) throw new Error('list-failed');
             const data = await res.json();
             return (data.files && data.files[0]) ? data.files[0].id : null;
         }
 
-        async function createDriveFile(content) {
+        async function createDriveFile(content, interactive = false) {
             const boundary = 'tukkameterboundary';
             const metadata = { name: driveFileName(), mimeType: 'application/json' };
             const body =
@@ -2759,23 +2723,23 @@
                 method: 'POST',
                 headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
                 body
-            });
+            }, interactive);
             if (!res.ok) throw new Error('create-failed');
             const data = await res.json();
             return data.id;
         }
 
-        async function updateDriveFile(fileId, content) {
+        async function updateDriveFile(fileId, content, interactive = false) {
             const res = await driveFetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: content
-            });
+            }, interactive);
             if (!res.ok) throw new Error('update-failed');
         }
 
-        async function readDriveFile(fileId) {
-            const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+        async function readDriveFile(fileId, interactive = false) {
+            const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, undefined, interactive);
             if (!res.ok) throw new Error('read-failed');
             return res.text();
         }
@@ -2785,7 +2749,7 @@
             const text = document.getElementById('sync-status-text');
             if (!icon || !text) return;
             icon.className = 'fa-solid fa-cloud';
-            if (state === 'off') { icon.classList.add('text-slate-400'); text.textContent = 'Sync Off'; }
+            if (state === 'off') { icon.classList.add('text-slate-400'); text.textContent = message || 'Sync Off'; }
             else if (state === 'syncing') { icon.className = 'fa-solid fa-cloud-arrow-up fa-fade text-brand-600'; text.textContent = 'Syncing...'; }
             else if (state === 'synced') { icon.className = 'fa-solid fa-cloud-arrow-up text-emerald-600'; text.textContent = message || 'Synced'; }
             else if (state === 'error') { icon.className = 'fa-solid fa-triangle-exclamation text-rose-600'; text.textContent = 'Sync Failed'; }
@@ -2859,7 +2823,10 @@
         // Pushes ONE combined backup — SSC + Bank + Railway together — to Drive,
         // regardless of which app triggered the sync. Since all three apps share
         // this browser's localStorage, collectFullAppBackup() already sees every
-        // category's data, not just this one.
+        // category's data, not just this one. Always runs in the background
+        // (debounced), so it never opens an auth popup — if the token needs a
+        // fresh interactive login, this just quietly waits for the next manual
+        // "Sync Now" tap instead of trying (and getting blocked) on its own.
         function pushToCloud() {
             if (!isDriveConnected() || !getDriveClientId()) return;
             clearTimeout(syncDebounceTimer);
@@ -2868,24 +2835,31 @@
                     updateSyncStatus('syncing');
                     const data = collectFullAppBackup();
                     const content = JSON.stringify({ app: 'Tukka Meter - Full Backup', version: 1, data, updatedAt: Date.now() });
-                    const fileId = await findDriveFileId();
-                    if (fileId) { await updateDriveFile(fileId, content); }
-                    else { await createDriveFile(content); }
+                    const fileId = await findDriveFileId(false);
+                    if (fileId) { await updateDriveFile(fileId, content, false); }
+                    else { await createDriveFile(content, false); }
                     updateSyncStatus('synced', 'Synced ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-                } catch (e) { updateSyncStatus('error'); }
+                } catch (e) {
+                    // Likely just needs a fresh sign-in — surface that quietly rather than an alarming error.
+                    updateSyncStatus('off', 'Tap Sync Now to resume');
+                }
             }, 800);
         }
 
         // Pulls the combined backup from Drive and restores every category it
         // contains (not just this app's), then refreshes this app's own view
         // if its data was part of what came down.
-        async function pullFromCloud(showMsg) {
+        // interactive=true only when called directly from a user click (e.g. the
+        // "Sync Now" button or Connect flow) — that's the only time it's safe to
+        // pop the Google auth window, since browsers block popups that aren't a
+        // direct result of a click. Background/auto calls stay silent-only.
+        async function pullFromCloud(showMsg, interactive = false) {
             if (!isDriveConnected() || !getDriveClientId()) { updateSyncStatus('off'); return false; }
             try {
                 updateSyncStatus('syncing');
-                const fileId = await findDriveFileId();
+                const fileId = await findDriveFileId(interactive);
                 if (fileId) {
-                    const text = await readDriveFile(fileId);
+                    const text = await readDriveFile(fileId, interactive);
                     const parsed = JSON.parse(text);
                     if (parsed && parsed.data && typeof parsed.data === 'object') {
                         Object.keys(parsed.data).forEach(prefix => {
@@ -2919,8 +2893,13 @@
                 if (showMsg) showToast('Data loaded from Google Drive.', 'success');
                 return true;
             } catch (e) {
-                updateSyncStatus('error');
-                if (showMsg) showToast('Could not connect to Google Drive. Check your Client ID & try again.', 'error');
+                if (interactive) {
+                    updateSyncStatus('error');
+                    if (showMsg) showToast('Could not connect to Google Drive. Check your Client ID & try again.', 'error');
+                } else {
+                    // Background attempt needed a fresh sign-in — don't alarm the user, just ask for a tap.
+                    updateSyncStatus('off', 'Tap Sync Now to resume');
+                }
                 return false;
             }
         }
