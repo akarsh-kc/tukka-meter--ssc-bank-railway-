@@ -255,9 +255,12 @@
         // ANNOUNCEMENT — reusable popup for updates, new features, or notices.
         // To post a new announcement: just change the 4 values below and commit.
         // - id: change this to any new short text every time (so a dismissed
-        //   old announcement doesn't block a new one on the same day)
-        // - date: format YYYY-MM-DD — the popup ONLY shows on this exact date
-        //   (the user's device today), automatically nothing before or after
+        //   old announcement doesn't block a new one)
+        // - date: format YYYY-MM-DD — the popup shows from this date onward
+        //   (the user's device "today"), until they dismiss it. It no longer
+        //   requires an EXACT date match, since that used to silently skip
+        //   anyone whose clock/timezone was off by even a day, or who simply
+        //   didn't open the app on that one specific day.
         // - title / message: whatever you want to tell users
         // Never duplicate this block for a new announcement — just overwrite
         // these 4 values each time, so the file size never grows.
@@ -279,7 +282,9 @@
 
         function maybeShowAnnouncement() {
             try {
-                if (getLocalDateStr() !== ANNOUNCEMENT.date) return;
+                // Shows any day on/after ANNOUNCEMENT.date, not just that exact date —
+                // dismissal (by id) is what stops it from showing again, not the date.
+                if (getLocalDateStr() < ANNOUNCEMENT.date) return;
                 if (localStorage.getItem('tukka_announcement_seen') === ANNOUNCEMENT.id) return;
                 document.getElementById('announce-title').textContent = ANNOUNCEMENT.title;
                 document.getElementById('announce-message').textContent = ANNOUNCEMENT.message;
