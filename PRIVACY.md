@@ -1,6 +1,6 @@
 # Privacy Policy — Tukka Meter (SSC / Bank / Railway)
 
-Last updated: [DATE]
+Last updated: 07-08-2026
 
 Tukka Meter is a free mock-test tracking tool. This page explains what data
 it accesses and how.
@@ -44,4 +44,4 @@ account.
 
 ## Contact
 
-Questions about this policy: [YOUR CONTACT EMAIL]
+Questions about this policy: notesforak@gmail.com
