@@ -472,9 +472,12 @@
                 <span class="nav-icon-wrap"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="hidden lg:inline">Individual Mock Analyzer</span><span class="nav-active-dot hidden lg:block"></span>
             </button>
             <div class="nav-divider"></div>
-            <button onclick="openSyncModal()" id="sync-status-btn" class="nav-pill" title="Cloud Sync Settings">
+            <div onclick="openSyncModal()" id="sync-status-btn" class="nav-pill" title="Cloud Sync Settings" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSyncModal();}">
                 <span class="nav-icon-wrap"><i id="sync-status-icon" class="fa-solid fa-cloud"></i></span><span id="sync-status-text" class="hidden lg:inline">Sync Off</span>
-            </button>
+                <button type="button" onclick="event.stopPropagation(); pullFromCloud(true, true);" id="sync-now-icon-btn" class="hidden lg:flex absolute right-[0.6rem] top-1/2 -translate-y-1/2 items-center justify-center w-6 h-6 rounded-md hover:bg-black/10 dark:hover:bg-white/15 transition-colors" title="Sync Now">
+                    <i class="fa-solid fa-arrows-rotate text-[11px] text-slate-500 dark:text-slate-300"></i>
+                </button>
+            </div>
             <button onclick="showBackupView()" id="nav-backup-btn" class="nav-pill" style="--pill-a:#059669;--pill-b:#f59e0b;--pill-glow:rgba(5,150,105,.5)" title="Backup & Restore your data">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="hidden lg:inline">Backup &amp; Restore</span><span class="nav-active-dot hidden lg:block"></span>
             </button>
@@ -837,22 +840,11 @@
                         <p id="samosa-question" class="text-sm font-bold text-slate-900">Do I deserve a samosa for pulling this off overnight? 🌙🥟 </p>
                         <p class="text-xs text-slate-500 mt-0.5"> Help the dev out 🙃✨</p>
                     </div>
-                    <!-- Mobile: UPI Payment Button -->
-                    <button id="upi-mobile-btn" onclick="initiateUPIPayment()" class="sm:hidden shrink-0 w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-brand-600 hover:from-purple-700 hover:to-brand-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-mobile"></i> Send via UPI
-                    </button>
-                    <!-- Mobile fallback: shown only if no UPI app picks up the payment link -->
-                    <div id="upi-mobile-fallback" class="hidden sm:hidden shrink-0 w-full flex flex-col items-center text-center gap-2.5 bg-white border border-purple-200 rounded-xl p-4 shadow-sm mx-auto">
-                        <p class="text-[11px] text-slate-500">No UPI app found. Scan the QR code, or copy the ID instead.</p>
-                        <img id="upi-qr-mobile" loading="lazy" decoding="async" src="https://api.qrserver.com/v1/create-qr-code/?size=140&data=upi://pay?pa=tukka-meter@ptaxis&pn=Tukka%20Meter&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-32 h-32 border border-slate-200 rounded-lg p-1.5 bg-white shadow-sm">
-                        <p class="text-xs text-slate-700 font-semibold">tukka-meter@ptaxis</p>
-                        <button onclick="copyUPIId()" class="text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-all">
-                            <i class="fa-solid fa-copy"></i> Copy UPI ID
-                        </button>
-                    </div>
-
-                    <!-- Desktop: QR Code & UPI ID -->
-                    <div id="upi-desktop" class="hidden sm:flex sm:shrink-0 flex-col items-center gap-3">
+                    <!-- QR Code & UPI ID — same on mobile and desktop. The old "Send via UPI" deep-link
+                         button was removed: it silently failed on many phones/browsers (no UPI app
+                         detected, or the tab-switch got flagged as a popup), so the reliable QR + ID
+                         flow is now shown everywhere instead. -->
+                    <div id="upi-desktop" class="flex shrink-0 flex-col items-center gap-3">
                         <img id="upi-qr" loading="lazy" decoding="async" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=Tukka%20Meter&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
                         <div class="text-center">
                             <p class="text-xs text-slate-600 font-semibold mb-1.5">tukka-meter@ptaxis</p>
@@ -923,15 +915,12 @@
                 <div class="flex-1 min-w-0">
                     <h3 class="text-sm font-bold text-slate-900">Export as Backup Data</h3>
                     <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                        This saves mocks and progress from <span class="font-semibold">every SSC exam you track</span> (CGL, CHSL, MTS, CPO) into one file — like taking a photo of everything you've logged so far. Keep this file safe (Google Drive, email to yourself, etc.) so you never lose your data — even if you clear your browser or switch devices.
+                        This saves mocks and progress from <span class="font-semibold">everything you track across SSC, Bank, and Railway</span> — not just the exam or category you have open right now — into one file, like taking a photo of everything you've logged so far. Keep this file safe (Google Drive, email to yourself, etc.) so you never lose your data — even if you clear your browser or switch devices.
                     </p>
                 </div>
                 <div class="w-full sm:w-auto shrink-0 flex flex-col sm:flex-row gap-2">
                     <button onclick="exportDataJSON()" class="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
                         <i class="fa-solid fa-download"></i> Export Backup
-                    </button>
-                    <button onclick="shareBackupJSON()" class="w-full sm:w-auto px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-share-nodes"></i> Share
                     </button>
                 </div>
             </div>
@@ -1007,11 +996,11 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Negative Factor</label>
-                        <input type="number" step="0.01" id="field-negFactor" value="0.5" oninput="autoCalculateForm()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <input type="number" step="any" id="field-negFactor" value="0.5" oninput="autoCalculateForm()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
                         <div class="flex flex-wrap gap-1 mt-1.5">
                             <button type="button" onclick="setNegFactorPreset(0)" class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 hover:bg-brand-100 text-slate-600 hover:text-brand-700 transition">None</button>
                             <button type="button" onclick="setNegFactorPreset(0.25)" class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 hover:bg-brand-100 text-slate-600 hover:text-brand-700 transition">1/4</button>
-                            <button type="button" onclick="setNegFactorPreset(0.3333)" class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 hover:bg-brand-100 text-slate-600 hover:text-brand-700 transition">1/3</button>
+                            <button type="button" onclick="setNegFactorPreset(0.33)" class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 hover:bg-brand-100 text-slate-600 hover:text-brand-700 transition">1/3</button>
                             <button type="button" onclick="setNegFactorPreset(0.5)" class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 hover:bg-brand-100 text-slate-600 hover:text-brand-700 transition">1/2</button>
                             <button type="button" onclick="setNegFactorPreset(1)" class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-100 hover:bg-brand-100 text-slate-600 hover:text-brand-700 transition">Full</button>
                         </div>
@@ -1056,28 +1045,56 @@
 
     <!-- Cloud Sync Settings Modal -->
     <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3 text-center">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-2 text-left">
-                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i class="fa-brands fa-google-drive text-brand-600"></i> Cloud Sync (Google Drive)</h3>
-                <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+        <div class="bg-white dark:bg-[#0b0f20] rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3.5 text-center max-h-[88vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2.5 text-left">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2"><i class="fa-brands fa-google-drive text-brand-600"></i> Cloud Sync (Google Drive)</h3>
+                <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="flex flex-col items-center gap-2 py-2">
-                <div class="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center">
-                    <i class="fa-brands fa-google-drive text-brand-600 text-xl"></i>
+
+            <div class="flex flex-col items-center gap-2 pt-1">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-900/40 dark:to-brand-800/20 flex items-center justify-center shadow-inner">
+                    <i class="fa-brands fa-google-drive text-brand-600 dark:text-brand-400 text-2xl"></i>
                 </div>
-                <p class="text-xs text-slate-500 leading-relaxed px-2">Back up your mock data to your Google Drive and access it on any device. Completely optional — the dashboard works fully offline too.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed px-1">
+                    Sign in with your Google account to back up <span class="font-semibold">all your data — SSC, Bank, and Railway together</span> — to Google Drive in one file. Connect once from any of the three apps and it covers all of them; sign in with that same account on any other device — PC, tablet, or phone — and everything carries over automatically. Completely optional, the app still works fully offline.
+                </p>
             </div>
+
+            <div class="grid grid-cols-3 gap-2">
+                <div class="flex flex-col items-center gap-1 bg-slate-50 dark:bg-white/5 rounded-xl py-2.5">
+                    <i class="fa-solid fa-desktop text-slate-400 dark:text-slate-500 text-sm"></i>
+                    <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">PC</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 bg-slate-50 dark:bg-white/5 rounded-xl py-2.5">
+                    <i class="fa-solid fa-tablet-screen-button text-slate-400 dark:text-slate-500 text-sm"></i>
+                    <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Tablet</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 bg-slate-50 dark:bg-white/5 rounded-xl py-2.5">
+                    <i class="fa-solid fa-mobile-screen-button text-slate-400 dark:text-slate-500 text-sm"></i>
+                    <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Phone</span>
+                </div>
+            </div>
+
+            <ul class="text-left text-[11px] text-slate-500 dark:text-slate-400 space-y-1.5 bg-slate-50/70 dark:bg-white/5 rounded-xl p-2.5">
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-check text-emerald-500 text-[10px] mt-0.5"></i> Backup is saved privately to your own Google Drive</li>
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-check text-emerald-500 text-[10px] mt-0.5"></i> Switch or reinstall on any device without losing progress</li>
+                <li class="flex items-start gap-1.5"><i class="fa-solid fa-check text-emerald-500 text-[10px] mt-0.5"></i> Nothing is uploaded until you tap "Sync with Google Drive"</li>
+            </ul>
+
             <button onclick="connectDrive()" id="sync-connect-btn" class="w-full px-3.5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> Sync with Google Drive</button>
             <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                <button onclick="pullFromCloud(true)" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"><i class="fa-solid fa-arrows-rotate text-[11px]"></i> Sync Now</button>
-                <button onclick="disconnectDrive()" id="sync-disconnect-btn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors">Disconnect</button>
-                <button onclick="deleteDriveBackupPrompt()" id="sync-delete-btn" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"><i class="fa-solid fa-trash-can text-[11px]"></i> Delete Cloud Backup</button>
+                <button onclick="pullFromCloud(true, true)" class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"><i class="fa-solid fa-arrows-rotate text-[11px]"></i> Sync Now</button>
+                <button onclick="disconnectDrive()" id="sync-disconnect-btn" class="px-3 py-1.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition-colors">Disconnect</button>
+                <button onclick="deleteDriveBackupPrompt()" id="sync-delete-btn" class="px-3 py-1.5 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"><i class="fa-solid fa-trash-can text-[11px]"></i> Delete Cloud Backup</button>
             </div>
             <p id="sync-modal-status" class="text-[11px] font-medium"></p>
-            <p class="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-2.5 flex items-start gap-1.5 text-left">
-                <i class="fa-solid fa-lock-keyhole mt-0.5 text-slate-300"></i>
-                <span>This app has no server of its own &mdash; your data goes straight to <span class="font-semibold text-slate-500">your own</span> Google Drive, never through us, and we never see or collect it. That's exactly why Google asks you to quietly re-confirm sign-in about once an hour instead of trusting a saved login forever &mdash; it's a privacy trade-off, not a bug.</span>
-            </p>
+
+            <div class="flex items-start gap-2 text-left border-t border-slate-100 dark:border-white/10 pt-2.5">
+                <i class="fa-solid fa-lock text-slate-400 dark:text-slate-500 text-[11px] mt-0.5 shrink-0"></i>
+                <p class="text-[10.5px] text-slate-400 dark:text-slate-500 leading-relaxed">
+                    There's no server behind this app — your data goes straight to your own Google Drive and is never seen or stored by anyone else, including us. That's also why Google asks you to reconfirm sign-in every hour instead of trusting it forever — a quick tap on "Sync Now" keeps that privacy guarantee in place.
+                </p>
+            </div>
         </div>
     </div>
 
@@ -2048,39 +2065,8 @@
         }
         function closeExamSwitchModal() { document.getElementById('exam-switch-modal').classList.add('hidden'); }
 
-        // ---------- Support banner: UPI payment ----------
+        // ---------- Support banner: UPI (QR + ID shown the same on every device) ----------
         const UPI_ID = 'tukka-meter@ptaxis';
-        const UPI_PAYEE_NAME = 'Tukka Meter';
-        const UPI_NOTE = 'Support overnight project';
-
-        function initiateUPIPayment() {
-            const link = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(UPI_PAYEE_NAME)}&tn=${encodeURIComponent(UPI_NOTE)}&cu=INR`;
-            const fallback = document.getElementById('upi-mobile-fallback');
-            if (fallback) fallback.classList.add('hidden');
-            let appOpened = false;
-            const markOpened = () => { appOpened = true; };
-            window.addEventListener('blur', markOpened, { once: true });
-            document.addEventListener('visibilitychange', markOpened, { once: true });
-            try {
-                window.location.href = link;
-            } catch (e) {
-                window.removeEventListener('blur', markOpened);
-                document.removeEventListener('visibilitychange', markOpened);
-                showUPIFallback();
-                return;
-            }
-            setTimeout(() => {
-                window.removeEventListener('blur', markOpened);
-                document.removeEventListener('visibilitychange', markOpened);
-                if (!appOpened) showUPIFallback();
-            }, 1200);
-        }
-
-        function showUPIFallback() {
-            const fallback = document.getElementById('upi-mobile-fallback');
-            if (fallback) fallback.classList.remove('hidden');
-            showToast('No UPI app found — scan the QR or copy the ID below.', 'info');
-        }
 
         function copyUPIId() {
             navigator.clipboard.writeText(UPI_ID).then(() => {
@@ -2137,7 +2123,7 @@
             // Pull this exam's own Drive backup in the background, in case it has
             // newer data synced from another device.
             if (isDriveConnected() && isDriveConfigured()) {
-                pullFromCloud(false);
+                pullFromCloud(false).then(() => { renderDashboard(); });
             }
         }
 
@@ -2414,36 +2400,56 @@
         }
 
         // ================= EXPORT / IMPORT ================
-        // Backups now bundle every SSC exam track (CGL Tier 1/2, CHSL Tier 1/2, MTS, CPO)
-        // in one file, not just whichever exam happens to be open right now.
-        function collectAllExamsBackup() {
-            const exams = {};
-            EXAM_ORDER.forEach(id => {
-                const raw = (id === currentExamId) ? JSON.stringify(mockData) : localStorage.getItem(getStorageKey(id));
-                let data = [];
-                try { data = raw ? JSON.parse(raw) : []; } catch (e) { data = []; }
-                if (!Array.isArray(data)) data = [];
-                const cutoff = getCutoff(id);
-                if (data.length || cutoff !== null) {
-                    exams[id] = { examName: EXAMS[id] ? EXAMS[id].name : id, mockData: data, cutoff: cutoff };
+        // Backups bundle every exam across ALL THREE apps — SSC, Bank, and Railway —
+        // in one file, not just the category you happen to have open right now.
+        // This works because all three apps share one browser origin, so their
+        // localStorage namespaces (cgl_ / bank_ / railway_) are all readable from
+        // here even though only the SSC app is loaded in this tab/iframe.
+        const THIS_APP_PREFIX = 'cgl';
+        const APP_CATEGORY_NAMES = { cgl: 'SSC', bank: 'Bank', railway: 'Railway' };
+
+        function collectFullAppBackup() {
+            // Flush the currently-open exam's in-memory data first so it's included.
+            localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
+
+            const data = {};
+            Object.keys(APP_CATEGORY_NAMES).forEach(prefix => {
+                const exams = {};
+                const marker = prefix + '_mock_data__';
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (!key || key.indexOf(marker) !== 0 || key.indexOf('__resolve', marker.length) !== -1) continue;
+                    const examId = key.slice(marker.length);
+                    let mock = [];
+                    try { mock = JSON.parse(localStorage.getItem(key)) || []; } catch (e) {}
+                    if (!Array.isArray(mock)) mock = [];
+                    let resolveItems = [];
+                    try { resolveItems = JSON.parse(localStorage.getItem(key + '__resolve')) || []; } catch (e) {}
+                    const cutoffRaw = localStorage.getItem(prefix + '_cutoff__' + examId);
+                    const cutoffVal = cutoffRaw !== null ? parseFloat(cutoffRaw) : NaN;
+                    const cutoff = isNaN(cutoffVal) ? null : cutoffVal;
+                    if (mock.length || resolveItems.length || cutoff !== null) {
+                        exams[examId] = { mockData: mock, resolveItems: resolveItems, cutoff: cutoff };
+                    }
                 }
+                if (Object.keys(exams).length) data[prefix] = { categoryName: APP_CATEGORY_NAMES[prefix], exams: exams };
             });
-            return exams;
+            return data;
         }
 
         function exportDataJSON() {
             try {
-                const exams = collectAllExamsBackup();
-                const payload = { app: 'Tukka Meter - SSC', version: 3, exportedAt: new Date().toISOString(), exams: exams };
+                const data = collectFullAppBackup();
+                const payload = { app: 'Tukka Meter - Full Backup', version: 1, exportedAt: new Date().toISOString(), data: data };
                 const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 const stamp = new Date().toISOString().slice(0, 10);
-                a.href = url; a.download = `ssc-all-exams-backup-${stamp}.json`;
+                a.href = url; a.download = `tukka-meter-full-backup-${stamp}.json`;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 recordBackupDone();
-                showToast('Backup downloaded — all your SSC exams are in there, keep it safe!', 'success');
+                showToast('Backup downloaded — SSC, Bank & Railway data all included!', 'success');
             } catch (e) { showToast('Export failed. Please try again.', 'error'); }
         }
 
@@ -2453,10 +2459,10 @@
         // Falls back to a normal download on browsers/laptops that don't.
         async function shareBackupJSON() {
             try {
-                const exams = collectAllExamsBackup();
-                const payload = { app: 'Tukka Meter - SSC', version: 3, exportedAt: new Date().toISOString(), exams: exams };
+                const data = collectFullAppBackup();
+                const payload = { app: 'Tukka Meter - Full Backup', version: 1, exportedAt: new Date().toISOString(), data: data };
                 const stamp = new Date().toISOString().slice(0, 10);
-                const filename = `ssc-all-exams-backup-${stamp}.json`;
+                const filename = `tukka-meter-full-backup-${stamp}.json`;
                 const file = new File([JSON.stringify(payload, null, 2)], filename, { type: 'application/json' });
 
                 if (!window.isSecureContext) {
@@ -2471,7 +2477,7 @@
                         await navigator.share({
                             files: [file],
                             title: 'Tukka Meter Backup',
-                            text: 'My full SSC mock tracker backup (all exams) — import this in the Backup & Restore section.'
+                            text: 'My full Tukka Meter backup (SSC + Bank + Railway) — import this in the Backup & Restore section.'
                         });
                         recordBackupDone();
                     } catch (shareErr) {
@@ -2504,7 +2510,41 @@
                 let parsed;
                 try { parsed = JSON.parse(e.target.result); } catch (err) { showToast('That file is not valid JSON.', 'error'); return; }
 
-                // New-style backup: one file with every exam bundled under "exams".
+                // Full cross-app backup: one file with SSC + Bank + Railway all bundled under "data".
+                if (parsed && parsed.data && typeof parsed.data === 'object' && !Array.isArray(parsed.data)) {
+                    const presentPrefixes = Object.keys(parsed.data).filter(p => APP_CATEGORY_NAMES[p]);
+                    if (!presentPrefixes.length) { showToast("This JSON file doesn't look like a valid backup.", 'error'); return; }
+                    let totalMocks = 0, totalExams = 0;
+                    presentPrefixes.forEach(p => {
+                        const exams = parsed.data[p].exams || {};
+                        Object.keys(exams).forEach(id => { totalExams++; totalMocks += Array.isArray(exams[id].mockData) ? exams[id].mockData.length : 0; });
+                    });
+                    const catList = presentPrefixes.map(p => APP_CATEGORY_NAMES[p]).join(', ');
+                    showConfirmModal('Import Full Backup?', `This will replace your current data across ${catList} — ${totalExams} exam(s), ${totalMocks} mock(s) total. This cannot be undone.`, () => {
+                        presentPrefixes.forEach(prefix => {
+                            const exams = parsed.data[prefix].exams || {};
+                            Object.keys(exams).forEach(id => {
+                                const entry = exams[id];
+                                const incomingMocks = Array.isArray(entry.mockData) ? entry.mockData.map(m => ({ id: m.id || genId(), ...m })) : [];
+                                localStorage.setItem(prefix + '_mock_data__' + id, JSON.stringify(incomingMocks));
+                                if (entry.cutoff !== undefined && entry.cutoff !== null) localStorage.setItem(prefix + '_cutoff__' + id, String(entry.cutoff));
+                                else localStorage.removeItem(prefix + '_cutoff__' + id);
+                                if (Array.isArray(entry.resolveItems)) localStorage.setItem(prefix + '_mock_data__' + id + '__resolve', JSON.stringify(entry.resolveItems));
+                                if (prefix === THIS_APP_PREFIX && id === currentExamId) mockData = incomingMocks;
+                            });
+                        });
+                        migrateMockSubjects();
+                        localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
+                        selectedIndividualId = mockData.length ? sortedMocks()[sortedMocks().length - 1].id : null;
+                        renderDashboard();
+                        pushToCloud();
+                        goHome();
+                        showToast(`Full backup restored across ${catList}!`, 'success');
+                    });
+                    return;
+                }
+
+                // New-style backup: one file with every exam bundled under "exams" (single category, older format).
                 if (parsed && parsed.exams && typeof parsed.exams === 'object' && !Array.isArray(parsed.exams)) {
                     const examIds = Object.keys(parsed.exams).filter(id => EXAMS[id]);
                     if (!examIds.length) { showToast("This JSON file doesn't look like a valid backup.", 'error'); return; }
@@ -2557,38 +2597,38 @@
         // and sign in with their own account — no setup needed on their end. Each
         // user's data still goes only to their own personal Drive.
         const DRIVE_CLIENT_ID = '766379515513-ufmc75dpic898902tughujruoign5fnh.apps.googleusercontent.com';
-        const DRIVE_CONNECTED_KEY = 'cgl_drive_connected';
-        // Shared across SSC/Bank/Railway (same origin) so switching apps reuses
-        // one login for ~1hr instead of each app re-asking Google separately.
-        const DRIVE_TOKEN_CACHE_KEY = 'tukka_drive_token_v1';
-        const DRIVE_EXPIRED_NOTIFIED_KEY = 'tukka_drive_expired_notified_at';
+        // Shared across all three apps (SSC/Bank/Railway) on purpose — connecting once,
+        // from any one of them, syncs everything to a single Drive file, so you don't
+        // have to repeat the connect step per category.
+        const DRIVE_CONNECTED_KEY = 'tukka_drive_connected';
+        // Google's token client has no real "silent" mode — even a non-interactive
+        // request tries to open a window, which browsers block if it isn't a
+        // direct result of a click. So instead of asking Google again on every
+        // app switch, the token itself is cached here in shared localStorage —
+        // get it once (via a click), and every app reuses it until it expires
+        // (~1hr) or you disconnect, with zero further popup attempts.
+        const DRIVE_TOKEN_KEY = 'tukka_drive_token';
+        const DRIVE_TOKEN_EXPIRY_KEY = 'tukka_drive_token_expiry';
         let driveTokenClient = null;
         let driveAccessToken = null;
         let driveTokenExpiry = 0;
+        // Fires the "sign-in expired" toast once per expiry, not on every
+        // background attempt — reset to false whenever a fresh token comes in.
+        let driveExpiryNotified = false;
+        try {
+            const cachedExpiry = parseInt(localStorage.getItem(DRIVE_TOKEN_EXPIRY_KEY), 10);
+            const cachedToken = localStorage.getItem(DRIVE_TOKEN_KEY);
+            if (cachedToken && cachedExpiry && Date.now() < cachedExpiry - 30000) {
+                driveAccessToken = cachedToken;
+                driveTokenExpiry = cachedExpiry;
+            }
+        } catch (e) {}
 
         function getDriveClientId() { return DRIVE_CLIENT_ID; }
         function isDriveConfigured() { return DRIVE_CLIENT_ID && DRIVE_CLIENT_ID.indexOf('PASTE_YOUR_CLIENT_ID_HERE') === -1; }
         function isDriveConnected() { return localStorage.getItem(DRIVE_CONNECTED_KEY) === '1'; }
-        function driveFileName() { return `tukka-meter-ssc-${currentExamId}.json`; }
-
-        function loadCachedDriveToken() {
-            try {
-                const raw = localStorage.getItem(DRIVE_TOKEN_CACHE_KEY);
-                if (!raw) return;
-                const cached = JSON.parse(raw);
-                if (cached && cached.token && cached.expiry && Date.now() < cached.expiry - 30000) {
-                    driveAccessToken = cached.token;
-                    driveTokenExpiry = cached.expiry;
-                }
-            } catch (e) {}
-        }
-        function saveCachedDriveToken() {
-            try { localStorage.setItem(DRIVE_TOKEN_CACHE_KEY, JSON.stringify({ token: driveAccessToken, expiry: driveTokenExpiry })); } catch (e) {}
-        }
-        function clearCachedDriveToken() {
-            driveAccessToken = null; driveTokenExpiry = 0;
-            try { localStorage.removeItem(DRIVE_TOKEN_CACHE_KEY); } catch (e) {}
-        }
+        // One shared backup file covers SSC + Bank + Railway together.
+        function driveFileName() { return `tukka-meter-full-backup.json`; }
 
         function getDriveTokenClient() {
             const clientId = getDriveClientId();
@@ -2605,16 +2645,13 @@
             return driveTokenClient;
         }
 
-        // interactive=true is only ever passed from a real user click (Connect /
-        // Sync Now / a 401 retry right after one of those). That's the ONLY time
-        // we're allowed to call Google at all — its token popup isn't a true
-        // "silent" call even with prompt:'', it still tries to open a window, so
-        // calling it from a background auto-sync (switching exam tabs, typing a
-        // mock) gets blocked by the browser and looks like a random popup error.
-        // Background paths just reuse the cached token or fail quietly instead.
+        // interactive=true is the ONLY case allowed to call Google at all — and
+        // that's only safe because it's reached from a direct click (Connect /
+        // Sync Now). Every other path just uses whatever's already cached
+        // (memory, falling back to localStorage) and fails fast otherwise —
+        // never attempting a popup on its own.
         function ensureDriveToken(interactive) {
             return new Promise((resolve, reject) => {
-                loadCachedDriveToken();
                 if (driveAccessToken && Date.now() < driveTokenExpiry - 30000) { resolve(driveAccessToken); return; }
                 if (!interactive) { reject(new Error('no-cached-token')); return; }
                 const tc = getDriveTokenClient();
@@ -2623,22 +2660,27 @@
                     if (resp && resp.access_token) {
                         driveAccessToken = resp.access_token;
                         driveTokenExpiry = Date.now() + (resp.expires_in ? resp.expires_in * 1000 : 3500000);
-                        saveCachedDriveToken();
+                        driveExpiryNotified = false;
+                        try {
+                            localStorage.setItem(DRIVE_TOKEN_KEY, driveAccessToken);
+                            localStorage.setItem(DRIVE_TOKEN_EXPIRY_KEY, String(driveTokenExpiry));
+                        } catch (e) {}
                         resolve(driveAccessToken);
                     } else { reject(new Error((resp && resp.error) || 'auth-failed')); }
                 };
-                tc.requestAccessToken({ prompt: 'select_account' });
+                tc.requestAccessToken({ prompt: 'consent' });
             });
         }
 
-        async function driveFetch(url, options, allowInteractive) {
-            const token = await ensureDriveToken(!!allowInteractive);
+        async function driveFetch(url, options, interactive = false) {
+            const token = await ensureDriveToken(interactive);
             const opts = Object.assign({}, options);
             opts.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + token });
             let res = await fetch(url, opts);
             if (res.status === 401) {
-                clearCachedDriveToken();
-                if (!allowInteractive) throw new Error('token-expired');
+                driveAccessToken = null;
+                try { localStorage.removeItem(DRIVE_TOKEN_KEY); localStorage.removeItem(DRIVE_TOKEN_EXPIRY_KEY); } catch (e) {}
+                if (!interactive) throw new Error('auth-expired');
                 const token2 = await ensureDriveToken(true);
                 opts.headers.Authorization = 'Bearer ' + token2;
                 res = await fetch(url, opts);
@@ -2646,15 +2688,15 @@
             return res;
         }
 
-        async function findDriveFileId(allowInteractive) {
+        async function findDriveFileId(interactive = false) {
             const q = encodeURIComponent(`name='${driveFileName()}' and trashed=false`);
-            const res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name,modifiedTime)`, undefined, allowInteractive);
+            const res = await driveFetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name,modifiedTime)`, undefined, interactive);
             if (!res.ok) throw new Error('list-failed');
             const data = await res.json();
             return (data.files && data.files[0]) ? data.files[0].id : null;
         }
 
-        async function createDriveFile(content, allowInteractive) {
+        async function createDriveFile(content, interactive = false) {
             const boundary = 'tukkameterboundary';
             const metadata = { name: driveFileName(), mimeType: 'application/json' };
             const body =
@@ -2665,23 +2707,23 @@
                 method: 'POST',
                 headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
                 body
-            }, allowInteractive);
+            }, interactive);
             if (!res.ok) throw new Error('create-failed');
             const data = await res.json();
             return data.id;
         }
 
-        async function updateDriveFile(fileId, content, allowInteractive) {
+        async function updateDriveFile(fileId, content, interactive = false) {
             const res = await driveFetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: content
-            }, allowInteractive);
+            }, interactive);
             if (!res.ok) throw new Error('update-failed');
         }
 
-        async function readDriveFile(fileId, allowInteractive) {
-            const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, undefined, allowInteractive);
+        async function readDriveFile(fileId, interactive = false) {
+            const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, undefined, interactive);
             if (!res.ok) throw new Error('read-failed');
             return res.text();
         }
@@ -2691,20 +2733,10 @@
             const text = document.getElementById('sync-status-text');
             if (!icon || !text) return;
             icon.className = 'fa-solid fa-cloud';
-            if (state === 'off') { icon.classList.add('text-slate-400'); text.textContent = 'Sync Off'; }
+            if (state === 'off') { icon.classList.add('text-slate-400'); text.textContent = message || 'Sync Off'; }
             else if (state === 'syncing') { icon.className = 'fa-solid fa-cloud-arrow-up fa-fade text-brand-600'; text.textContent = 'Syncing...'; }
             else if (state === 'synced') { icon.className = 'fa-solid fa-cloud-arrow-up text-emerald-600'; text.textContent = message || 'Synced'; }
-            else if (state === 'expired') { icon.className = 'fa-solid fa-cloud-arrow-up text-slate-400'; text.textContent = 'Tap Sync Now'; }
             else if (state === 'error') { icon.className = 'fa-solid fa-triangle-exclamation text-rose-600'; text.textContent = 'Sync Failed'; }
-        }
-
-        // Shown at most once every 5 min (shared across all 3 apps) so hopping
-        // between exam tabs with an expired session doesn't spam repeat toasts.
-        function notifyDriveExpiredOnce() {
-            const last = parseInt(localStorage.getItem(DRIVE_EXPIRED_NOTIFIED_KEY) || '0', 10);
-            if (Date.now() - last < 5 * 60 * 1000) return;
-            localStorage.setItem(DRIVE_EXPIRED_NOTIFIED_KEY, String(Date.now()));
-            showToast('Sign-in expired — tap Sync Now to resume (this keeps your Drive data private).', 'info');
         }
 
         function openSyncModal() {
@@ -2725,7 +2757,7 @@
                 await ensureDriveToken(true);
                 localStorage.setItem(DRIVE_CONNECTED_KEY, '1');
                 statusEl.textContent = 'Connected! Loading your data from Drive...'; statusEl.className = 'text-[11px] font-medium text-emerald-600';
-                await pullFromCloud(false, true);
+                await pullFromCloud(false);
                 showToast('Connected to Google Drive successfully!', 'success');
                 setTimeout(closeSyncModal, 900);
             } catch (e) {
@@ -2736,22 +2768,25 @@
         }
 
         function disconnectDrive() {
-            localStorage.removeItem(DRIVE_CONNECTED_KEY);
             const tokenToRevoke = driveAccessToken;
-            clearCachedDriveToken();
+            localStorage.removeItem(DRIVE_CONNECTED_KEY);
+            localStorage.removeItem(DRIVE_TOKEN_KEY);
+            localStorage.removeItem(DRIVE_TOKEN_EXPIRY_KEY);
+            driveAccessToken = null;
+            driveTokenExpiry = 0;
             if (tokenToRevoke && window.google && google.accounts && google.accounts.oauth2) {
                 google.accounts.oauth2.revoke(tokenToRevoke, () => {});
             }
             updateSyncStatus('off');
-            showToast('Disconnected from Google Drive.', 'info');
+            showToast('Disconnected from Google Drive (all three apps).', 'info');
             closeSyncModal();
         }
 
         function deleteDriveBackupPrompt() {
             if (!isDriveConnected()) { showToast('Not connected to Google Drive.', 'error'); return; }
             showConfirmModal(
-                'Delete Cloud Backup?',
-                `This permanently deletes your "${driveFileName()}" backup file from Google Drive and disconnects this app. Your data on this device is not affected. This cannot be undone.`,
+                '⚠️ Delete Cloud Backup?',
+                `This permanently deletes your "${driveFileName()}" backup from Google Drive — the SHARED file covering SSC, Bank, and Railway together — and disconnects sync in all three apps. Google cannot recover it afterwards, and this cannot be undone. Your data on this device is safe and stays exactly as it is, but you won't be able to restore any of it on another device unless you sync again from here first.`,
                 deleteDriveBackup
             );
         }
@@ -2759,9 +2794,9 @@
         async function deleteDriveBackup() {
             const statusEl = document.getElementById('sync-modal-status');
             try {
-                const fileId = await findDriveFileId(true);
+                const fileId = await findDriveFileId();
                 if (fileId) {
-                    const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, { method: 'DELETE' }, true);
+                    const res = await driveFetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, { method: 'DELETE' });
                     if (!res.ok && res.status !== 404) throw new Error('delete-failed');
                 }
                 disconnectDrive();
@@ -2772,68 +2807,91 @@
             }
         }
 
-        // Auto-saves (typing a mock, switching exams) NEVER show a Google popup —
-        // they only reuse an already-cached token. If it's expired, this fails
-        // quietly and just marks the sync icon "Tap Sync Now" instead of trying
-        // to interactively re-authenticate on its own.
+        // Pushes ONE combined backup — SSC + Bank + Railway together — to Drive,
+        // regardless of which app triggered the sync. Since all three apps share
+        // this browser's localStorage, collectFullAppBackup() already sees every
+        // category's data, not just this one.
+        // Always runs in the background (debounced), so it never opens an auth
+        // popup — if the token needs a fresh interactive login, this just quietly
+        // waits for the next manual "Sync Now" tap instead of trying (and
+        // getting blocked) on its own.
         function pushToCloud() {
             if (!isDriveConnected() || !getDriveClientId()) return;
             clearTimeout(syncDebounceTimer);
             syncDebounceTimer = setTimeout(async () => {
                 try {
                     updateSyncStatus('syncing');
-                    const content = JSON.stringify({ mockData, cutoff: getCutoff(currentExamId), updatedAt: Date.now() });
+                    const data = collectFullAppBackup();
+                    const content = JSON.stringify({ app: 'Tukka Meter - Full Backup', version: 1, data, updatedAt: Date.now() });
                     const fileId = await findDriveFileId(false);
                     if (fileId) { await updateDriveFile(fileId, content, false); }
                     else { await createDriveFile(content, false); }
                     updateSyncStatus('synced', 'Last synced ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }));
                 } catch (e) {
-                    if (e && (e.message === 'no-cached-token' || e.message === 'token-expired')) {
-                        updateSyncStatus('expired');
-                        notifyDriveExpiredOnce();
-                    } else {
-                        updateSyncStatus('error');
+                    updateSyncStatus('off', 'Tap Sync Now to resume');
+                    if (!driveExpiryNotified) {
+                        driveExpiryNotified = true;
+                        showToast('Sign-in expired — tap Sync Now to resume (this keeps your Drive data private).', 'info');
                     }
                 }
             }, 800);
         }
 
-        // showMsg=true only happens from the explicit "Sync Now" button click, so
-        // it doubles as the "this is a real user gesture" flag — the only time
-        // this function is allowed to open a Google popup.
-        async function pullFromCloud(showMsg, forceInteractiveOk) {
+        // Pulls the combined backup from Drive and restores every category it
+        // contains (not just this app's), then refreshes this app's own view
+        // if its data was part of what came down.
+        // interactive=true only when called directly from a user click (e.g. the
+        // "Sync Now" button or Connect flow) — that's the only time it's safe to
+        // pop the Google auth window. Background/auto calls stay silent-only.
+        async function pullFromCloud(showMsg, interactive = false) {
             if (!isDriveConnected() || !getDriveClientId()) { updateSyncStatus('off'); return false; }
-            const allowInteractive = !!showMsg || !!forceInteractiveOk;
             try {
                 updateSyncStatus('syncing');
-                const fileId = await findDriveFileId(allowInteractive);
+                const fileId = await findDriveFileId(interactive);
                 if (fileId) {
-                    const text = await readDriveFile(fileId, allowInteractive);
-                    const data = JSON.parse(text);
-                    if (data && data.mockData) {
-                        const incomingMocks = data.mockData.map(m => ({ id: m.id || genId(), ...m }));
-                        const incomingCutoff = (data.cutoff !== undefined) ? data.cutoff : getCutoff(currentExamId);
-                        const changed = JSON.stringify(incomingMocks) !== JSON.stringify(mockData) || incomingCutoff !== getCutoff(currentExamId);
-                        if (changed) {
-                            mockData = incomingMocks;
-                            migrateMockSubjects();
-                            localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
-                            if (data.cutoff !== undefined) setCutoff(currentExamId, data.cutoff);
-                            if (mockData.length) { selectedIndividualId = sortedMocks()[sortedMocks().length - 1].id; }
-                            renderDashboard();
-                        }
+                    const text = await readDriveFile(fileId, interactive);
+                    const parsed = JSON.parse(text);
+                    if (parsed && parsed.data && typeof parsed.data === 'object') {
+                        Object.keys(parsed.data).forEach(prefix => {
+                            if (!APP_CATEGORY_NAMES[prefix]) return;
+                            const exams = parsed.data[prefix].exams || {};
+                            Object.keys(exams).forEach(id => {
+                                const entry = exams[id];
+                                const incomingMocks = Array.isArray(entry.mockData) ? entry.mockData.map(m => ({ id: m.id || genId(), ...m })) : [];
+                                localStorage.setItem(prefix + '_mock_data__' + id, JSON.stringify(incomingMocks));
+                                if (entry.cutoff !== undefined && entry.cutoff !== null) localStorage.setItem(prefix + '_cutoff__' + id, String(entry.cutoff));
+                                else localStorage.removeItem(prefix + '_cutoff__' + id);
+                                if (Array.isArray(entry.resolveItems)) localStorage.setItem(prefix + '_mock_data__' + id + '__resolve', JSON.stringify(entry.resolveItems));
+                                if (prefix === THIS_APP_PREFIX && id === currentExamId) mockData = incomingMocks;
+                            });
+                        });
+                        migrateMockSubjects();
+                        localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
+                        if (mockData.length) { selectedIndividualId = sortedMocks()[sortedMocks().length - 1].id; }
+                        renderDashboard();
+                    } else if (parsed && parsed.mockData) {
+                        // Backward compatibility with the old per-exam Drive file format.
+                        mockData = parsed.mockData.map(m => ({ id: m.id || genId(), ...m }));
+                        migrateMockSubjects();
+                        localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
+                        if (parsed.cutoff !== undefined) setCutoff(currentExamId, parsed.cutoff);
+                        if (mockData.length) { selectedIndividualId = sortedMocks()[sortedMocks().length - 1].id; }
+                        renderDashboard();
                     }
                 }
-                updateSyncStatus('synced', 'Last synced ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }));
+                updateSyncStatus('synced', 'Last synced just now');
                 if (showMsg) showToast('Data loaded from Google Drive.', 'success');
                 return true;
             } catch (e) {
-                if (e && (e.message === 'no-cached-token' || e.message === 'token-expired') && !allowInteractive) {
-                    updateSyncStatus('expired');
-                    notifyDriveExpiredOnce();
-                } else {
+                if (interactive) {
                     updateSyncStatus('error');
                     if (showMsg) showToast('Could not connect to Google Drive. Check your Client ID & try again.', 'error');
+                } else {
+                    updateSyncStatus('off', 'Tap Sync Now to resume');
+                    if (!driveExpiryNotified) {
+                        driveExpiryNotified = true;
+                        showToast('Sign-in expired — tap Sync Now to resume (this keeps your Drive data private).', 'info');
+                    }
                 }
                 return false;
             }
