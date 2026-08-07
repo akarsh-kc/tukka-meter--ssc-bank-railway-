@@ -382,6 +382,7 @@
             .app-sidebar, .app-sidebar * { touch-action: manipulation; }
             .app-sidebar .hidden.lg\:inline { display: inline !important; }
             .app-sidebar .hidden.lg\:block { display: block !important; }
+            .app-sidebar .hidden.lg\:flex { display: flex !important; }
             .app-sidebar .lg\:justify-start { justify-content: flex-start !important; }
             .app-sidebar .lg\:justify-between { justify-content: space-between !important; }
             #nav-overlay {
@@ -584,10 +585,10 @@
                 <div id="overall-performance-pill" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 whitespace-nowrap self-start sm:self-center">-</div>
             </div>
             <div class="mb-4">
-                <button onclick="editCutoff()" id="cutoff-pill" class="text-[11px] font-semibold text-slate-500 hover:text-brand-700 flex items-center gap-1.5 transition-colors">
+                <button onclick="editCutoff()" id="cutoff-pill" class="text-[11px] font-semibold flex items-center gap-1.5 transition-colors px-2.5 py-1 rounded-full border">
                     <i class="fa-solid fa-flag-checkered text-[10px]"></i>
                     <span id="cutoff-pill-text">Set expected cutoff for smarter ratings</span>
-                    <i class="fa-solid fa-pen text-[9px] text-slate-400"></i>
+                    <i class="fa-solid fa-pen text-[9px] opacity-60"></i>
                 </button>
             </div>
             <div class="space-y-4">
@@ -796,7 +797,7 @@
                     <i class="fa-solid fa-magnifying-glass w-4 h-4 absolute left-3 top-2.5 text-slate-400 text-xs"></i>
                     <input type="text" id="individual-search" placeholder="Search test name or notes..." oninput="debouncedRenderIndividualSidebar()" class="w-full pl-8 pr-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
                 </div>
-                <div id="individual-mock-sidebar" class="flex flex-col gap-1 lg:max-h-[65vh] lg:overflow-y-auto pr-1"></div>
+                <div id="individual-mock-sidebar" class="flex flex-col gap-1 max-h-[50vh] lg:max-h-[65vh] overflow-y-auto pr-1" style="-webkit-overflow-scrolling: touch;"></div>
             </div>
             <div id="individual-mock-content" class="lg:col-span-9 space-y-4">
                 <!-- Populated by JS -->
@@ -980,6 +981,7 @@
                 <div class="p-3 bg-indigo-50/40 rounded-xl border border-indigo-100 space-y-2">
                     <span class="text-xs font-bold text-indigo-900 block flex items-center gap-1.5"><i class="fa-solid fa-book-open text-indigo-600"></i> Subject Breakdown Scores &mdash; <span class="js-exam-name font-semibold">SSC CGL Tier 1</span> (Optional / Auto-Sums Total)</span>
                     <div id="subject-fields-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+                    <p class="text-[10px] text-slate-400 leading-snug pt-0.5">These fields are pre-filled based on the exam pattern I last knew — always check against your actual test paper and edit any value here if it differs.</p>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div>
@@ -1300,6 +1302,14 @@
         function updateLastBackupStatus() {
             const el = document.getElementById('last-backup-status');
             if (!el) return;
+            // If Google Drive auto-sync is connected, your data is already being backed up
+            // continuously in the background — the old manual-JSON-backup nag isn't needed.
+            if (isDriveConnected() && isDriveConfigured()) {
+                el.textContent = 'Auto-synced to Google Drive';
+                el.classList.remove('text-amber-600');
+                el.classList.add('text-emerald-600');
+                return;
+            }
             const iso = localStorage.getItem(LAST_BACKUP_KEY);
             const then = iso ? new Date(iso).getTime() : NaN;
             let text, stale;
@@ -1314,6 +1324,7 @@
                 stale = days >= 30;
             }
             el.textContent = text;
+            el.classList.remove('text-emerald-600');
             el.classList.toggle('text-amber-600', stale);
             el.classList.toggle('text-slate-400', !stale);
         }
@@ -1803,6 +1814,12 @@
             const cutoffPillText = document.getElementById('cutoff-pill-text');
             if (cutoffPillText) {
                 cutoffPillText.textContent = cutoffVal !== null ? `Cutoff: ${cutoffVal} / ${totalMarks} (tap to edit)` : 'Set expected cutoff for smarter ratings';
+                const cutoffPillBtn = document.getElementById('cutoff-pill');
+                if (cutoffPillBtn) {
+                    cutoffPillBtn.className = cutoffVal !== null
+                        ? 'text-[11px] font-semibold flex items-center gap-1.5 transition-colors px-2.5 py-1 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                        : 'text-[11px] font-semibold flex items-center gap-1.5 transition-colors px-2.5 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100 animate-pulse';
+                }
             }
 
             document.getElementById('bar-percentile-text').textContent = `${avgPercentile.toFixed(1)}%`;
