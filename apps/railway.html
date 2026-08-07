@@ -472,9 +472,12 @@
                 <span class="nav-icon-wrap"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="hidden lg:inline">Individual Mock Analyzer</span><span class="nav-active-dot hidden lg:block"></span>
             </button>
             <div class="nav-divider"></div>
-            <button onclick="openSyncModal()" id="sync-status-btn" class="nav-pill" title="Cloud Sync Settings">
+            <div onclick="openSyncModal()" id="sync-status-btn" class="nav-pill" title="Cloud Sync Settings" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSyncModal();}">
                 <span class="nav-icon-wrap"><i id="sync-status-icon" class="fa-solid fa-cloud"></i></span><span id="sync-status-text" class="hidden lg:inline">Sync Off</span>
-            </button>
+                <button type="button" onclick="event.stopPropagation(); pullFromCloud(true, true);" id="sync-now-icon-btn" class="hidden lg:flex absolute right-[0.6rem] top-1/2 -translate-y-1/2 items-center justify-center w-6 h-6 rounded-md hover:bg-black/10 dark:hover:bg-white/15 transition-colors" title="Sync Now">
+                    <i class="fa-solid fa-arrows-rotate text-[11px] text-slate-500 dark:text-slate-300"></i>
+                </button>
+            </div>
             <button onclick="showBackupView()" id="nav-backup-btn" class="nav-pill" style="--pill-a:#059669;--pill-b:#f59e0b;--pill-glow:rgba(5,150,105,.5)" title="Backup & Restore your data">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="hidden lg:inline">Backup &amp; Restore</span><span class="nav-active-dot hidden lg:block"></span>
             </button>
@@ -2952,7 +2955,7 @@
                     const fileId = await findDriveFileId(false);
                     if (fileId) { await updateDriveFile(fileId, content, false); }
                     else { await createDriveFile(content, false); }
-                    updateSyncStatus('synced', 'Synced ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                    updateSyncStatus('synced', 'Last synced ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }));
                 } catch (e) {
                     updateSyncStatus('off', 'Tap Sync Now to resume');
                 }
@@ -3001,7 +3004,7 @@
                         renderDashboard();
                     }
                 }
-                updateSyncStatus('synced', 'Synced just now');
+                updateSyncStatus('synced', 'Last synced just now');
                 if (showMsg) showToast('Data loaded from Google Drive.', 'success');
                 return true;
             } catch (e) {
