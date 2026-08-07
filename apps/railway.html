@@ -2731,9 +2731,25 @@
         // from any one of them, syncs everything to a single Drive file, so you don't
         // have to repeat the connect step per category.
         const DRIVE_CONNECTED_KEY = 'tukka_drive_connected';
+        // Google's token client has no real "silent" mode — even a non-interactive
+        // request tries to open a window, which browsers block if it isn't a
+        // direct result of a click. So instead of asking Google again on every
+        // app switch, the token itself is cached here in shared localStorage —
+        // get it once (via a click), and every app reuses it until it expires
+        // (~1hr) or you disconnect, with zero further popup attempts.
+        const DRIVE_TOKEN_KEY = 'tukka_drive_token';
+        const DRIVE_TOKEN_EXPIRY_KEY = 'tukka_drive_token_expiry';
         let driveTokenClient = null;
         let driveAccessToken = null;
         let driveTokenExpiry = 0;
+        try {
+            const cachedExpiry = parseInt(localStorage.getItem(DRIVE_TOKEN_EXPIRY_KEY), 10);
+            const cachedToken = localStorage.getItem(DRIVE_TOKEN_KEY);
+            if (cachedToken && cachedExpiry && Date.now() < cachedExpiry - 30000) {
+                driveAccessToken = cachedToken;
+                driveTokenExpiry = cachedExpiry;
+            }
+        } catch (e) {}
 
         function getDriveClientId() { return DRIVE_CLIENT_ID; }
         function isDriveConfigured() { return DRIVE_CLIENT_ID && DRIVE_CLIENT_ID.indexOf('PASTE_YOUR_CLIENT_ID_HERE') === -1; }
@@ -2756,34 +2772,40 @@
             return driveTokenClient;
         }
 
+        // interactive=true is the ONLY case allowed to call Google at all — and
+        // that's only safe because it's reached from a direct click (Connect /
+        // Sync Now). Every other path just uses whatever's already cached
+        // (memory, falling back to localStorage) and fails fast otherwise —
+        // never attempting a popup on its own.
         function ensureDriveToken(interactive) {
             return new Promise((resolve, reject) => {
                 if (driveAccessToken && Date.now() < driveTokenExpiry - 30000) { resolve(driveAccessToken); return; }
+                if (!interactive) { reject(new Error('no-cached-token')); return; }
                 const tc = getDriveTokenClient();
                 if (!tc) { reject(new Error('missing-client')); return; }
                 tc.callback = (resp) => {
                     if (resp && resp.access_token) {
                         driveAccessToken = resp.access_token;
                         driveTokenExpiry = Date.now() + (resp.expires_in ? resp.expires_in * 1000 : 3500000);
+                        try {
+                            localStorage.setItem(DRIVE_TOKEN_KEY, driveAccessToken);
+                            localStorage.setItem(DRIVE_TOKEN_EXPIRY_KEY, String(driveTokenExpiry));
+                        } catch (e) {}
                         resolve(driveAccessToken);
                     } else { reject(new Error((resp && resp.error) || 'auth-failed')); }
                 };
-                tc.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+                tc.requestAccessToken({ prompt: 'consent' });
             });
         }
 
         async function driveFetch(url, options, interactive = false) {
-            let token;
-            try { token = await ensureDriveToken(false); }
-            catch (e) {
-                if (!interactive) throw e; // background/auto sync never opens an auth popup — browsers block it anyway since it's not a direct click
-                token = await ensureDriveToken(true);
-            }
+            const token = await ensureDriveToken(interactive);
             const opts = Object.assign({}, options);
             opts.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + token });
             let res = await fetch(url, opts);
             if (res.status === 401) {
                 driveAccessToken = null;
+                try { localStorage.removeItem(DRIVE_TOKEN_KEY); localStorage.removeItem(DRIVE_TOKEN_EXPIRY_KEY); } catch (e) {}
                 if (!interactive) throw new Error('auth-expired');
                 const token2 = await ensureDriveToken(true);
                 opts.headers.Authorization = 'Bearer ' + token2;
@@ -2874,7 +2896,10 @@
         function disconnectDrive() {
             const tokenToRevoke = driveAccessToken;
             localStorage.removeItem(DRIVE_CONNECTED_KEY);
+            localStorage.removeItem(DRIVE_TOKEN_KEY);
+            localStorage.removeItem(DRIVE_TOKEN_EXPIRY_KEY);
             driveAccessToken = null;
+            driveTokenExpiry = 0;
             if (tokenToRevoke && window.google && google.accounts && google.accounts.oauth2) {
                 google.accounts.oauth2.revoke(tokenToRevoke, () => {});
             }
