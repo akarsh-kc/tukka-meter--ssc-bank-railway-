@@ -916,7 +916,7 @@
                 <div class="flex-1 min-w-0">
                     <h3 class="text-sm font-bold text-slate-900">Export as Backup Data</h3>
                     <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                        This saves mocks and progress from <span class="font-semibold">everything you track across SSC, Bank, and Railway</span> — not just the exam or category you have open right now — into one file, like taking a photo of everything you've logged so far. Keep this file safe (Google Drive, email to yourself, etc.) so you never lose your data — even if you clear your browser or switch devices.
+                        This saves mocks and progress from <span class="font-semibold">everything you track across SSC, Bank, Railway &amp; the CGL Maths Tracker</span> — not just the exam or category you have open right now — into one file, like taking a photo of everything you've logged so far. Keep this file safe (Google Drive, email to yourself, etc.) so you never lose your data — even if you clear your browser or switch devices.
                     </p>
                 </div>
                 <div class="w-full sm:w-auto shrink-0 flex flex-col sm:flex-row gap-2">
@@ -1058,7 +1058,7 @@
                     <i class="fa-brands fa-google-drive text-brand-600 dark:text-brand-400 text-2xl"></i>
                 </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed px-1">
-                    Sign in with your Google account to back up <span class="font-semibold">all your data — SSC, Bank, and Railway together</span> — to Google Drive in one file. Connect once from any of the three apps and it covers all of them; sign in with that same account on any other device — PC, tablet, or phone — and everything carries over automatically. Completely optional, the app still works fully offline.
+                    Sign in with your Google account to back up <span class="font-semibold">all your data — SSC, Bank, Railway &amp; the CGL Maths Tracker together</span> — to Google Drive in one file. Connect once from any one of them and it covers all four; sign in with that same account on any other device — PC, tablet, or phone — and everything carries over automatically. Completely optional, the app still works fully offline.
                 </p>
             </div>
 
@@ -2402,13 +2402,13 @@
         }
 
         // ================= EXPORT / IMPORT ================
-        // Backups bundle every exam across ALL THREE apps — SSC, Bank, and Railway —
+        // Backups bundle every exam across ALL FOUR apps — SSC, Bank, Railway & the CGL Maths Tracker —
         // in one file, not just the category you happen to have open right now.
-        // This works because all three apps share one browser origin, so their
+        // This works because all four apps share one browser origin, so their
         // localStorage namespaces (cgl_ / bank_ / railway_) are all readable from
         // here even though only the SSC app is loaded in this tab/iframe.
         const THIS_APP_PREFIX = 'cgl';
-        const APP_CATEGORY_NAMES = { cgl: 'SSC', bank: 'Bank', railway: 'Railway' };
+        const APP_CATEGORY_NAMES = { cgl: 'SSC', bank: 'Bank', railway: 'Railway', cgl_maths: 'CGL Maths Tracker' };
 
         function collectFullAppBackup() {
             // Flush the currently-open exam's in-memory data first so it's included.
@@ -2451,7 +2451,7 @@
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 recordBackupDone();
-                showToast('Backup downloaded — SSC, Bank & Railway data all included!', 'success');
+                showToast('Backup downloaded — SSC, Bank, Railway & Maths Tracker data all included!', 'success');
             } catch (e) { showToast('Export failed. Please try again.', 'error'); }
         }
 
@@ -2599,7 +2599,7 @@
         // and sign in with their own account — no setup needed on their end. Each
         // user's data still goes only to their own personal Drive.
         const DRIVE_CLIENT_ID = '766379515513-ufmc75dpic898902tughujruoign5fnh.apps.googleusercontent.com';
-        // Shared across all three apps (SSC/Bank/Railway) on purpose — connecting once,
+        // Shared across all four apps (SSC/Bank/Railway/Maths Tracker) on purpose — connecting once,
         // from any one of them, syncs everything to a single Drive file, so you don't
         // have to repeat the connect step per category.
         const DRIVE_CONNECTED_KEY = 'tukka_drive_connected';
@@ -2780,7 +2780,7 @@
                 google.accounts.oauth2.revoke(tokenToRevoke, () => {});
             }
             updateSyncStatus('off');
-            showToast('Disconnected from Google Drive (all three apps).', 'info');
+            showToast('Disconnected from Google Drive (all four apps).', 'info');
             closeSyncModal();
         }
 
@@ -2788,7 +2788,7 @@
             if (!isDriveConnected()) { showToast('Not connected to Google Drive.', 'error'); return; }
             showConfirmModal(
                 '⚠️ Delete Cloud Backup?',
-                `This permanently deletes your "${driveFileName()}" backup from Google Drive — the SHARED file covering SSC, Bank, and Railway together — and disconnects sync in all three apps. Google cannot recover it afterwards, and this cannot be undone. Your data on this device is safe and stays exactly as it is, but you won't be able to restore any of it on another device unless you sync again from here first.`,
+                `This permanently deletes your "${driveFileName()}" backup from Google Drive — the SHARED file covering SSC, Bank, Railway & the CGL Maths Tracker together — and disconnects sync in all four apps. Google cannot recover it afterwards, and this cannot be undone. Your data on this device is safe and stays exactly as it is, but you won't be able to restore any of it on another device unless you sync again from here first.`,
                 deleteDriveBackup
             );
         }
@@ -2810,7 +2810,7 @@
         }
 
         // Pushes ONE combined backup — SSC + Bank + Railway together — to Drive,
-        // regardless of which app triggered the sync. Since all three apps share
+        // regardless of which app triggered the sync. Since all four apps share
         // this browser's localStorage, collectFullAppBackup() already sees every
         // category's data, not just this one.
         // Always runs in the background (debounced), so it never opens an auth
