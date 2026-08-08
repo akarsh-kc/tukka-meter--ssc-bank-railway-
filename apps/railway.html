@@ -81,6 +81,23 @@
         h1, h2, h3, h4, .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; }
         .font-mono-tech { font-family: 'JetBrains Mono', monospace; }
 
+        /* Disable casual text selection/copying app-wide (long-press, drag-select,
+           triple-click) while keeping form fields normally editable. This is a UX
+           deterrent, not real security — page source, screenshots, and dev tools
+           can still get at the text. */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none; /* stops the iOS long-press Copy/Share bubble */
+        }
+        input, textarea, select, [contenteditable="true"] {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            user-select: text;
+            -webkit-touch-callout: default;
+        }
+
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #818cf8, #22d3ee); border-radius: 10px; }
