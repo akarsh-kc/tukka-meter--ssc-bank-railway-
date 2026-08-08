@@ -154,6 +154,37 @@
         #exam-grid::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
         html.dark #exam-grid::-webkit-scrollbar-thumb { background: #334155; }
 
+        /* ---- Special exam entry (e.g. the dedicated CGL Maths Tracker) ----
+           Same exam-pill shell, but with its own gradient border/glow (driven by
+           the exam's own --cat-a/--cat-b, set per-item rather than per-category),
+           a small animated ring, a corner star icon, and a "SPECIAL" chip next
+           to its name — so it visually stands apart from the regular exam list. */
+        .exam-pill-special {
+            border-width: 1.5px;
+            border-color: color-mix(in srgb, var(--cat-a) 55%, transparent);
+            background: linear-gradient(160deg, color-mix(in srgb, var(--cat-a) 10%, white), color-mix(in srgb, var(--cat-b) 7%, white));
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--cat-a) 18%, transparent), 0 10px 24px -12px color-mix(in srgb, var(--cat-a) 60%, transparent);
+        }
+        html.dark .exam-pill-special {
+            background: linear-gradient(160deg, color-mix(in srgb, var(--cat-a) 24%, #0b0f20), color-mix(in srgb, var(--cat-b) 16%, #0b0f20));
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--cat-a) 35%, transparent), 0 10px 26px -12px color-mix(in srgb, var(--cat-a) 70%, transparent);
+        }
+        .exam-pill-special:hover { transform: translateX(2px) translateY(-1px); }
+        .exam-pill-special .exam-icon { position: relative; }
+        .exam-special-star {
+            position: absolute; top: -6px; left: -6px; font-size: 8px; color: #fff;
+            background: linear-gradient(135deg, var(--cat-a), var(--cat-b)); border-radius: 999px;
+            width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 2px #fff; animation: specialPulse 2.2s ease-in-out infinite;
+        }
+        html.dark .exam-special-star { box-shadow: 0 0 0 2px #0b0f20; }
+        @keyframes specialPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        .exam-special-badge {
+            display: inline-block; vertical-align: middle; margin-left: 4px; padding: 1px 6px;
+            font-size: 8px; font-weight: 800; letter-spacing: 0.04em; color: #fff; border-radius: 999px;
+            background: linear-gradient(135deg, var(--cat-a), var(--cat-b));
+        }
+
         .fade-in { animation: fadeIn .25s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -253,23 +284,28 @@
 
         // ===================================================================
         // ANNOUNCEMENT — reusable popup for updates, new features, or notices.
-        // To post a new announcement: just change the 4 values below and commit.
+        // To post a new announcement: just change the values below and commit.
         // - id: change this to any new short text every time (so a dismissed
         //   old announcement doesn't block a new one)
         // - date: format YYYY-MM-DD — the popup shows from this date onward
-        //   (the user's device "today"), until they dismiss it. It no longer
-        //   requires an EXACT date match, since that used to silently skip
-        //   anyone whose clock/timezone was off by even a day, or who simply
-        //   didn't open the app on that one specific day.
+        //   (the user's device "today"), until they dismiss it or endDate passes.
+        //   It no longer requires an EXACT date match, since that used to
+        //   silently skip anyone whose clock/timezone was off by even a day,
+        //   or who simply didn't open the app on that one specific day.
+        // - endDate: format YYYY-MM-DD, inclusive — last day the popup is
+        //   eligible to show (on the user's device "today"). Optional: leave
+        //   it out (or null) for an announcement with no cutoff, shown until
+        //   dismissed. Whichever is later, dismissal or endDate still wins.
         // - title / message: whatever you want to tell users
         // Never duplicate this block for a new announcement — just overwrite
-        // these 4 values each time, so the file size never grows.
+        // these values each time, so the file size never grows.
         // ===================================================================
         const ANNOUNCEMENT = {
-            id: 'update-2026-08-07',
-            date: '2026-08-07',
+            id: 'update-2026-08-08',
+            date: '2026-08-08',
+            endDate: '2026-08-09',
             title: "What's new ✨",
-            message: '• Negative marking now supports 1/3 as well\n• Google Drive backup added — sync across PC, tablet & phone\n• Export settings can now export everything at once\n• Various bug fixes'
+            message: '• New: CGL Maths Tracker — a dedicated pill in the SSC switcher\n• Various bug fixes'
         };
 
         function getLocalDateStr() {
@@ -282,9 +318,12 @@
 
         function maybeShowAnnouncement() {
             try {
-                // Shows any day on/after ANNOUNCEMENT.date, not just that exact date —
-                // dismissal (by id) is what stops it from showing again, not the date.
-                if (getLocalDateStr() < ANNOUNCEMENT.date) return;
+                const today = getLocalDateStr();
+                // Shows any day on/after ANNOUNCEMENT.date, and on/before ANNOUNCEMENT.endDate
+                // (if set) — dismissal (by id) or the endDate cutoff is what stops it from
+                // showing again, not an exact date match.
+                if (today < ANNOUNCEMENT.date) return;
+                if (ANNOUNCEMENT.endDate && today > ANNOUNCEMENT.endDate) return;
                 if (localStorage.getItem('tukka_announcement_seen') === ANNOUNCEMENT.id) return;
                 document.getElementById('announce-title').textContent = ANNOUNCEMENT.title;
                 document.getElementById('announce-message').textContent = ANNOUNCEMENT.message;
@@ -303,6 +342,7 @@
                 name: 'SSC', sub: 'CGL, CHSL, MTS, CPO', icon: 'fa-graduation-cap',
                 colorA: '#ea580c', colorB: '#fb923c',
                 exams: [
+                    { id: 'cgl_maths_tracker', short: 'CGL Maths Tracker', desc: 'Dedicated maths mock & error analytics — for CGL aspirants sharpening quant', icon: 'fa-square-root-variable', special: true, file: 'apps/maths.html', color: { a: '#9333ea', b: '#ec4899' } },
                     { id: 'cgl_tier1', short: 'CGL Tier 1', desc: 'Combined Graduate Level — Tier 1', icon: 'fa-graduation-cap' },
                     { id: 'cgl_tier2', short: 'CGL Tier 2', desc: 'Combined Graduate Level — Tier 2', icon: 'fa-layer-group' },
                     { id: 'chsl_tier1', short: 'CHSL Tier 1', desc: 'Combined Higher Secondary Level — Tier 1', icon: 'fa-school' },
@@ -379,16 +419,19 @@
             const currentExamId = cat.id === activeCategory ? localStorage.getItem(cat.examKey) : null;
             examGridEl.style.setProperty('--cat-a', cat.colorA);
             examGridEl.style.setProperty('--cat-b', cat.colorB);
-            examGridEl.innerHTML = cat.exams.map(ex => `
-                <button class="exam-pill ${ex.id === currentExamId ? 'current' : ''}" style="${catVars(cat)}" onclick="pickExam('${cat.id}', '${ex.id}')">
-                    <span class="exam-icon"><i class="fa-solid ${ex.icon}"></i></span>
+            examGridEl.innerHTML = cat.exams.map(ex => {
+                const vars = ex.color ? `--cat-a:${ex.color.a};--cat-b:${ex.color.b};` : catVars(cat);
+                const specialClass = ex.special ? 'exam-pill-special' : '';
+                return `
+                <button class="exam-pill ${specialClass} ${ex.id === currentExamId ? 'current' : ''}" style="${vars}" onclick="pickExam('${cat.id}', '${ex.id}')">
+                    <span class="exam-icon">${ex.special ? '<i class="fa-solid fa-star exam-special-star"></i>' : ''}<i class="fa-solid ${ex.icon}"></i></span>
                     <span class="exam-text">
-                        <span class="exam-name">${ex.short}</span>
+                        <span class="exam-name">${ex.short}${ex.special ? ' <span class="exam-special-badge">SPECIAL</span>' : ''}</span>
                         <span class="exam-desc">${ex.desc}</span>
                     </span>
                     ${ex.id === currentExamId ? '<span class="current-badge" title="Current"><i class="fa-solid fa-check"></i></span>' : ''}
-                </button>
-            `).join('');
+                </button>`;
+            }).join('');
         }
 
         function selectPickerCategory(catId) {
@@ -399,22 +442,31 @@
 
         function pickExam(catId, examId) {
             const cat = CATEGORIES[catId];
-            const sameCategoryAlreadyLoaded = (catId === activeCategory) && frame.getAttribute('src');
+            const ex = cat.exams.find(e => e.id === examId);
+            // A "special" exam entry can point at its own standalone app file
+            // (e.g. the dedicated CGL Maths Tracker) instead of living inside
+            // the category's main app — it always gets a fresh full load, since
+            // there's no shared switchExam() to hand it off to.
+            const targetFile = (ex && ex.file) ? ex.file : cat.file;
+            const sameCategoryAlreadyLoaded = (catId === activeCategory) && frame.getAttribute('src') && !(ex && ex.file);
 
             localStorage.setItem(LAST_CATEGORY_KEY, catId);
             localStorage.setItem(cat.examKey, examId);
             activeCategory = catId;
 
-            if (sameCategoryAlreadyLoaded) {
+            if (ex && ex.file) {
+                // Standalone dedicated app — always a full load, no in-place switch.
+                frame.src = ex.file + '?ts=' + Date.now();
+            } else if (sameCategoryAlreadyLoaded) {
                 // Same app already running in the iframe — switch instantly in place,
                 // no reload, via the app's own exam-switch function.
                 try {
                     frame.contentWindow.switchExam(examId);
                 } catch (e) {
-                    frame.src = cat.file + '?ts=' + Date.now();
+                    frame.src = targetFile + '?ts=' + Date.now();
                 }
             } else {
-                frame.src = cat.file + '?ts=' + Date.now();
+                frame.src = targetFile + '?ts=' + Date.now();
             }
             closeSwitcher();
         }
@@ -483,7 +535,10 @@
             setTimeout(() => document.getElementById('boot-loader').remove(), 400);
 
             if (activeCategory && CATEGORIES[activeCategory]) {
-                frame.src = CATEGORIES[activeCategory].file;
+                const cat = CATEGORIES[activeCategory];
+                const savedExamId = localStorage.getItem(cat.examKey);
+                const ex = cat.exams.find(e => e.id === savedExamId);
+                frame.src = (ex && ex.file) ? ex.file : cat.file;
             } else {
                 openSwitcher(true);
             }
