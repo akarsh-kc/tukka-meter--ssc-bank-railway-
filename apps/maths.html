@@ -647,10 +647,13 @@
 
             <div class="nav-divider"></div>
 
-            <button onclick="openSyncModal()" id="sync-status-btn" class="nav-pill" title="Cloud Sync Settings">
+            <div onclick="openSyncModal()" id="sync-status-btn" class="nav-pill" title="Cloud Sync Settings" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSyncModal();}">
                 <span class="nav-icon-wrap"><i id="sync-status-icon" class="fa-solid fa-cloud"></i></span>
                 <span id="sync-status-text" class="hidden lg:inline">Sync Off</span>
-            </button>
+                <button type="button" onclick="event.stopPropagation(); pullFromCloud(true, true);" id="sync-now-icon-btn" class="flex absolute right-[0.6rem] top-1/2 -translate-y-1/2 items-center justify-center w-6 h-6 rounded-full bg-brand-600 hover:bg-brand-700 shadow-sm ring-2 ring-white/70 dark:ring-white/10 transition-colors" title="Sync Now">
+                    <i class="fa-solid fa-arrows-rotate text-[10px] text-white"></i>
+                </button>
+            </div>
             <button onclick="showBackupView()" id="nav-backup-btn" class="nav-pill" style="--pill-a:#059669;--pill-b:#f59e0b;--pill-glow:rgba(5,150,105,.5)" title="Backup & Restore your data">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-cloud-arrow-up"></i></span>
                 <span class="hidden lg:inline">Backup &amp; Restore</span>
@@ -1061,29 +1064,28 @@
             </div>
 
             <div class="text-sm leading-relaxed text-slate-700 space-y-4 border-t border-slate-200/70 pt-5">
-                <p>If this dashboard saves you even 10 minutes of panic, I've done my job. Hi, I'm the guy who built this (mostly AI) for one simple reason&mdash;I was too lazy to manually track my own mock analysis on paper. So I made an app instead. </p>
+                <p>Hi, I'm the guy who built this (mostly AI) for one simple reason&mdash;I was too lazy to manually track my own mock analysis on paper. I searched everywhere but couldn't find a tool that did exactly what I needed, so I decided to build one myself. </p>
                 <p>Now stop reading my bio and go attempt a mock, my friend 🏃‍♂️💨</p>
                 <p>Word of advice: Consistency beats intensity every single time. Show up, grind, and trust the process.</p>
-                <p class="font-semibold text-slate-900">Thank you &mdash; Akarsh K C</p>
+                <p class="font-semibold text-slate-900">Thank you &mdash; Akarsh K C </p>
             </div>
 
             <div class="border-t border-slate-200/70 pt-5">
-                <div id="support-banner" class="bg-gradient-to-r from-purple-50 via-brand-50 to-white border border-purple-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div id="support-banner" class="bg-gradient-to-r from-purple-50 via-brand-50 to-white border border-purple-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4">
                     <div class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
                         <i class="fa-solid fa-utensils text-lg"></i>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-slate-900">Do I deserve a samosa for pulling this off overnight? 🌙🥟 </p>
+                    <div class="flex-1 min-w-0 text-center sm:text-left">
+                        <p id="samosa-question" class="text-sm font-bold text-slate-900">Do I deserve a samosa for pulling this off overnight? 🌙🥟 </p>
                         <p class="text-xs text-slate-500 mt-0.5"> Help the dev out 🙃✨</p>
                     </div>
-                    <!-- Mobile: UPI Payment Button -->
-                    <button id="upi-mobile-btn" onclick="initiateUPIPayment()" class="hidden sm:hidden shrink-0 w-full px-4 py-2.5 bg-gradient-to-r from-purple-600 to-brand-600 hover:from-purple-700 hover:to-brand-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-mobile"></i> Send via UPI
-                    </button>
-                    
-                    <!-- Desktop: QR Code & UPI ID -->
-                    <div id="upi-desktop" class="hidden sm:flex sm:shrink-0 flex-col items-center gap-3">
-                        <img id="upi-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=CGL%20Maths%20Analytics&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white">
+                    <!-- QR Code & UPI ID — same on mobile and desktop. The old "Send via UPI" deep-link
+                         button was removed: it silently failed on many phones/browsers (no UPI app
+                         detected, or the tab-switch got flagged as a popup), so the reliable QR + ID
+                         flow is now shown everywhere instead. Wrapped in its own centered card (full-width
+                         on mobile) so it doesn't sit dull/left-stuck under the text on small screens. -->
+                    <div id="upi-desktop" class="flex shrink-0 flex-col items-center gap-3 w-full sm:w-auto bg-white/85 sm:bg-transparent border border-purple-100 sm:border-0 rounded-xl p-3 sm:p-0 shadow-sm sm:shadow-none">
+                        <img id="upi-qr" loading="lazy" decoding="async" src="https://api.qrserver.com/v1/create-qr-code/?size=120&data=upi://pay?pa=tukka-meter@ptaxis&pn=Tukka%20Meter&tn=Support%20overnight%20project" alt="UPI QR Code" class="w-24 h-24 border border-slate-200 rounded-lg p-1 bg-white shrink-0">
                         <div class="text-center">
                             <p class="text-xs text-slate-600 font-semibold mb-1.5">tukka-meter@ptaxis</p>
                             <button onclick="copyUPIId()" class="text-xs px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-all">
@@ -1101,7 +1103,7 @@
                 <p class="text-xs text-slate-500 mt-1 mb-3">Know someone grinding for SSC/Bank exams? Send them this link.</p>
                 <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 pl-4">
                     <i class="fa-brands fa-github text-slate-500 shrink-0"></i>
-                    <input id="github-share-link" type="text" readonly value="https://github.com/akarsh-kc/cgl-mock-tracker"
+                    <input id="github-share-link" type="text" readonly value="https://github.com/akarsh-kc/tukka-meter--ssc-bank-railway-"
                         class="flex-1 min-w-0 bg-transparent text-xs text-slate-600 font-medium truncate outline-none">
                     <button onclick="copyGithubLink()" id="github-copy-btn" class="shrink-0 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5">
                         <i class="fa-solid fa-copy"></i> Copy
@@ -1113,11 +1115,17 @@
                 <div>
                     <p class="text-xs font-bold text-slate-900">App Version</p>
                     <p class="text-[11px] text-slate-500">Works fully offline. Updates only need internet to check.</p>
-                    <p class="text-[11px] text-slate-500 mt-0.5">If SSC/Bank exam patterns change, I update this app to match — tap Check for Updates to grab the latest version.</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">If SSC exam patterns change, I update this app to match — tap Check for Updates to grab the latest version.</p>
                 </div>
-                <button onclick="checkForAppUpdate()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-rotate"></i> Check for Updates
-                </button>
+                <button onclick="checkForAppUpdate()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm"><i class="fa-solid fa-rotate"></i> Check for Updates</button>
+            </div>
+
+            <div class="border-t border-slate-200/70 pt-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold text-slate-900">Feedback</p>
+                    <p class="text-[11px] text-slate-500">Found a bug or have an idea? I'd genuinely love to hear it.</p>
+                </div>
+                <a href="mailto:randomwork.a@gmail.com?subject=Tukka%20Meter%20Maths%20Tracker%20Feedback" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 shadow-sm"><i class="fa-solid fa-envelope"></i> Send Feedback</a>
             </div>
         </div>
     </section>
@@ -1380,6 +1388,48 @@
             </p>
             <div class="flex items-center justify-end pt-2">
                 <button onclick="closeSampleDataNoticeModal()" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg text-xs shadow transition-colors">
+                    Got it
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- First-run notice: points new users to the Subject Wise Weightage tab -->
+    <div id="weightageTipModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center space-x-3 text-brand-600">
+                <div class="p-2 bg-brand-100 rounded-xl">
+                    <i class="fa-solid fa-scale-balanced text-xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">Don't miss this 👀</h3>
+            </div>
+            <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                Please visit <strong>Subject Wise Weightage</strong> — it breaks down, per subject, the max available chances of each question area appearing based on an analysis of 2020 to 2025 papers. It was a genuinely hard task to put together, so make sure you check it out.
+                <br><br>
+                Nav bar → <strong>Subject Wise Weightage</strong>.
+            </p>
+            <div class="flex items-center justify-end pt-2">
+                <button onclick="closeWeightageTipModal()" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg text-xs shadow transition-colors">
+                    Got it
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- First-run notice: shown the first time "Add New Mock" is opened, explains the subtopic question-count figures -->
+    <div id="subtopicMaxNoticeModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <div class="flex items-center space-x-3 text-brand-600">
+                <div class="p-2 bg-brand-100 rounded-xl">
+                    <i class="fa-solid fa-circle-info text-xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-900">Quick note on subtopics</h3>
+            </div>
+            <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                In the subtopic list, I've added the max question possibilities known by me for each topic — use it as a guide while logging your mistakes, not as a hard rule.
+            </p>
+            <div class="flex items-center justify-end pt-2">
+                <button onclick="closeSubtopicMaxNoticeModal()" class="px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg text-xs shadow transition-colors">
                     Got it
                 </button>
             </div>
@@ -4062,6 +4112,8 @@
 
                 addMistakeRow();
                 addMistakeRow();
+
+                setTimeout(maybeShowSubtopicMaxNotice, 350);
             }
 
             const modal = document.getElementById('mockModal');
@@ -4210,6 +4262,33 @@
         function closeSampleDataNoticeModal() {
             localStorage.setItem(SAMPLE_NOTICE_KEY, 'true');
             document.getElementById('sampleDataNoticeModal').classList.add('hidden');
+            // Chain straight into the weightage tip once the sample-data notice is
+            // dismissed, so the two first-run popups never overlap on screen.
+            setTimeout(maybeShowWeightageTip, 300);
+        }
+
+        // ---------- First-run tip: point new (and updating) users at Subject Wise Weightage ----------
+        const WEIGHTAGE_TIP_KEY = 'cgl_maths_weightage_tip_seen';
+        function maybeShowWeightageTip() {
+            if (localStorage.getItem(WEIGHTAGE_TIP_KEY)) return;
+            const sampleModal = document.getElementById('sampleDataNoticeModal');
+            if (sampleModal && !sampleModal.classList.contains('hidden')) return; // sample notice is showing; closeSampleDataNoticeModal() will re-trigger this
+            document.getElementById('weightageTipModal').classList.remove('hidden');
+        }
+        function closeWeightageTipModal() {
+            localStorage.setItem(WEIGHTAGE_TIP_KEY, 'true');
+            document.getElementById('weightageTipModal').classList.add('hidden');
+        }
+
+        // ---------- First-run notice: subtopic max-question figures, shown on first "Add New Mock" ----------
+        const SUBTOPIC_MAX_NOTICE_KEY = 'cgl_maths_addmock_subtopic_notice_seen';
+        function maybeShowSubtopicMaxNotice() {
+            if (localStorage.getItem(SUBTOPIC_MAX_NOTICE_KEY)) return;
+            document.getElementById('subtopicMaxNoticeModal').classList.remove('hidden');
+        }
+        function closeSubtopicMaxNoticeModal() {
+            localStorage.setItem(SUBTOPIC_MAX_NOTICE_KEY, 'true');
+            document.getElementById('subtopicMaxNoticeModal').classList.add('hidden');
         }
 
         function showConfirmModal(title, message, callback) {
@@ -4284,29 +4363,6 @@
         }
 
         // UPI Payment Support
-        function isMobileDevice() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 640;
-        }
-
-        function setupUPISupport() {
-            const mobileBtn = document.getElementById('upi-mobile-btn');
-            const desktopUI = document.getElementById('upi-desktop');
-            
-            if (isMobileDevice()) {
-                if (mobileBtn) mobileBtn.classList.remove('hidden');
-                if (desktopUI) desktopUI.classList.add('hidden');
-            } else {
-                if (mobileBtn) mobileBtn.classList.add('hidden');
-                if (desktopUI) desktopUI.classList.remove('hidden', 'hidden', 'sm:flex');
-                if (desktopUI) desktopUI.classList.add('sm:flex');
-            }
-        }
-
-        function initiateUPIPayment() {
-            const upiLink = 'upi://pay?pa=tukka-meter@ptaxis&pn=CGL%20Maths%20Analytics&am=&tn=Support%20overnight%20project';
-            window.location.href = upiLink;
-        }
-
         function copyUPIId() {
             const upiId = 'tukka-meter@ptaxis';
             const btn = document.querySelector('#upi-desktop button');
@@ -4343,7 +4399,6 @@
             const rail = document.querySelector('.nav-rail');
             if (rail) rail.addEventListener('click', (e) => { if (e.target.closest('button')) closeMobileNav(); });
             document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMobileNav(); });
-            setupUPISupport();
         });
 
         // App Initialization
@@ -4361,10 +4416,8 @@
             if (isDriveConnected() && getDriveClientId()) { await pullFromCloud(false); } else { updateSyncStatus('off'); }
             hideAppLoadingScreen();
             setTimeout(maybeShowSampleDataNotice, 550);
+            setTimeout(maybeShowWeightageTip, 550);
         });
-
-        // Handle window resize for responsive UPI UI
-        window.addEventListener('resize', setupUPISupport);
 
         // Fade out and remove the boot loading screen once the dashboard is ready
         function hideAppLoadingScreen() {
