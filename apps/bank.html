@@ -16,6 +16,13 @@
     <link rel="icon" href="../icon-192.png" type="image/png">
     <link rel="apple-touch-icon" href="../icon-192.png">
 
+    <!-- Warm up connections to third-party hosts as early as possible -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <!-- Splash icon is the first thing painted — fetch it immediately, don't wait in the parse queue -->
+    <link rel="preload" as="image" href="../icon-192.png" fetchpriority="high">
+
     <script>
         (function () {
             try {
@@ -58,13 +65,20 @@
         }
     </script>
 
+    <!-- Google Fonts (loaded non-blocking: preload + swap to 'stylesheet' once fetched) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js CDN (deferred — downloads in parallel with parsing, runs before DOMContentLoaded so it's still ready when the app initializes) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- FontAwesome CDN (loaded non-blocking — icons pop in a beat after first paint, which the splash screen already covers) -->
+    <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
     <style>
         body {
@@ -1755,7 +1769,7 @@
             document.documentElement.classList.toggle('dark');
             localStorage.setItem(DARK_KEY, isDarkMode() ? 'true' : 'false');
             applyDarkModeIcon();
-            renderDashboard();
+            refreshChartThemeOnly();
             // Tell the Tukka Meter hub shell (parent window) to mirror this theme —
             // the shell's own switcher modal lives outside this iframe, so it won't
             // pick up the change on its own otherwise.
@@ -2022,6 +2036,17 @@
                     ch.options.plugins.legend.labels.color = textColor;
                 }
             });
+        }
+
+        // Repaints just the chart colors (axes, grid, legend, radar) for a theme
+        // toggle, without recomputing any chart data — the data hasn't changed,
+        // only the colors have, so skip the expensive filter/reduce work in
+        // updateCharts(). Everything else on the dashboard (cards, calendar,
+        // resolve list) already re-themes itself for free via Tailwind's
+        // dark: classes the instant the .dark class flips, so no JS needed there.
+        function refreshChartThemeOnly() {
+            refreshChartTheme();
+            Object.values(chartInstances).forEach(ch => { try { ch.update(); } catch (e) {} });
         }
 
         function updateCharts() {

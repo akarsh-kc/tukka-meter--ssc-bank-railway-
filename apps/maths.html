@@ -1767,7 +1767,16 @@
             const isDark = html.classList.toggle('dark');
             try { localStorage.setItem('tukka_dark_mode', isDark ? 'true' : 'false'); } catch (e) {}
             applyDarkModeIcon();
-            renderDashboard();
+            // Only the canvas charts need JS to repaint on a theme flip — everything
+            // else (KPI cards, resolve list, calendar, weakness matrix, mock list,
+            // individual mock view) already re-themes itself for free the instant
+            // .dark toggles, via Tailwind's dark: classes. Re-running those DOM
+            // rebuilds and the rule engine here would just redo work that produces
+            // an identical result, so skip straight to the charts.
+            renderTrendChart();
+            renderAttemptChart();
+            renderTopicBarChart();
+            renderReasonChart();
             // Tell the Tukka Meter hub shell (parent window) to mirror this theme —
             // the shell's own switcher modal lives outside this iframe, so it won't
             // pick up the change on its own otherwise.
