@@ -7,7 +7,7 @@
 
     <!-- PWA setup -->
     <link rel="manifest" href="../manifest.json">
-    <meta name="theme-color" content="#5b4fe0">
+    <meta name="theme-color" content="#4f46e5">
     <meta name="color-scheme" content="light dark">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -28,29 +28,6 @@
                 if (localStorage.getItem('tukka_dark_mode') === 'true') {
                     document.documentElement.classList.add('dark');
                 }
-                // Pre-apply the saved theme color before first paint (mirrors the
-                // dark-mode approach above) so there's no flash of the default
-                // violet before switching to whatever accent color was chosen.
-                var THEME_KEYS_EARLY = ['50','100','200','300','400','500','600','700','800','900'];
-                var THEME_PRESETS_EARLY = {
-                    violet: {'50':'241 238 254','100':'227 221 253','200':'199 187 251','300':'171 153 249','400':'143 129 248','500':'123 110 246','600':'91 79 224','700':'74 63 196','800':'58 50 160','900':'43 38 120','accent2':'110 193 255'},
-                    blue: {'50':'238 244 255','100':'220 233 255','200':'185 211 255','300':'143 184 255','400':'106 160 255','500':'79 134 240','600':'61 111 217','700':'49 89 184','800':'39 71 147','900':'28 52 104','accent2':'155 144 248'},
-                    green: {'50':'236 253 246','100':'211 248 234','200':'166 240 212','300':'114 226 186','400':'63 207 158','500':'31 181 131','600':'20 154 108','700':'16 125 88','800':'12 97 70','900':'9 71 52','accent2':'110 225 208'},
-                    rose: {'50':'254 241 246','100':'253 227 238','200':'250 194 220','300':'247 156 196','400':'242 121 173','500':'232 90 151','600':'204 67 128','700':'168 53 104','800':'131 41 81','900':'94 30 59','accent2':'185 138 245'},
-                    amber: {'50':'255 247 236','100':'255 236 209','200':'255 214 163','300':'255 188 112','400':'255 161 71','500':'245 135 43','600':'214 110 28','700':'178 87 23','800':'138 67 21','900':'98 48 20','accent2':'255 157 122'},
-                    graphite: {'50':'244 244 246','100':'231 231 236','200':'207 208 216','300':'179 181 192','400':'150 152 167','500':'124 126 141','600':'101 102 122','700':'80 82 102','800':'60 61 79','900':'42 43 58','accent2':'143 146 168'},
-                    pink: {'50':'255 238 248','100':'255 214 238','200':'255 176 224','300':'255 130 207','400':'250 85 187','500':'236 42 160','600':'200 26 132','700':'161 21 105','800':'124 17 82','900':'87 12 58','accent2':'207 138 255'},
-                    red: {'50':'255 241 240','100':'255 222 219','200':'255 184 176','300':'255 138 125','400':'250 92 76','500':'234 51 35','600':'200 31 18','700':'161 24 16','800':'124 19 14','900':'86 13 10','accent2':'255 148 102'},
-                    cyan: {'50':'236 254 255','100':'207 250 254','200':'162 240 250','300':'103 226 240','400':'34 199 224','500':'10 168 194','600':'8 136 160','700':'10 109 130','800':'14 85 102','900':'15 63 77','accent2':'127 184 255'}
-                };
-                var savedTheme = localStorage.getItem('tukka_theme_color');
-                var themePreset = THEME_PRESETS_EARLY[savedTheme] || THEME_PRESETS_EARLY.violet;
-                if (savedTheme && themePreset !== THEME_PRESETS_EARLY.violet) {
-                    THEME_KEYS_EARLY.forEach(function (stop) {
-                        document.documentElement.style.setProperty('--brand-' + stop, themePreset[stop]);
-                    });
-                    document.documentElement.style.setProperty('--brand-accent2', themePreset.accent2);
-                }
             } catch (e) {}
         })();
     </script>
@@ -63,24 +40,18 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: 'rgb(var(--brand-50) / <alpha-value>)', 100: 'rgb(var(--brand-100) / <alpha-value>)',
-                            200: 'rgb(var(--brand-200) / <alpha-value>)', 300: 'rgb(var(--brand-300) / <alpha-value>)',
-                            400: 'rgb(var(--brand-400) / <alpha-value>)', 500: 'rgb(var(--brand-500) / <alpha-value>)',
-                            600: 'rgb(var(--brand-600) / <alpha-value>)', 700: 'rgb(var(--brand-700) / <alpha-value>)',
-                            800: 'rgb(var(--brand-800) / <alpha-value>)', 900: 'rgb(var(--brand-900) / <alpha-value>)',
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#2e2a6b',
                         },
-                        accent: { amber: '#f59e0b', rose: '#fb3d68', emerald: '#10d9a3', purple: 'rgb(var(--brand-300) / <alpha-value>)', cyan: 'rgb(var(--brand-accent2) / <alpha-value>)' }
+                        accent: { amber: '#f59e0b', rose: '#fb3d68', emerald: '#10d9a3', purple: '#a855f7', cyan: '#22d3ee' }
                     },
                     fontFamily: {
-                        sans: ['Roboto', 'Google Sans Text', 'system-ui', 'sans-serif'],
-                        display: ['Roboto', 'Google Sans Text', 'system-ui', 'sans-serif']
-                    },
-                    borderRadius: {
-                        lg: '14px', xl: '18px', '2xl': '24px', '3xl': '30px', '4xl': '36px'
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif']
                     },
                     boxShadow: {
-                        glow: '0 1px 2px rgba(28,20,60,0.06), 0 6px 20px -6px rgba(123,110,246,0.35)',
-                        'glow-lg': '0 2px 8px rgba(28,20,60,0.08), 0 16px 40px -10px rgba(123,110,246,0.40)',
+                        glow: '0 0 0 1px rgba(99,102,241,0.15), 0 8px 24px -8px rgba(99,102,241,0.35)',
+                        'glow-lg': '0 0 40px -8px rgba(99,102,241,0.45)',
                     }
                 }
             }
@@ -89,62 +60,26 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root {
-            --brand-50: 241 238 254; --brand-100: 227 221 253; --brand-200: 199 187 251; --brand-300: 171 153 249; --brand-400: 143 129 248; --brand-500: 123 110 246; --brand-600: 91 79 224; --brand-700: 74 63 196; --brand-800: 58 50 160; --brand-900: 43 38 120;
-            --brand-accent2: 110 193 255;
-        }
-        .nav-pill[data-tone="1"] { --pill-a: rgb(var(--brand-500)); --pill-b: rgb(var(--brand-accent2)); }
-        .nav-pill[data-tone="2"] { --pill-a: rgb(var(--brand-900)); --pill-b: rgb(var(--brand-700)); }
-        .nav-pill[data-tone="3"] { --pill-a: rgb(var(--brand-700)); --pill-b: rgb(var(--brand-400)); }
-        .nav-pill[data-tone="4"] { --pill-a: rgb(var(--brand-400)); --pill-b: rgb(var(--brand-200)); }
-        .nav-pill[data-tone="5"] { --pill-a: rgb(var(--brand-600)); --pill-b: rgb(var(--brand-accent2)); }
-        .nav-pill[data-tone="6"] { --pill-a: rgb(var(--brand-600)); --pill-b: rgb(var(--brand-300)); }
-        .nav-pill[data-tone="7"] { --pill-a: rgb(var(--brand-800)); --pill-b: rgb(var(--brand-500)); }
-        .nav-pill[data-tone="8"] { --pill-a: rgb(var(--brand-600)); --pill-b: rgb(var(--brand-accent2)); }
-        .nav-pill[data-tone="9"] { --pill-a: rgb(var(--brand-700)); --pill-b: rgb(var(--brand-accent2)); }
-
-        /* ---- Theme color picker (Material You style accent chooser) ---- */
-        #theme-picker-pop {
-            position: absolute; z-index: 70; display: none; padding: 14px;
-            background: #fff; border-radius: 1.25rem; box-shadow: 0 0 0 1px rgba(28,20,60,0.08), 0 20px 50px -18px rgba(28,20,60,0.35);
-            bottom: calc(100% + 8px); right: 0; width: 200px;
-        }
-        html.dark #theme-picker-pop { background: #231e30; box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 20px 50px -18px rgba(0,0,0,0.6); }
-        #theme-picker-pop.open { display: block; }
-        #theme-picker-pop .tp-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #94a3b8; margin-bottom: 10px; }
-        #theme-picker-pop .tp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .tp-swatch {
-            width: 100%; aspect-ratio: 1; border-radius: 999px; cursor: pointer; border: 2px solid transparent;
-            display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px;
-            transition: transform .15s ease, border-color .15s ease; padding: 0;
-        }
-        .tp-swatch:active { transform: scale(0.88); }
-        .tp-swatch.active { border-color: #1e293b; }
-        html.dark .tp-swatch.active { border-color: #f1f5f9; }
-        #theme-picker-row { position: relative; }
-
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f7f4fc;
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6fb;
             background-image:
-                radial-gradient(circle at 15% 0%, rgb(var(--brand-500) / 0.10), transparent 40%),
-                radial-gradient(circle at 85% 8%, rgb(var(--brand-accent2) / 0.10), transparent 38%),
-                linear-gradient(rgb(var(--brand-500) / 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgb(var(--brand-500) / 0.05) 1px, transparent 1px);
+                radial-gradient(circle at 15% 0%, rgba(99,102,241,0.10), transparent 40%),
+                radial-gradient(circle at 85% 8%, rgba(34,211,238,0.10), transparent 38%),
+                linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
             background-size: auto, auto, 42px 42px, 42px 42px;
             background-attachment: fixed;
         }
-        h1, h2, h3, h4, .font-display { font-family: 'Roboto', sans-serif; letter-spacing: -0.01em; }
-        .font-mono-tech { font-family: 'Roboto Mono', monospace; }
+        h1, h2, h3, h4, .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; }
+        .font-mono-tech { font-family: 'JetBrains Mono', monospace; }
 
         /* Disable casual text selection/copying app-wide (long-press, drag-select,
            triple-click) while keeping form fields normally editable. This is a UX
@@ -165,8 +100,8 @@
 
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgb(var(--brand-400)), rgb(var(--brand-accent2))); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgb(var(--brand-500)), #06b6d4); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #818cf8, #22d3ee); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #6366f1, #06b6d4); }
 
         .timeline-line::before {
             content: '';
@@ -175,20 +110,20 @@
             bottom: 8px;
             left: 7px;
             width: 2px;
-            background: linear-gradient(180deg, rgb(var(--brand-500)), rgb(var(--brand-accent2)));
+            background: linear-gradient(180deg, #6366f1, #22d3ee);
             opacity: 0.35;
             z-index: 0;
         }
-        html.dark .timeline-line::before { background: linear-gradient(180deg, rgb(var(--brand-400)), rgb(var(--brand-accent2))); opacity: 0.5; }
+        html.dark .timeline-line::before { background: linear-gradient(180deg, #818cf8, #22d3ee); opacity: 0.5; }
 
         #resolve-timeline-container {
             scrollbar-width: thin;
-            scrollbar-color: rgb(var(--brand-400)) transparent;
+            scrollbar-color: #818cf8 transparent;
         }
         #resolve-timeline-container::-webkit-scrollbar { width: 6px; }
         #resolve-timeline-container::-webkit-scrollbar-track { background: rgba(148,163,184,0.08); border-radius: 999px; }
-        #resolve-timeline-container::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgb(var(--brand-400)), rgb(var(--brand-accent2))); border-radius: 999px; }
-        #resolve-timeline-container::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgb(var(--brand-500)), #06b6d4); }
+        #resolve-timeline-container::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #818cf8, #22d3ee); border-radius: 999px; }
+        #resolve-timeline-container::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #6366f1, #06b6d4); }
         html.dark #resolve-timeline-container::-webkit-scrollbar-track { background: rgba(148,163,184,0.12); }
 
         .resolve-item-card {
@@ -196,7 +131,7 @@
             box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04), 0 10px 22px -12px rgba(30, 41, 59, 0.18);
         }
         html.dark .resolve-item-card {
-            background: #251f33;
+            background: #151f32;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 10px 20px -10px rgba(0, 0, 0, 0.5);
         }
 
@@ -215,18 +150,18 @@
         }
         .glass-panel::before {
             content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
-            background: linear-gradient(135deg, rgb(var(--brand-500) / 0.35), rgb(var(--brand-accent2) / 0.05) 35%, rgb(var(--brand-300) / 0.25) 100%);
+            background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(34,211,238,0.05) 35%, rgba(168,85,247,0.25) 100%);
             -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
             -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0.55; pointer-events: none;
         }
         .glass-panel:hover {
-            box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05), 0 20px 40px -14px rgb(var(--brand-600) / 0.22);
-            transform: translateY(-2px); border-color: rgb(var(--brand-500) / 0.35);
+            box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05), 0 20px 40px -14px rgba(79, 70, 229, 0.22);
+            transform: translateY(-2px); border-color: rgba(99, 102, 241, 0.35);
         }
         @media (max-width: 768px) { .glass-panel:hover { transform: none; } }
 
         .gradient-flow-bg {
-            background: linear-gradient(270deg, rgb(var(--brand-500)), rgb(var(--brand-accent2)), rgb(var(--brand-300)), rgb(var(--brand-500)));
+            background: linear-gradient(270deg, #6366f1, #22d3ee, #a855f7, #6366f1);
             background-size: 300% 300%;
             background-position: 35% 50%;
         }
@@ -237,36 +172,36 @@
             backdrop-filter: blur(14px) saturate(150%);
             -webkit-backdrop-filter: blur(14px) saturate(150%);
             border: 1px solid rgba(148, 163, 184, 0.22);
-            box-shadow: 0 1px 2px 0 rgba(15,23,42,0.04), 0 24px 48px -20px rgb(var(--brand-600) / 0.22), 0 8px 20px -10px rgba(30,41,59,0.10);
+            box-shadow: 0 1px 2px 0 rgba(15,23,42,0.04), 0 24px 48px -20px rgba(79,70,229,0.22), 0 8px 20px -10px rgba(30,41,59,0.10);
             transition: background .4s ease, border-color .4s ease, box-shadow .4s ease;
         }
         html.dark .app-sidebar {
             background: linear-gradient(180deg, rgba(9, 13, 28, 0.96) 0%, rgba(7, 10, 22, 0.98) 100%);
-            border-color: rgb(var(--brand-500) / 0.18);
-            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4), 0 24px 48px -18px rgba(0,0,0,0.6), 0 0 30px -12px rgb(var(--brand-500) / 0.25);
+            border-color: rgba(99, 102, 241, 0.18);
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4), 0 24px 48px -18px rgba(0,0,0,0.6), 0 0 30px -12px rgba(99,102,241,0.25);
         }
 
         .nav-rail { position: relative; }
         .nav-pill {
             position: relative; width: 100%; display: flex; align-items: center; gap: 0.7rem;
-            padding: 0.65rem 0.8rem; border-radius: 1.1rem; font-size: 0.72rem; font-weight: 600;
-            letter-spacing: 0.01em; color: #3b4a63; background: rgb(var(--brand-500) / 0.07);
-            border: 1px solid rgb(var(--brand-500) / 0.14); cursor: pointer; overflow: hidden; isolation: isolate;
+            padding: 0.65rem 0.8rem; border-radius: 0.85rem; font-size: 0.72rem; font-weight: 600;
+            letter-spacing: 0.01em; color: #3b4a63; background: rgba(99, 102, 241, 0.07);
+            border: 1px solid rgba(99, 102, 241, 0.14); cursor: pointer; overflow: hidden; isolation: isolate;
             will-change: transform;
             transition: background .45s ease, border-color .45s ease, color .4s ease, transform .38s cubic-bezier(.34,1.2,.64,1), box-shadow .45s ease;
         }
         .nav-pill .nav-icon-wrap {
-            width: 1.6rem; height: 1.6rem; border-radius: 0.65rem; flex-shrink: 0;
+            width: 1.6rem; height: 1.6rem; border-radius: 0.5rem; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            background: rgb(var(--brand-500) / 0.14); color: var(--pill-a, rgb(var(--brand-500)));
+            background: rgba(99, 102, 241, 0.14); color: var(--pill-a, #6366f1);
             transition: background .45s ease, color .4s ease, transform .4s cubic-bezier(.34,1.2,.64,1);
         }
-        .nav-pill:hover { background: rgb(var(--brand-500) / 0.14); border-color: rgb(var(--brand-500) / 0.32); }
+        .nav-pill:hover { background: rgba(99, 102, 241, 0.14); border-color: rgba(99,102,241,0.32); }
         .nav-pill:active { transform: scale(0.97); }
         .nav-pill.nav-active {
-            color: #fff; background: linear-gradient(120deg, var(--pill-a, rgb(var(--brand-500))), var(--pill-b, rgb(var(--brand-accent2))));
+            color: #fff; background: linear-gradient(120deg, var(--pill-a, #6366f1), var(--pill-b, #22d3ee));
             border-color: transparent;
-            box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--pill-a, rgb(var(--brand-500))) 65%, transparent), 0 0 0 1px rgba(255,255,255,0.08) inset;
+            box-shadow: 0 10px 24px -10px var(--pill-glow, rgba(99,102,241,.65)), 0 0 0 1px rgba(255,255,255,0.08) inset;
         }
         .nav-pill.nav-active .nav-icon-wrap { background: rgba(255,255,255,0.22); color: #fff; }
         .nav-pill.nav-active .nav-active-dot {
@@ -274,35 +209,35 @@
             width: 6px; height: 6px; border-radius: 999px; background: #fff; box-shadow: 0 0 6px 1px rgba(255,255,255,0.8);
         }
         .nav-cta {
-            background: linear-gradient(120deg, rgb(var(--brand-500)), rgb(var(--brand-600)) 45%, rgb(var(--brand-accent2))); background-size: 200% auto;
-            box-shadow: 0 10px 24px -10px rgb(var(--brand-600) / 0.55);
+            background: linear-gradient(120deg, #6366f1, #4f46e5 45%, #22d3ee); background-size: 200% auto;
+            box-shadow: 0 10px 24px -10px rgba(79,70,229,0.55);
         }
-        .nav-cta:hover { background-position: right center; transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgb(var(--brand-600) / 0.7); }
+        .nav-cta:hover { background-position: right center; transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(79,70,229,0.7); }
         .nav-cta:active { transform: translateY(0) scale(0.97); }
         .nav-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(148,163,184,0.35), transparent); margin: 0.5rem 0.25rem; }
-        html.dark .nav-divider { background: linear-gradient(90deg, transparent, rgb(var(--brand-500) / 0.3), transparent); }
-        html.dark .nav-pill { color: #a6b3cc; background: rgb(var(--brand-500) / 0.09); border-color: rgb(var(--brand-500) / 0.18); }
-        html.dark .nav-pill .nav-icon-wrap { background: rgb(var(--brand-500) / 0.16); }
-        html.dark .nav-pill:hover { background: rgb(var(--brand-500) / 0.12); border-color: rgb(var(--brand-500) / 0.4); color: #e6ebf5; }
-        html.dark .nav-pill.nav-active { box-shadow: 0 10px 28px -8px color-mix(in srgb, var(--pill-a, rgb(var(--brand-500))) 55%, transparent), 0 0 0 1px rgba(255,255,255,0.06) inset; }
+        html.dark .nav-divider { background: linear-gradient(90deg, transparent, rgba(99,102,241,0.3), transparent); }
+        html.dark .nav-pill { color: #a6b3cc; background: rgba(99, 102, 241, 0.09); border-color: rgba(99, 102, 241, 0.18); }
+        html.dark .nav-pill .nav-icon-wrap { background: rgba(99, 102, 241, 0.16); }
+        html.dark .nav-pill:hover { background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.4); color: #e6ebf5; }
+        html.dark .nav-pill.nav-active { box-shadow: 0 10px 28px -8px var(--pill-glow, rgba(99,102,241,.55)), 0 0 0 1px rgba(255,255,255,0.06) inset; }
 
         html { color-scheme: light; }
         html.dark { color-scheme: dark; }
         html.dark body {
             background-color: #060a17; color: #e2e8f0;
             background-image:
-                radial-gradient(circle at 12% 0%, rgb(var(--brand-500) / 0.20), transparent 42%),
-                radial-gradient(circle at 88% 12%, rgb(var(--brand-accent2) / 0.16), transparent 40%),
-                radial-gradient(circle at 50% 100%, rgb(var(--brand-300) / 0.12), transparent 45%),
+                radial-gradient(circle at 12% 0%, rgba(99,102,241,0.20), transparent 42%),
+                radial-gradient(circle at 88% 12%, rgba(34,211,238,0.16), transparent 40%),
+                radial-gradient(circle at 50% 100%, rgba(168,85,247,0.12), transparent 45%),
                 linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(148,163,184,0.06) 1px, transparent 1px);
             background-size: auto, auto, auto, 42px 42px, 42px 42px;
         }
         html.dark ::-webkit-scrollbar-track { background: #0a0f1e; }
-        html.dark ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgb(var(--brand-500)), #3e6fd9); }
-        html.dark ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgb(var(--brand-400)), rgb(var(--brand-accent2))); }
+        html.dark ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #6366f1, #0891b2); }
+        html.dark ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8, #22d3ee); }
         html.dark .glass-panel {
-            background: rgba(15, 21, 40, 0.92); border-color: rgb(var(--brand-500) / 0.18);
+            background: rgba(15, 21, 40, 0.92); border-color: rgba(99, 102, 241, 0.18);
             backdrop-filter: blur(11px) saturate(140%); -webkit-backdrop-filter: blur(11px) saturate(140%);
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.4), 0 12px 32px -14px rgba(0, 0, 0, 0.55);
         }
@@ -311,10 +246,10 @@
         }
         html.dark .glass-panel::before { opacity: 0.9; }
         html.dark .glass-panel:hover {
-            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4), 0 24px 48px -16px rgb(var(--brand-500) / 0.35); border-color: rgb(var(--brand-500) / 0.5);
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.4), 0 24px 48px -16px rgba(99, 102, 241, 0.35); border-color: rgba(99, 102, 241, 0.5);
         }
-        html.dark aside { background-color: rgba(6, 10, 23, 0.85) !important; border-color: rgb(var(--brand-500) / 0.18) !important; }
-        html.dark [class~="bg-white"] { background-color: #251f33 !important; }
+        html.dark aside { background-color: rgba(6, 10, 23, 0.85) !important; border-color: rgba(99,102,241,0.18) !important; }
+        html.dark [class~="bg-white"] { background-color: #151f32 !important; }
         html.dark [class~="bg-slate-50"] { background-color: #0f172a !important; }
         html.dark [class~="bg-slate-50/70"] { background-color: #0f172a !important; }
         html.dark [class~="bg-slate-50/80"] { background-color: #0f172a !important; }
@@ -339,21 +274,21 @@
         html.dark [class~="divide-slate-200"] > * + * { border-color: #1e293b !important; }
         html.dark [class*="hover:bg-slate-"]:hover { background-color: #1e293b !important; }
         html.dark [class~="hover:bg-white"]:hover { background-color: #1e293b !important; }
-        html.dark [class~="bg-brand-50"] { background-color: rgba(90,126,240, 0.15) !important; }
-        html.dark [class~="bg-brand-100"] { background-color: rgba(90,126,240, 0.18) !important; }
+        html.dark [class~="bg-brand-50"] { background-color: rgba(59, 130, 246, 0.15) !important; }
+        html.dark [class~="bg-brand-100"] { background-color: rgba(59, 130, 246, 0.18) !important; }
         html.dark [class~="bg-emerald-50"] { background-color: rgba(16, 185, 129, 0.15) !important; }
         html.dark [class~="bg-emerald-100"] { background-color: rgba(16, 185, 129, 0.18) !important; }
         html.dark [class~="bg-rose-50"] { background-color: rgba(244, 63, 94, 0.15) !important; }
         html.dark [class~="bg-rose-100"] { background-color: rgba(244, 63, 94, 0.18) !important; }
         html.dark [class~="bg-amber-50"] { background-color: rgba(245, 158, 11, 0.15) !important; }
         html.dark [class~="bg-amber-100"] { background-color: rgba(245, 158, 11, 0.18) !important; }
-        html.dark [class~="bg-purple-100"] { background-color: rgb(var(--brand-700) / 0.18) !important; }
-        html.dark [class~="bg-cyan-100"] { background-color: rgba(62,111,217, 0.18) !important; }
-        html.dark [class~="bg-blue-100"] { background-color: rgba(90,126,240, 0.18) !important; }
-        html.dark [class~="bg-indigo-50/40"] { background-color: rgb(var(--brand-600) / 0.10) !important; }
-        html.dark [class~="border-indigo-100"] { border-color: rgb(var(--brand-500) / 0.25) !important; }
-        html.dark [class~="border-indigo-200"] { border-color: rgb(var(--brand-500) / 0.3) !important; }
-        html.dark [class~="text-brand-600"] { color: #7fa6ff !important; }
+        html.dark [class~="bg-purple-100"] { background-color: rgba(124, 58, 237, 0.18) !important; }
+        html.dark [class~="bg-cyan-100"] { background-color: rgba(8, 145, 178, 0.18) !important; }
+        html.dark [class~="bg-blue-100"] { background-color: rgba(59, 130, 246, 0.18) !important; }
+        html.dark [class~="bg-indigo-50/40"] { background-color: rgba(79,70,229,0.10) !important; }
+        html.dark [class~="border-indigo-100"] { border-color: rgba(99,102,241,0.25) !important; }
+        html.dark [class~="border-indigo-200"] { border-color: rgba(99,102,241,0.3) !important; }
+        html.dark [class~="text-brand-600"] { color: #60a5fa !important; }
         html.dark [class~="text-brand-700"] { color: #93c5fd !important; }
         html.dark [class~="text-brand-800"] { color: #bfdbfe !important; }
         html.dark [class~="text-emerald-600"] { color: #34d399 !important; }
@@ -367,15 +302,15 @@
         html.dark [class~="text-purple-600"] { color: #c084fc !important; }
         html.dark [class~="text-purple-700"] { color: #d8b4fe !important; }
         html.dark [class~="text-indigo-600"] { color: #a5b4fc !important; }
-        html.dark [class~="text-indigo-800"] { color: rgb(var(--brand-200)) !important; }
-        html.dark [class~="text-indigo-900"] { color: rgb(var(--brand-100)) !important; }
-        html.dark [class~="border-brand-200"] { border-color: rgb(var(--brand-400) / 0.35) !important; }
+        html.dark [class~="text-indigo-800"] { color: #c7d2fe !important; }
+        html.dark [class~="text-indigo-900"] { color: #e0e7ff !important; }
+        html.dark [class~="border-brand-200"] { border-color: rgba(59, 130, 246, 0.35) !important; }
         html.dark [class~="border-emerald-200"] { border-color: rgba(16, 185, 129, 0.35) !important; }
         html.dark [class~="border-rose-200"] { border-color: rgba(244, 63, 94, 0.35) !important; }
         html.dark [class~="border-amber-200"] { border-color: rgba(245, 158, 11, 0.35) !important; }
-        html.dark [class~="border-purple-200"] { border-color: rgb(var(--brand-700) / 0.35) !important; }
-        html.dark #insights-banner { background: linear-gradient(to right, rgba(79,116,224, 0.14), rgb(var(--brand-600) / 0.08), transparent) !important; }
-        html.dark #dark-mode-toggle { background-color: rgb(var(--brand-600)) !important; }
+        html.dark [class~="border-purple-200"] { border-color: rgba(124, 58, 237, 0.35) !important; }
+        html.dark #insights-banner { background: linear-gradient(to right, rgba(37, 99, 235, 0.14), rgba(79, 70, 229, 0.08), transparent) !important; }
+        html.dark #dark-mode-toggle { background-color: #4f46e5 !important; }
         html.dark #dark-mode-knob { transform: translateX(20px); }
         /* --- Dark mode fixes: dynamic subject-color classes (cards use bg-${color}-50/40, border-${color}-100, text-${color}-500/700/800) and other classes the rules above didn't cover --- */
         html.dark [class~="bg-amber-50/40"] { background-color: rgba(245, 158, 11, 0.12) !important; }
@@ -383,19 +318,19 @@
         html.dark [class~="text-amber-500"] { color: #fbbf24 !important; }
         html.dark [class~="text-amber-800"] { color: #fde68a !important; }
 
-        html.dark [class~="bg-blue-50"] { background-color: rgba(79,116,224, 0.15) !important; }
-        html.dark [class~="bg-blue-50/40"] { background-color: rgba(79,116,224, 0.12) !important; }
-        html.dark [class~="border-blue-100"] { border-color: rgba(79,116,224, 0.25) !important; }
-        html.dark [class~="text-blue-500"] { color: #7fa6ff !important; }
-        html.dark [class~="text-blue-600"] { color: #7fa6ff !important; }
+        html.dark [class~="bg-blue-50"] { background-color: rgba(37, 99, 235, 0.15) !important; }
+        html.dark [class~="bg-blue-50/40"] { background-color: rgba(37, 99, 235, 0.12) !important; }
+        html.dark [class~="border-blue-100"] { border-color: rgba(37, 99, 235, 0.25) !important; }
+        html.dark [class~="text-blue-500"] { color: #60a5fa !important; }
+        html.dark [class~="text-blue-600"] { color: #60a5fa !important; }
         html.dark [class~="text-blue-700"] { color: #93c5fd !important; }
         html.dark [class~="text-blue-800"] { color: #bfdbfe !important; }
 
-        html.dark [class~="bg-cyan-50"] { background-color: rgba(62,111,217, 0.15) !important; }
-        html.dark [class~="bg-cyan-50/40"] { background-color: rgba(62,111,217, 0.12) !important; }
-        html.dark [class~="border-cyan-100"] { border-color: rgba(62,111,217, 0.25) !important; }
-        html.dark [class~="text-cyan-500"] { color: rgb(var(--brand-accent2)) !important; }
-        html.dark [class~="text-cyan-600"] { color: rgb(var(--brand-accent2)) !important; }
+        html.dark [class~="bg-cyan-50"] { background-color: rgba(8, 145, 178, 0.15) !important; }
+        html.dark [class~="bg-cyan-50/40"] { background-color: rgba(8, 145, 178, 0.12) !important; }
+        html.dark [class~="border-cyan-100"] { border-color: rgba(8, 145, 178, 0.25) !important; }
+        html.dark [class~="text-cyan-500"] { color: #22d3ee !important; }
+        html.dark [class~="text-cyan-600"] { color: #22d3ee !important; }
         html.dark [class~="text-cyan-700"] { color: #67e8f9 !important; }
         html.dark [class~="text-cyan-800"] { color: #a5f3fc !important; }
 
@@ -403,12 +338,12 @@
         html.dark [class~="border-emerald-100"] { border-color: rgba(16, 185, 129, 0.25) !important; }
         html.dark [class~="text-emerald-500"] { color: #34d399 !important; }
 
-        html.dark [class~="bg-indigo-50"] { background-color: rgb(var(--brand-500) / 0.15) !important; }
-        html.dark [class~="text-indigo-500"] { color: rgb(var(--brand-400)) !important; }
+        html.dark [class~="bg-indigo-50"] { background-color: rgba(99, 102, 241, 0.15) !important; }
+        html.dark [class~="text-indigo-500"] { color: #818cf8 !important; }
         html.dark [class~="text-indigo-700"] { color: #a5b4fc !important; }
 
-        html.dark [class~="bg-purple-50/40"] { background-color: rgb(var(--brand-700) / 0.12) !important; }
-        html.dark [class~="border-purple-100"] { border-color: rgb(var(--brand-700) / 0.25) !important; }
+        html.dark [class~="bg-purple-50/40"] { background-color: rgba(124, 58, 237, 0.12) !important; }
+        html.dark [class~="border-purple-100"] { border-color: rgba(124, 58, 237, 0.25) !important; }
         html.dark [class~="text-purple-500"] { color: #c084fc !important; }
         html.dark [class~="text-purple-800"] { color: #e9d5ff !important; }
 
@@ -424,14 +359,14 @@
         html.dark [class~="text-teal-700"] { color: #5eead4 !important; }
         html.dark [class~="text-teal-800"] { color: #99f6e4 !important; }
 
-        html.dark [class~="bg-brand-200"] { background-color: rgba(90,126,240, 0.2) !important; }
-        html.dark [class~="border-brand-100"] { border-color: rgba(90,126,240, 0.25) !important; }
+        html.dark [class~="bg-brand-200"] { background-color: rgba(59, 130, 246, 0.2) !important; }
+        html.dark [class~="border-brand-100"] { border-color: rgba(59, 130, 246, 0.25) !important; }
         html.dark [class~="border-slate-200/70"] { border-color: rgba(38, 52, 74, 0.7) !important; }
         html.dark [class~="bg-white/70"] { background-color: rgba(21, 31, 50, 0.7) !important; }
 
         /* "Do I deserve a samosa" support banner used an unguarded light gradient (from-purple-50 via-brand-50 to-white),
            so text-slate-900/500 (which the rules above turn near-white/grey) went invisible against it. */
-        html.dark #support-banner { background: linear-gradient(to right, rgb(var(--brand-700) / 0.14), rgba(90,126,240,0.10), transparent) !important; border-color: rgb(var(--brand-700) / 0.3) !important; }
+        html.dark #support-banner { background: linear-gradient(to right, rgba(124,58,237,0.14), rgba(59,130,246,0.10), transparent) !important; border-color: rgba(124,58,237,0.3) !important; }
         html.dark #samosa-question { color: #9ca3af !important; }
 
         .mobile-topbar { display: none; }
@@ -442,13 +377,13 @@
                 align-items: center; gap: 0.6rem; padding: 0.6rem 0.9rem;
                 background: #ffffff; border-bottom: 1px solid rgba(148,163,184,0.25);
             }
-            html.dark .mobile-topbar { background: #090d1c; border-bottom-color: rgb(var(--brand-500) / 0.2); }
+            html.dark .mobile-topbar { background: #090d1c; border-bottom-color: rgba(99,102,241,0.2); }
             #mobile-menu-btn {
                 width: 2.4rem; height: 2.4rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-                border-radius: 0.7rem; background: rgb(var(--brand-500) / 0.12); border: 1px solid rgb(var(--brand-500) / 0.22);
-                color: rgb(var(--brand-600)); font-size: 1.05rem;
+                border-radius: 0.7rem; background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.22);
+                color: #4f46e5; font-size: 1.05rem;
             }
-            html.dark #mobile-menu-btn { color: #a5b4fc; background: rgb(var(--brand-500) / 0.18); }
+            html.dark #mobile-menu-btn { color: #a5b4fc; background: rgba(99,102,241,0.18); }
             #mobile-menu-btn:active { transform: scale(0.94); }
             .mobile-topbar h1 { color: #1e293b; }
             html.dark .mobile-topbar h1 { color: #f1f5f9; }
@@ -494,13 +429,13 @@
         .radar-scan-wrap { position: relative; }
         .radar-scan-wrap::after {
             content: ''; position: absolute; inset: 8%; border-radius: 9999px; pointer-events: none;
-            border: 1px solid rgb(var(--brand-accent2) / 0.3);
+            border: 1px solid rgba(34,211,238,0.3);
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex selection:bg-brand-500 selection:text-white">
 
-    <div id="app-loading-screen" class="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-[#15121c] transition-opacity duration-500 ease-out">
+    <div id="app-loading-screen" class="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-[#05070f] transition-opacity duration-500 ease-out">
         <div class="rounded-2xl shadow-glow overflow-hidden w-16 h-16">
             <img src="../icon-512.png" alt="Tukka Meter Railway" class="w-full h-full object-contain">
         </div>
@@ -527,7 +462,7 @@
         <div class="px-3 lg:px-5 py-5 flex items-center gap-3 border-b border-slate-200/70 dark:border-transparent justify-center lg:justify-start">
             <div class="rounded-xl shadow-glow overflow-hidden shrink-0 w-11 h-11"><img src="../icon-512.png" alt="Logo" class="w-full h-full object-contain"></div>
             <div class="hidden lg:block min-w-0">
-                <h1 class="text-base font-bold font-display bg-gradient-to-r from-brand-700 via-brand-600 to-brand-400 bg-clip-text text-transparent leading-tight">Tukka Meter Railway</h1>
+                <h1 class="text-base font-bold font-display bg-gradient-to-r from-brand-700 via-brand-600 to-indigo-600 bg-clip-text text-transparent leading-tight">Tukka Meter Railway</h1>
                 <p class="text-[11px] text-slate-500 font-medium flex items-center gap-2 mt-1">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot inline-block shrink-0"></span>
                     <span>Made by Akarsh K C❤️</span>
@@ -537,21 +472,21 @@
         </div>
 
         <nav class="nav-rail flex-1 overflow-y-auto px-2 lg:px-3 py-4 space-y-1.5">
-            <button onclick="goHome()" id="nav-home-btn" class="nav-pill nav-active" data-tone="1" title="Home">
+            <button onclick="goHome()" id="nav-home-btn" class="nav-pill nav-active" style="--pill-a:#3b82f6;--pill-b:#22d3ee;--pill-glow:rgba(59,130,246,.5)" title="Home">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-house"></i></span><span class="hidden lg:inline">Home</span><span class="nav-active-dot hidden lg:block"></span>
             </button>
-            <button onclick="tukkaSwitchCategory()" id="nav-category-btn" class="nav-pill" data-tone="2" title="Exam Category (SSC / Railway / Bank)">
+            <button onclick="tukkaSwitchCategory()" id="nav-category-btn" class="nav-pill" style="--pill-a:#e11d48;--pill-b:#fb7185;--pill-glow:rgba(225,29,72,.55)" title="Exam Category (SSC / Railway / Bank)">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-shapes"></i></span><span class="hidden lg:inline truncate">Exam Category</span>
                 <i class="fa-solid fa-toggle-on hidden lg:block absolute right-[0.65rem] top-1/2 -translate-y-1/2 text-amber-500 text-xs" title="Switch between SSC / Railway / Bank category"></i>
             </button>
-            <button onclick="openExamSwitchModal()" id="nav-exam-btn" class="nav-pill" data-tone="3" title="Exam Type">
+            <button onclick="openExamSwitchModal()" id="nav-exam-btn" class="nav-pill" style="--pill-a:#7c3aed;--pill-b:#a855f7;--pill-glow:rgba(124,58,237,.55)" title="Exam Type">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-right-left"></i></span><span class="hidden lg:inline truncate">Exam Type &middot; <span class="js-exam-short">NTPC CBT 1</span></span>
             </button>
             <div class="nav-divider"></div>
             <button onclick="openMockModal()" class="nav-cta w-full px-3 py-2.5 text-white text-xs font-semibold rounded-xl transition-all duration-400 flex items-center justify-center lg:justify-start gap-3" title="Add New Mock">
                 <span class="nav-icon-wrap !bg-white/20 !text-white"><i class="fa-solid fa-plus"></i></span><span class="hidden lg:inline">Add New Mock</span>
             </button>
-            <button onclick="showIndividualView()" id="nav-individual-btn" class="nav-pill" data-tone="4" title="Individual Mock Analyzer">
+            <button onclick="showIndividualView()" id="nav-individual-btn" class="nav-pill" style="--pill-a:#a855f7;--pill-b:#ec4899;--pill-glow:rgba(168,85,247,.55)" title="Individual Mock Analyzer">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-magnifying-glass-chart"></i></span><span class="hidden lg:inline">Individual Mock Analyzer</span><span class="nav-active-dot hidden lg:block"></span>
             </button>
             <div class="nav-divider"></div>
@@ -561,27 +496,16 @@
                     <i class="fa-solid fa-arrows-rotate text-[10px] text-white"></i>
                 </button>
             </div>
-            <button onclick="showBackupView()" id="nav-backup-btn" class="nav-pill" data-tone="5" title="Backup & Restore your data">
+            <button onclick="showBackupView()" id="nav-backup-btn" class="nav-pill" style="--pill-a:#059669;--pill-b:#f59e0b;--pill-glow:rgba(5,150,105,.5)" title="Backup & Restore your data">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-cloud-arrow-up"></i></span><span class="hidden lg:inline">Backup &amp; Restore</span><span class="nav-active-dot hidden lg:block"></span>
             </button>
             <input type="file" id="import-json-input" accept=".json,application/json" class="hidden" onchange="handleImportFile(event)">
-            <button onclick="openExportReportModal()" id="nav-export-report-btn" class="nav-pill" data-tone="6" title="Export a PDF performance report">
-                <span class="nav-icon-wrap"><i class="fa-solid fa-file-pdf"></i></span><span class="hidden lg:inline">Export Report</span>
-            </button>
             <div class="nav-divider"></div>
-            <button onclick="showAboutView()" id="nav-about-btn" class="nav-pill" data-tone="7" title="About Me">
+            <button onclick="showAboutView()" id="nav-about-btn" class="nav-pill" style="--pill-a:#ec4899;--pill-b:#f59e0b;--pill-glow:rgba(236,72,153,.55)" title="About Me">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-circle-user"></i></span><span class="hidden lg:inline">About Me</span><span class="nav-active-dot hidden lg:block"></span>
             </button>
         </nav>
 
-        <div id="theme-picker-row" class="px-3 lg:px-5 py-4 border-t border-slate-200/70 dark:border-transparent flex items-center justify-center lg:justify-between">
-            <span class="hidden lg:inline text-xs font-semibold text-slate-500">Theme Color</span>
-            <button onclick="toggleThemePicker(event)" id="theme-picker-btn" class="w-8 h-8 rounded-full shrink-0 ring-2 ring-white dark:ring-[#231e30] shadow-sm" style="background: linear-gradient(135deg, rgb(var(--brand-500)), rgb(var(--brand-accent2)));" title="Choose theme color" aria-label="Choose theme color"></button>
-            <div id="theme-picker-pop">
-                <p class="tp-title">Theme color</p>
-                <div class="tp-grid" id="theme-picker-grid"></div>
-            </div>
-        </div>
         <div class="px-3 lg:px-5 py-4 border-t border-slate-200/70 dark:border-transparent flex items-center justify-center lg:justify-between">
             <span class="hidden lg:inline text-xs font-semibold text-slate-500">Dark Mode</span>
             <button onclick="toggleDarkMode()" id="dark-mode-toggle" class="relative w-11 h-6 rounded-full bg-slate-200 transition-colors duration-300 shrink-0" title="Toggle dark mode" aria-label="Toggle dark mode">
@@ -605,8 +529,8 @@
                 </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-                <span class="text-xs font-bold px-3 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-800 js-exam-total">200 Marks Total</span>
-                <button onclick="openExamSwitchModal()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition"><i class="fa-solid fa-right-left text-[11px]"></i> Switch</button>
+                <span class="text-xs font-bold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 border border-brand-100 js-exam-total">200 Marks Total</span>
+                <button onclick="openExamSwitchModal()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 transition"><i class="fa-solid fa-right-left text-[11px]"></i> Switch</button>
             </div>
         </section>
 
@@ -677,10 +601,10 @@
                 <div id="overall-performance-pill" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 whitespace-nowrap self-start sm:self-center">-</div>
             </div>
             <div class="mb-4">
-                <button onclick="editCutoff()" id="cutoff-pill" class="text-xs font-bold px-3 py-1.5 rounded-lg border w-fit flex items-center gap-1.5 transition-colors bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 shadow-sm">
+                <button onclick="editCutoff()" id="cutoff-pill" class="text-[11px] font-semibold text-slate-500 hover:text-brand-700 flex items-center gap-1.5 transition-colors">
                     <i class="fa-solid fa-flag-checkered text-[10px]"></i>
                     <span id="cutoff-pill-text">Set expected cutoff for smarter ratings</span>
-                    <i class="fa-solid fa-pen text-[9px] opacity-60"></i>
+                    <i class="fa-solid fa-pen text-[9px] text-slate-400"></i>
                 </button>
             </div>
             <div class="space-y-4">
@@ -706,11 +630,11 @@
                     <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-white/10">
                         <div>
                             <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                                <i class="fa-solid fa-list-check text-brand-600 dark:text-brand-400"></i> Resolve These Before Next Mock
+                                <i class="fa-solid fa-list-check text-emerald-600 dark:text-emerald-400"></i> Resolve These Before Next Mock
                             </h3>
                             <p class="text-xs text-slate-500 dark:text-slate-400">Key concept fixes & mistake targets to address before your next attempt</p>
                         </div>
-                        <button onclick="toggleAddResolveInput()" class="px-2.5 py-1 bg-brand-50 hover:bg-brand-100 dark:bg-brand-400/10 dark:hover:bg-brand-400/20 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-400/30 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 shrink-0">
+                        <button onclick="toggleAddResolveInput()" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-400/10 dark:hover:bg-emerald-400/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-400/30 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 shrink-0">
                             <i class="fa-solid fa-plus text-[10px]"></i> Add Task
                         </button>
                     </div>
@@ -725,7 +649,7 @@
                         <textarea id="new-resolve-desc" rows="2" placeholder="Notes / Details (e.g., Confused direct vs transverse tangent formula in Mock 06)" class="w-full text-xs p-2 border border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 rounded-lg focus:outline-none focus:border-brand-500"></textarea>
                         <div class="flex justify-end gap-2 pt-1">
                             <button onclick="toggleAddResolveInput()" class="px-3 py-1 bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-lg">Cancel</button>
-                            <button onclick="addNewResolveItem()" class="px-3 py-1 bg-brand-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-brand-700">Save Task</button>
+                            <button onclick="addNewResolveItem()" class="px-3 py-1 bg-emerald-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-emerald-700">Save Task</button>
                         </div>
                     </div>
 
@@ -737,7 +661,7 @@
 
                 <div class="mt-3 pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                     <span id="resolve-items-count"><i class="fa-solid fa-spinner fa-spin"></i> Loading targets...</span>
-                    <span class="italic text-slate-400 dark:text-slate-500"><i class="fa-solid fa-circle-check text-brand-500 mr-1"></i>Delete or check off items as you resolve them</span>
+                    <span class="italic text-slate-400 dark:text-slate-500"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Delete or check off items as you resolve them</span>
                 </div>
             </div>
 
@@ -776,7 +700,7 @@
                 <div class="mt-4 pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px]">
                     <div class="flex items-center space-x-3">
                         <span class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-medium">
-                            <span class="w-2.5 h-2.5 rounded-full bg-brand-600 inline-block"></span> Mock Day
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Mock Day
                         </span>
                         <span class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-medium">
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-white/10 inline-block"></span> Rest Day
@@ -1140,7 +1064,7 @@
 
     <!-- Cloud Sync Settings Modal -->
     <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-[#1c1826] rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3.5 text-center max-h-[88vh] overflow-y-auto">
+        <div class="bg-white dark:bg-[#0b0f20] rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-3.5 text-center max-h-[88vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2.5 text-left">
                 <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2"><i class="fa-brands fa-google-drive text-brand-600"></i> Cloud Sync (Google Drive)</h3>
                 <button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm"><i class="fa-solid fa-xmark"></i></button>
@@ -1218,31 +1142,6 @@
         </div>
     </div>
 
-    <!-- Export Report (PDF) Modal -->
-    <div id="export-report-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[85vh] flex flex-col border border-slate-200">
-            <div class="p-5 border-b border-slate-200 flex justify-between items-start bg-slate-50 rounded-t-2xl">
-                <div>
-                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-file-pdf text-brand-600"></i> Export Report (PDF)</h3>
-                    <p class="text-[11px] text-slate-500 mt-0.5">Pick which saved mocks to include, then generate a shareable PDF report.</p>
-                </div>
-                <button onclick="closeExportReportModal()" class="text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="px-5 pt-3 pb-2 flex items-center justify-between gap-2 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <button onclick="exportReportSelectAll()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg transition">Select All</button>
-                    <button onclick="exportReportClearAll()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg transition">Clear</button>
-                </div>
-                <span id="export-report-counter" class="text-[11px] font-bold text-brand-600">0 selected</span>
-            </div>
-            <div id="export-report-list" class="flex-1 overflow-y-auto px-5 py-3 space-y-3"></div>
-            <div class="p-4 border-t border-slate-200 flex items-center justify-end gap-2 bg-slate-50 rounded-b-2xl">
-                <button onclick="closeExportReportModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">Cancel</button>
-                <button onclick="generateReportPDF()" id="export-report-generate-btn" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-lg shadow-sm transition flex items-center gap-2 disabled:opacity-50"><i class="fa-solid fa-file-arrow-down"></i> Generate PDF</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
     <script>
@@ -1263,26 +1162,26 @@
             // ---- RRB NTPC ------------------------------------------------
             ntpc_cbt1: {
                 id: 'ntpc_cbt1', name: 'RRB NTPC CBT 1 (UG & Graduate)', short: 'NTPC CBT 1', icon: 'fa-train',
-                pillA: '#4f74e0', pillB: '#6ec1ff',
+                pillA: '#2563eb', pillB: '#22d3ee',
                 totalMarks: 100, totalQuestions: 100, negFactor: 0.3333,
                 // CBT 1 is a screening test common for both UG (10+2) and Graduate posts.
                 // Subject split: GA 40 | Maths 30 | Reasoning 30. Neg: -1/3 per wrong.
                 subjects: [
                     { key: 'ga',        label: 'General Awareness',        max: 40, color: 'amber',   hex: '#f59e0b' },
-                    { key: 'maths',     label: 'Mathematics',              max: 30, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 30, color: 'indigo', hex: '#7b6ef6' }
+                    { key: 'maths',     label: 'Mathematics',              max: 30, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 30, color: 'indigo', hex: '#6366f1' }
                 ]
             },
             ntpc_cbt2: {
                 id: 'ntpc_cbt2', name: 'RRB NTPC CBT 2 (UG & Graduate)', short: 'NTPC CBT 2', icon: 'fa-train-subway',
-                pillA: '#5b4fe0', pillB: '#9b90f8',
+                pillA: '#4f46e5', pillB: '#818cf8',
                 totalMarks: 120, totalQuestions: 120, negFactor: 0.3333,
                 // CBT 2 is the merit-deciding stage. Same subjects as CBT 1 but higher
                 // difficulty and more questions. GA 50 | Maths 35 | Reasoning 35. Neg: -1/3.
                 subjects: [
                     { key: 'ga',        label: 'General Awareness',        max: 50, color: 'amber',   hex: '#f59e0b' },
-                    { key: 'maths',     label: 'Mathematics',              max: 35, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 35, color: 'indigo', hex: '#7b6ef6' }
+                    { key: 'maths',     label: 'Mathematics',              max: 35, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 35, color: 'indigo', hex: '#6366f1' }
                 ]
             },
 
@@ -1295,9 +1194,9 @@
                 // Split: Maths 25 | Gen Science 25 | Reasoning 30 | GA & Current Affairs 20.
                 // Neg: -1/3 per wrong. Followed by PET then DV & Medical.
                 subjects: [
-                    { key: 'maths',     label: 'Mathematics',              max: 25, color: 'blue',    hex: '#4f74e0' },
+                    { key: 'maths',     label: 'Mathematics',              max: 25, color: 'blue',    hex: '#2563eb' },
                     { key: 'science',   label: 'General Science',          max: 25, color: 'emerald', hex: '#10b981' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 30, color: 'indigo', hex: '#7b6ef6' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 30, color: 'indigo', hex: '#6366f1' },
                     { key: 'ga',        label: 'GA & Current Affairs',     max: 20, color: 'amber',   hex: '#f59e0b' }
                 ]
             },
@@ -1305,13 +1204,13 @@
             // ---- RRB ALP -------------------------------------------------
             alp_cbt1: {
                 id: 'alp_cbt1', name: 'RRB ALP CBT 1', short: 'ALP CBT 1', icon: 'fa-gauge-high',
-                pillA: '#3e6fd9', pillB: '#6ec1ff',
+                pillA: '#0891b2', pillB: '#22d3ee',
                 totalMarks: 75, totalQuestions: 75, negFactor: 0.3333,
                 // CBT 1: screening stage. Maths 20 | Reasoning 25 | Gen Science & Engg 20 | GA 10.
                 // Neg: -1/3 per wrong. Duration 60 min.
                 subjects: [
-                    { key: 'maths',     label: 'Mathematics',              max: 20, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#7b6ef6' },
+                    { key: 'maths',     label: 'Mathematics',              max: 20, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#6366f1' },
                     { key: 'science',   label: 'Basic Sci. & Engineering', max: 20, color: 'emerald', hex: '#10b981' },
                     { key: 'ga',        label: 'General Awareness',        max: 10, color: 'amber',   hex: '#f59e0b' }
                 ]
@@ -1324,8 +1223,8 @@
                 // Part A carries 70% weightage in final merit; Part B (trade-specific, 75 Qs, 60 min) is qualifying.
                 // Neg: -1/3 per wrong.
                 subjects: [
-                    { key: 'maths',     label: 'Mathematics',              max: 25, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#7b6ef6' },
+                    { key: 'maths',     label: 'Mathematics',              max: 25, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#6366f1' },
                     { key: 'science',   label: 'Basic Sci. & Engineering', max: 40, color: 'emerald', hex: '#10b981' },
                     { key: 'ga',        label: 'General Awareness',        max: 10, color: 'amber',   hex: '#f59e0b' }
                 ]
@@ -1334,13 +1233,13 @@
             // ---- RRB Technician ------------------------------------------
             tech_gr1: {
                 id: 'tech_gr1', name: 'RRB Technician Grade I Signal – CBT', short: 'Tech Gr I', icon: 'fa-tower-broadcast',
-                pillA: '#6d4fe0', pillB: '#9b7ff5',
+                pillA: '#7c3aed', pillB: '#a855f7',
                 totalMarks: 100, totalQuestions: 100, negFactor: 0.3333,
                 // Single-stage CBT (90 min). Maths 25 | Reasoning 25 | Gen Science 25 | GA 25.
                 // Neg: -1/3. Merit = CBT score only.
                 subjects: [
-                    { key: 'maths',     label: 'Mathematics',              max: 25, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#7b6ef6' },
+                    { key: 'maths',     label: 'Mathematics',              max: 25, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#6366f1' },
                     { key: 'science',   label: 'General Science',          max: 25, color: 'emerald', hex: '#10b981' },
                     { key: 'ga',        label: 'General Awareness',        max: 25, color: 'amber',   hex: '#f59e0b' }
                 ]
@@ -1352,10 +1251,10 @@
                 // Single-stage CBT (90 min).
                 // Maths 25 | Reasoning 25 | Gen Science 25 | Basics of Computers & Applications 10 | GA 15.
                 subjects: [
-                    { key: 'maths',     label: 'Mathematics',              max: 25, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#7b6ef6' },
+                    { key: 'maths',     label: 'Mathematics',              max: 25, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#6366f1' },
                     { key: 'science',   label: 'General Science',          max: 25, color: 'emerald', hex: '#10b981' },
-                    { key: 'computer',  label: 'Computers & Applications', max: 10, color: 'purple',  hex: '#9b7ff5' },
+                    { key: 'computer',  label: 'Computers & Applications', max: 10, color: 'purple',  hex: '#a855f7' },
                     { key: 'ga',        label: 'General Awareness',        max: 15, color: 'amber',   hex: '#f59e0b' }
                 ]
             },
@@ -1369,8 +1268,8 @@
                 // Neg: -1/3 per wrong. 15x vacancies shortlisted for CBT 2.
                 subjects: [
                     { key: 'ga',        label: 'General Awareness',        max: 15, color: 'amber',   hex: '#f59e0b' },
-                    { key: 'maths',     label: 'Mathematics',              max: 30, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#7b6ef6' },
+                    { key: 'maths',     label: 'Mathematics',              max: 30, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 25, color: 'indigo', hex: '#6366f1' },
                     { key: 'science',   label: 'General Science',          max: 30, color: 'emerald', hex: '#10b981' }
                 ]
             },
@@ -1383,10 +1282,10 @@
                 // Neg: -1/3 per wrong. Technical Abilities is discipline-specific.
                 subjects: [
                     { key: 'ga',        label: 'General Awareness',        max: 15, color: 'amber',   hex: '#f59e0b' },
-                    { key: 'physics',   label: 'Physics & Chemistry',      max: 15, color: 'cyan',    hex: '#6ec1ff' },
-                    { key: 'computer',  label: 'Basics of Computers',      max: 10, color: 'purple',  hex: '#9b7ff5' },
+                    { key: 'physics',   label: 'Physics & Chemistry',      max: 15, color: 'cyan',    hex: '#22d3ee' },
+                    { key: 'computer',  label: 'Basics of Computers',      max: 10, color: 'purple',  hex: '#a855f7' },
                     { key: 'drawing',   label: 'Engg Drawing/Environment', max: 10, color: 'rose',    hex: '#fb3d68' },
-                    { key: 'technical', label: 'Technical Abilities',      max: 100, color: 'blue',   hex: '#4f74e0' }
+                    { key: 'technical', label: 'Technical Abilities',      max: 100, color: 'blue',   hex: '#2563eb' }
                 ]
             },
 
@@ -1400,8 +1299,8 @@
                 // Neg: -1/3. Final merit = CBT score only (PET/PMT are qualifying).
                 subjects: [
                     { key: 'ga',        label: 'General Awareness',        max: 50, color: 'amber',   hex: '#f59e0b' },
-                    { key: 'arith',     label: 'Arithmetic',               max: 35, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 35, color: 'indigo', hex: '#7b6ef6' }
+                    { key: 'arith',     label: 'Arithmetic',               max: 35, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 35, color: 'indigo', hex: '#6366f1' }
                 ]
             },
 
@@ -1416,15 +1315,15 @@
                 // Final merit = CBT score only (PET/PMT are qualifying).
                 subjects: [
                     { key: 'ga',        label: 'General Awareness',        max: 50, color: 'amber',   hex: '#f59e0b' },
-                    { key: 'arith',     label: 'Arithmetic',               max: 35, color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 35, color: 'indigo', hex: '#7b6ef6' }
+                    { key: 'arith',     label: 'Arithmetic',               max: 35, color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning', label: 'Gen. Intelligence & Reasoning', max: 35, color: 'indigo', hex: '#6366f1' }
                 ]
             },
 
             // ---- RRB Paramedical -----------------------------------------
             paramedical: {
                 id: 'paramedical', name: 'RRB Paramedical CBT', short: 'Paramedical', icon: 'fa-kit-medical',
-                pillA: '#be185d', pillB: '#b368d9',
+                pillA: '#be185d', pillB: '#ec4899',
                 totalMarks: 100, totalQuestions: 100, negFactor: 0.3333,
                 // Single-stage CBT (90 min).
                 // Professional Ability 70 | Gen Awareness 12 | Arithmetic 9 | Gen Intelligence & Reasoning 9.
@@ -1432,8 +1331,8 @@
                 subjects: [
                     { key: 'professional', label: 'Professional Ability',  max: 70, color: 'rose',    hex: '#fb3d68' },
                     { key: 'ga',           label: 'General Awareness',     max: 12, color: 'amber',   hex: '#f59e0b' },
-                    { key: 'arith',        label: 'Arithmetic',            max: 9,  color: 'blue',    hex: '#4f74e0' },
-                    { key: 'reasoning',    label: 'Reasoning',             max: 9,  color: 'indigo',  hex: '#7b6ef6' }
+                    { key: 'arith',        label: 'Arithmetic',            max: 9,  color: 'blue',    hex: '#2563eb' },
+                    { key: 'reasoning',    label: 'Reasoning',             max: 9,  color: 'indigo',  hex: '#6366f1' }
                 ]
             },
 
@@ -1451,8 +1350,8 @@
                 subjects: [
                     { key: 'professional', label: 'Professional Ability (Traffic/Accounts)', max: 100, color: 'teal',   hex: '#0d9488' },
                     { key: 'ga',           label: 'General Awareness',                        max: 25,  color: 'amber',  hex: '#f59e0b' },
-                    { key: 'arith',        label: 'Arithmetic',                               max: 15,  color: 'blue',   hex: '#4f74e0' },
-                    { key: 'reasoning',    label: 'Gen. Intelligence & Reasoning',            max: 10,  color: 'indigo', hex: '#7b6ef6' }
+                    { key: 'arith',        label: 'Arithmetic',                               max: 15,  color: 'blue',   hex: '#2563eb' },
+                    { key: 'reasoning',    label: 'Gen. Intelligence & Reasoning',            max: 10,  color: 'indigo', hex: '#6366f1' }
                 ]
             }
         };
@@ -1702,8 +1601,8 @@
                 const itemDiv = document.createElement('div');
                 itemDiv.className = "relative pl-6 group transition-all";
                 itemDiv.innerHTML = `
-                    <div class="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full border-2 border-brand-500 bg-white dark:bg-[#1c1826] group-hover:bg-brand-500 transition-colors z-10 flex items-center justify-center">
-                        <div class="w-1 h-1 rounded-full bg-brand-500 group-hover:bg-white"></div>
+                    <div class="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full border-2 border-emerald-500 bg-white dark:bg-[#0b0f20] group-hover:bg-emerald-500 transition-colors z-10 flex items-center justify-center">
+                        <div class="w-1 h-1 rounded-full bg-emerald-500 group-hover:bg-white"></div>
                     </div>
                     <div class="resolve-item-card border border-slate-200 dark:border-white/10 group-hover:border-slate-300 dark:group-hover:border-white/20 rounded-xl p-3 transition-all flex items-start justify-between gap-3">
                         <div class="space-y-1 min-w-0">
@@ -1797,7 +1696,7 @@
                 const cell = document.createElement('div');
                 cell.className = `p-1.5 rounded-lg border text-xs font-semibold relative flex flex-col items-center justify-center transition-all cursor-pointer ${
                     hasMock
-                    ? 'bg-brand-600 text-white border-brand-700 shadow-sm hover:bg-brand-700'
+                    ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm hover:bg-emerald-600'
                     : 'bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10'
                 }`;
                 cell.innerHTML = `<span>${day}</span>${hasMock ? `<span class="w-1.5 h-1.5 rounded-full bg-white mt-0.5"></span>` : ''}`;
@@ -1954,124 +1853,12 @@
             setTimeout(() => document.documentElement.classList.remove('theme-transition'), 400);
         }
 
-
-        // ================= THEME COLOR =================
-        const THEME_PRESETS = {
-            violet: { name: 'Violet', '50': '241 238 254', '100': '227 221 253', '200': '199 187 251', '300': '171 153 249', '400': '143 129 248', '500': '123 110 246', '600': '91 79 224', '700': '74 63 196', '800': '58 50 160', '900': '43 38 120', 'accent2': '110 193 255' },
-            blue: { name: 'Blue', '50': '238 244 255', '100': '220 233 255', '200': '185 211 255', '300': '143 184 255', '400': '106 160 255', '500': '79 134 240', '600': '61 111 217', '700': '49 89 184', '800': '39 71 147', '900': '28 52 104', 'accent2': '155 144 248' },
-            green: { name: 'Green', '50': '236 253 246', '100': '211 248 234', '200': '166 240 212', '300': '114 226 186', '400': '63 207 158', '500': '31 181 131', '600': '20 154 108', '700': '16 125 88', '800': '12 97 70', '900': '9 71 52', 'accent2': '110 225 208' },
-            rose: { name: 'Rose', '50': '254 241 246', '100': '253 227 238', '200': '250 194 220', '300': '247 156 196', '400': '242 121 173', '500': '232 90 151', '600': '204 67 128', '700': '168 53 104', '800': '131 41 81', '900': '94 30 59', 'accent2': '185 138 245' },
-            amber: { name: 'Amber', '50': '255 247 236', '100': '255 236 209', '200': '255 214 163', '300': '255 188 112', '400': '255 161 71', '500': '245 135 43', '600': '214 110 28', '700': '178 87 23', '800': '138 67 21', '900': '98 48 20', 'accent2': '255 157 122' },
-            graphite: { name: 'Graphite', '50': '244 244 246', '100': '231 231 236', '200': '207 208 216', '300': '179 181 192', '400': '150 152 167', '500': '124 126 141', '600': '101 102 122', '700': '80 82 102', '800': '60 61 79', '900': '42 43 58', 'accent2': '143 146 168' },
-            pink: { name: 'Pink', '50': '255 238 248', '100': '255 214 238', '200': '255 176 224', '300': '255 130 207', '400': '250 85 187', '500': '236 42 160', '600': '200 26 132', '700': '161 21 105', '800': '124 17 82', '900': '87 12 58', 'accent2': '207 138 255' },
-            red: { name: 'Red', '50': '255 241 240', '100': '255 222 219', '200': '255 184 176', '300': '255 138 125', '400': '250 92 76', '500': '234 51 35', '600': '200 31 18', '700': '161 24 16', '800': '124 19 14', '900': '86 13 10', 'accent2': '255 148 102' },
-            cyan: { name: 'Cyan', '50': '236 254 255', '100': '207 250 254', '200': '162 240 250', '300': '103 226 240', '400': '34 199 224', '500': '10 168 194', '600': '8 136 160', '700': '10 109 130', '800': '14 85 102', '900': '15 63 77', 'accent2': '127 184 255' },
-        };
-        const THEME_KEY = 'tukka_theme_color';
-
-        function applyTheme(key, opts) {
-            const preset = THEME_PRESETS[key] || THEME_PRESETS.violet;
-            const root = document.documentElement.style;
-            ['50','100','200','300','400','500','600','700','800','900'].forEach(stop => {
-                root.setProperty('--brand-' + stop, preset[stop]);
-            });
-            root.setProperty('--brand-accent2', preset.accent2);
-            const metaTheme = document.querySelector('meta[name="theme-color"]');
-            if (metaTheme) metaTheme.setAttribute('content', 'rgb(' + preset['600'] + ')');
-            const btn = document.getElementById('theme-picker-btn');
-            if (btn) btn.style.background = 'linear-gradient(135deg, rgb(' + preset['500'] + '), rgb(' + preset.accent2 + '))';
-            renderThemeSwatches(key);
-            if (!(opts && opts.skipSave)) {
-                try { localStorage.setItem(THEME_KEY, key); } catch (e) {}
-            }
-            refreshBrandChartColors();
-        }
-
-        // Reads the live --brand-<stop> CSS var (set by applyTheme) and returns it
-        // as an rgb()/rgba() string, so chart colors follow whichever theme preset
-        // is currently selected instead of being pinned to the old fixed hex.
-        function brandRGB(stop, alpha) {
-            const v = getComputedStyle(document.documentElement).getPropertyValue('--brand-' + stop).trim().split(/\s+/).join(',');
-            return alpha === undefined ? `rgb(${v})` : `rgba(${v},${alpha})`;
-        }
-
-        // Re-colors chart datasets that should track the selected theme (score
-        // trend line + fill, accuracy bars, subject radar) on already-rendered
-        // charts, so switching the theme updates them immediately without a reload.
-        function refreshBrandChartColors() {
-            if (typeof chartInstances === 'undefined' || !chartInstances) return;
-            const st = chartInstances.scoreTrend;
-            if (st && st.data.datasets[0]) {
-                const ds = st.data.datasets[0];
-                ds.borderColor = brandRGB(500);
-                ds.pointBackgroundColor = brandRGB(500);
-                if (st.ctx) {
-                    const g = st.ctx.createLinearGradient(0, 0, 0, 280);
-                    g.addColorStop(0, brandRGB(500, 0.30));
-                    g.addColorStop(1, brandRGB(500, 0.02));
-                    ds.backgroundColor = g;
-                }
-                st.update();
-            }
-            const an = chartInstances.accNeg;
-            if (an && an.data.datasets[0]) {
-                an.data.datasets[0].backgroundColor = brandRGB(500, 0.85);
-                an.update();
-            }
-            const sr = chartInstances.subjectRadar;
-            if (sr && sr.data.datasets[0]) {
-                const rc = radarColors();
-                const ds = sr.data.datasets[0];
-                ds.backgroundColor = rc.bg; ds.borderColor = rc.border;
-                ds.pointBackgroundColor = rc.border; ds.pointBorderColor = rc.pointBorder;
-                ds.pointHoverBackgroundColor = rc.pointHover;
-                sr.options.scales.r.angleLines.color = rc.angle;
-                sr.options.scales.r.grid.color = rc.grid;
-                sr.options.scales.r.pointLabels.color = rc.label;
-                sr.update();
-            }
-        }
-
-        function renderThemeSwatches(activeKey) {
-            const grid = document.getElementById('theme-picker-grid');
-            if (!grid) return;
-            grid.innerHTML = Object.keys(THEME_PRESETS).map(key => {
-                const p = THEME_PRESETS[key];
-                const active = key === activeKey ? 'active' : '';
-                return `<button type="button" class="tp-swatch ${active}" style="background: linear-gradient(135deg, rgb(${p['500']}), rgb(${p.accent2}));" onclick="applyTheme('${key}')" title="${p.name}" aria-label="${p.name}"></button>`;
-            }).join('');
-        }
-
-        function loadTheme() {
-            let saved = 'violet';
-            try { saved = localStorage.getItem(THEME_KEY) || 'violet'; } catch (e) {}
-            applyTheme(saved, { skipSave: true });
-        }
-
-        function toggleThemePicker(e) {
-            if (e) e.stopPropagation();
-            const pop = document.getElementById('theme-picker-pop');
-            if (!pop) return;
-            pop.classList.toggle('open');
-        }
-        document.addEventListener('click', (e) => {
-            const pop = document.getElementById('theme-picker-pop');
-            const row = document.getElementById('theme-picker-row');
-            if (pop && pop.classList.contains('open') && row && !row.contains(e.target)) pop.classList.remove('open');
-        });
-        // Cross-document sync: this app, the shell, and the other exam-category
-        // apps are all separate same-origin documents (shell loads this one in
-        // an iframe). 'storage' fires here whenever any of them writes the key.
-        window.addEventListener('storage', (event) => {
-            if (event.key === THEME_KEY && event.newValue) applyTheme(event.newValue, { skipSave: true });
-        });
-
         function chartTextColor() { return isDarkMode() ? '#94a3b8' : '#334155'; }
         function chartGridColor() { return isDarkMode() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'; }
         function radarColors() {
             return isDarkMode()
-                ? { border: brandRGB('accent2'), bg: brandRGB('accent2', 0.18), pointBorder: '#0f172a', pointHover: brandRGB(300), angle: 'rgba(148,163,255,0.18)', grid: 'rgba(148,163,255,0.14)', label: '#cbd5e1' }
-                : { border: brandRGB(600), bg: brandRGB(600, 0.14), pointBorder: '#ffffff', pointHover: brandRGB(700), angle: 'rgba(51,65,85,0.14)', grid: 'rgba(51,65,85,0.08)', label: '#475569' };
+                ? { border: '#22d3ee', bg: 'rgba(34,211,238,0.18)', pointBorder: '#0f172a', pointHover: '#67e8f9', angle: 'rgba(148,163,255,0.18)', grid: 'rgba(148,163,255,0.14)', label: '#cbd5e1' }
+                : { border: '#0891b2', bg: 'rgba(8,145,178,0.14)', pointBorder: '#ffffff', pointHover: '#0e7490', angle: 'rgba(51,65,85,0.14)', grid: 'rgba(51,65,85,0.08)', label: '#475569' };
         }
 
         // ================= HOME DASHBOARD =================
@@ -2179,15 +1966,9 @@
             }
             perfPill.textContent = perfLabel;
             perfPill.className = `shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg ${perfClass} whitespace-nowrap self-start sm:self-center`;
-            const cutoffPill = document.getElementById('cutoff-pill');
             const cutoffPillText = document.getElementById('cutoff-pill-text');
             if (cutoffPillText) {
                 cutoffPillText.textContent = cutoffVal !== null ? `Cutoff: ${cutoffVal} / ${totalMarks} (tap to edit)` : 'Set expected cutoff for smarter ratings';
-            }
-            if (cutoffPill) {
-                cutoffPill.className = cutoffVal !== null
-                    ? 'text-xs font-bold px-3 py-1.5 rounded-lg border w-fit flex items-center gap-1.5 transition-colors bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
-                    : 'text-xs font-bold px-3 py-1.5 rounded-lg border w-fit flex items-center gap-1.5 transition-colors bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 shadow-sm';
             }
 
             document.getElementById('bar-percentile-text').textContent = `${avgPercentile.toFixed(1)}%`;
@@ -2250,12 +2031,12 @@
 
             const scoreTrendCtx = document.getElementById('scoreTrendChart').getContext('2d');
             const scoreTrendGradient = scoreTrendCtx.createLinearGradient(0, 0, 0, 280);
-            scoreTrendGradient.addColorStop(0, brandRGB(500, 0.30));
-            scoreTrendGradient.addColorStop(1, brandRGB(500, 0.02));
+            scoreTrendGradient.addColorStop(0, 'rgba(99,102,241,0.30)');
+            scoreTrendGradient.addColorStop(1, 'rgba(99,102,241,0.02)');
             chartInstances.scoreTrend = new Chart(scoreTrendCtx, {
                 type: 'line',
                 data: { labels: [], datasets: [
-                    { label: `Score (/${currentExam().totalMarks})`, data: [], borderColor: brandRGB(500), backgroundColor: scoreTrendGradient, fill: true, tension: 0.4, borderWidth: 2.5, pointBackgroundColor: brandRGB(500), pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 3, pointHoverRadius: 6, yAxisID: 'y' },
+                    { label: `Score (/${currentExam().totalMarks})`, data: [], borderColor: '#6366f1', backgroundColor: scoreTrendGradient, fill: true, tension: 0.4, borderWidth: 2.5, pointBackgroundColor: '#6366f1', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 3, pointHoverRadius: 6, yAxisID: 'y' },
                     { label: 'Percentile (%)', data: [], borderColor: '#10b981', backgroundColor: 'transparent', borderDash: [4,4], tension: 0.4, borderWidth: 2.5, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 1.5, pointRadius: 3, pointHoverRadius: 6, yAxisID: 'y1' }
                 ] },
                 options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: textColor, boxWidth: 10, font: { size: 10 } } } }, scales: {
@@ -2295,7 +2076,7 @@
             chartInstances.accNeg = new Chart(document.getElementById('accuracyNegativeChart').getContext('2d'), {
                 type: 'bar',
                 data: { labels: [], datasets: [
-                    { label: 'Accuracy %', data: [], backgroundColor: brandRGB(500, 0.85), yAxisID: 'y' },
+                    { label: 'Accuracy %', data: [], backgroundColor: 'rgba(99,102,241,0.85)', yAxisID: 'y' },
                     { label: 'Penalty Marks', data: [], backgroundColor: 'rgba(244,63,94,0.85)', yAxisID: 'y1' }
                 ] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor, boxWidth: 10, font: { size: 10 } } } }, scales: {
@@ -2467,7 +2248,7 @@
                     } catch (e) { return 0; }
                 })();
                 return `
-                <button onclick="switchExam('${id}')" class="w-full text-left p-3.5 rounded-xl border transition-all ${active ? 'border-transparent text-white shadow-glow' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}" style="${active ? `background: linear-gradient(120deg, rgb(var(--brand-600)), rgb(var(--brand-400)))` : ''}">
+                <button onclick="switchExam('${id}')" class="w-full text-left p-3.5 rounded-xl border transition-all ${active ? 'border-transparent text-white shadow-glow' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}" style="${active ? `background: linear-gradient(120deg, ${ex.pillA}, ${ex.pillB})` : ''}">
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2.5 min-w-0">
                             <span class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${active ? 'bg-white/20' : 'bg-slate-100'}"><i class="fa-solid ${ex.icon} text-sm ${active ? 'text-white' : 'text-slate-500'}"></i></span>
@@ -2551,7 +2332,7 @@
                 return;
             }
             container.innerHTML = list.map(m => `
-                <button onclick="selectIndividualMock('${m.id}')" class="w-full text-left px-3 py-2.5 rounded-xl border transition-all ${m.id === selectedIndividualId ? 'bg-gradient-to-r from-brand-600 to-brand-400 text-white border-transparent shadow-glow' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}">
+                <button onclick="selectIndividualMock('${m.id}')" class="w-full text-left px-3 py-2.5 rounded-xl border transition-all ${m.id === selectedIndividualId ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white border-transparent shadow-glow' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}">
                     <p class="text-xs font-bold truncate">Mock-${m.mockNo}: ${escapeHtml(m.testName)}</p>
                     <p class="text-[10px] ${m.id === selectedIndividualId ? 'text-white/80' : 'text-slate-400'} mt-0.5">${m.date} • Score ${m.score.toFixed(1)}</p>
                 </button>
@@ -3336,7 +3117,6 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             initData();
-            loadTheme();
             applyDarkModeIcon();
             // Make sure the hub shell (parent window) reflects this app's theme
             // right away too, not just after the next manual toggle.
@@ -3389,726 +3169,6 @@
             swRegistration.update().then(() => {
                 setTimeout(() => { if (swRegistration.installing || swRegistration.waiting) return; showToast("You're already on the latest version.", 'success'); }, 1200);
             }).catch(() => showToast("Couldn't check for updates — try again later.", 'error'));
-        }
-    </script>
-    <script>
-        /* ================= Export Report (PDF) ================= */
-        /* Pure jsPDF + jspdf-autotable drawing — no html2canvas/html2pdf.js anywhere, so PDF
-           generation still works under Brave Shields, Firefox resist-fingerprinting, and Tor
-           (which scramble canvas pixel readback for screenshot-based approaches). */
-        var EXPORT_REPORT_LOGO_B64 = 'data:image/png;base64,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';
-
-/* ================= Tukka Meter — Export Report (PDF) core =================
-   Pure jsPDF + jspdf-autotable drawing logic. No html2canvas, no runtime
-   canvas rasterization anywhere — every element is drawn natively so the
-   PDF still generates correctly under Brave Shields / Firefox RFP / Tor,
-   where canvas pixel readback is scrambled.
-   This file is shared: it runs unmodified in Node (for testing) and is
-   pasted verbatim into each app's <script> block for production.
-============================================================================ */
-
-var PDF_PAGE_W = 210, PDF_PAGE_H = 297, PDF_MARGIN = 16;
-var PDF_COLOR_BRAND = [79, 70, 229];       // brand-600 #5b4fe0
-var PDF_COLOR_BRAND_DARK = [55, 48, 163];  // brand-800
-var PDF_COLOR_STRONG = [5, 150, 105];      // emerald-600
-var PDF_COLOR_AVERAGE = [217, 119, 6];     // amber-600
-var PDF_COLOR_WEAK = [220, 38, 38];        // red-600
-var PDF_COLOR_SLATE = [100, 116, 139];     // slate-500
-var PDF_COLOR_SLATE_DARK = [30, 41, 59];   // slate-800
-var PDF_COLOR_SLATE_LIGHT = [241, 245, 249]; // slate-100
-var PDF_COLOR_BORDER = [226, 232, 240];    // slate-200
-
-function pdfGetAccuracyPct(correct, attempted) {
-    correct = Number(correct) || 0;
-    attempted = Number(attempted) || 0;
-    if (attempted <= 0) return 0;
-    return (correct / attempted) * 100;
-}
-
-function pdfTagForPercent(pct) {
-    if (pct === null || pct === undefined || isNaN(pct)) return { label: 'N/A', color: PDF_COLOR_SLATE };
-    if (pct >= 75) return { label: 'Strong', color: PDF_COLOR_STRONG };
-    if (pct >= 50) return { label: 'Average', color: PDF_COLOR_AVERAGE };
-    return { label: 'Weak', color: PDF_COLOR_WEAK };
-}
-
-function pdfFmt1(n) {
-    var v = Number(n);
-    return isNaN(v) ? '0.0' : v.toFixed(1);
-}
-
-/* ---------- watermark + pagination ---------- */
-
-function pdfDrawWatermark(doc, logoBase64) {
-    if (!logoBase64) return;
-    try {
-        var imgW = PDF_PAGE_W * 0.6;
-        var imgH = imgW; // square PWA icon
-        var x = (PDF_PAGE_W - imgW) / 2;
-        var y = (PDF_PAGE_H - imgH) / 2;
-        doc.saveGraphicsState();
-        doc.setGState(new doc.GState({ opacity: 0.05 }));
-        doc.addImage(logoBase64, 'PNG', x, y, imgW, imgH, undefined, 'FAST');
-        doc.restoreGraphicsState();
-    } catch (e) {
-        // Never let a watermark failure break the whole report.
-        if (typeof console !== 'undefined') console.warn('Tukka Meter: watermark draw failed', e);
-    }
-}
-
-function pdfNewPage(doc, logoBase64) {
-    doc.addPage();
-    pdfDrawWatermark(doc, logoBase64);
-    return PDF_MARGIN;
-}
-
-function pdfEnsureSpace(doc, cursorY, needed, logoBase64) {
-    if (cursorY + needed > PDF_PAGE_H - PDF_MARGIN - 6) {
-        return pdfNewPage(doc, logoBase64);
-    }
-    return cursorY;
-}
-
-/* ---------- small drawing primitives ---------- */
-
-function pdfDrawSectionHeading(doc, cursorY, text, logoBase64) {
-    cursorY = pdfEnsureSpace(doc, cursorY, 10, logoBase64);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor.apply(doc, PDF_COLOR_BRAND_DARK);
-    doc.text(text, PDF_MARGIN, cursorY);
-    doc.setDrawColor.apply(doc, PDF_COLOR_BORDER);
-    doc.setLineWidth(0.3);
-    doc.line(PDF_MARGIN, cursorY + 1.5, PDF_PAGE_W - PDF_MARGIN, cursorY + 1.5);
-    return cursorY + 8;
-}
-
-// stats: [{label, value, color}]  -- drawn as a 4-column grid of boxes, wraps rows automatically
-function pdfDrawStatGrid(doc, cursorY, stats, logoBase64) {
-    var cols = 4;
-    var gap = 3;
-    var boxW = (PDF_PAGE_W - PDF_MARGIN * 2 - gap * (cols - 1)) / cols;
-    var boxH = 16;
-    var rows = Math.ceil(stats.length / cols);
-    cursorY = pdfEnsureSpace(doc, cursorY, rows * (boxH + gap), logoBase64);
-    for (var i = 0; i < stats.length; i++) {
-        var col = i % cols;
-        var row = Math.floor(i / cols);
-        var x = PDF_MARGIN + col * (boxW + gap);
-        var y = cursorY + row * (boxH + gap);
-        var s = stats[i];
-        doc.setFillColor(248, 250, 252);
-        doc.setDrawColor.apply(doc, PDF_COLOR_BORDER);
-        doc.setLineWidth(0.2);
-        doc.roundedRect(x, y, boxW, boxH, 1.5, 1.5, 'FD');
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(6.5);
-        doc.setTextColor.apply(doc, PDF_COLOR_SLATE);
-        doc.text(String(s.label).toUpperCase(), x + boxW / 2, y + 6, { align: 'center' });
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.setTextColor.apply(doc, s.color || PDF_COLOR_SLATE_DARK);
-        doc.text(String(s.value), x + boxW / 2, y + 12.5, { align: 'center' });
-    }
-    return cursorY + rows * (boxH + gap);
-}
-
-function pdfDrawCalloutBox(doc, cursorY, title, bodyText, color, logoBase64) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    var lines = doc.splitTextToSize(bodyText, PDF_PAGE_W - PDF_MARGIN * 2 - 8);
-    var boxH = 10 + lines.length * 4.2;
-    cursorY = pdfEnsureSpace(doc, cursorY, boxH + 3, logoBase64);
-    doc.setFillColor(color[0], color[1], color[2]);
-    doc.rect(PDF_MARGIN, cursorY, 1.4, boxH, 'F');
-    doc.setFillColor(250, 250, 251);
-    doc.rect(PDF_MARGIN + 1.4, cursorY, PDF_PAGE_W - PDF_MARGIN * 2 - 1.4, boxH, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(color[0], color[1], color[2]);
-    doc.text(title, PDF_MARGIN + 4, cursorY + 5.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor.apply(doc, PDF_COLOR_SLATE_DARK);
-    doc.text(lines, PDF_MARGIN + 4, cursorY + 10.5);
-    return cursorY + boxH + 5;
-}
-
-// Wraps + paginates arbitrary body text line by line (used for notes / analysis paragraphs).
-function pdfDrawParagraph(doc, cursorY, text, logoBase64, opts) {
-    opts = opts || {};
-    doc.setFont('helvetica', opts.bold ? 'bold' : (opts.italic ? 'italic' : 'normal'));
-    doc.setFontSize(opts.size || 9);
-    doc.setTextColor.apply(doc, opts.color || PDF_COLOR_SLATE_DARK);
-    var lines = doc.splitTextToSize(text, PDF_PAGE_W - PDF_MARGIN * 2);
-    var lineH = opts.lineHeight || 4.4;
-    for (var i = 0; i < lines.length; i++) {
-        cursorY = pdfEnsureSpace(doc, cursorY, lineH, logoBase64);
-        doc.text(lines[i], PDF_MARGIN, cursorY);
-        cursorY += lineH;
-    }
-    return cursorY;
-}
-
-/* ---------- analysis text generation (template based, no external AI call) ---------- */
-
-function pdfBuildSubjectPerf(record) {
-    var subjectsMeta = record.subjectsMeta || [];
-    var mock = record.mock || {};
-    var out = [];
-    for (var i = 0; i < subjectsMeta.length; i++) {
-        var s = subjectsMeta[i];
-        var val = mock.subjects ? mock.subjects[s.key] : null;
-        if (val === null || val === undefined || val === '' || !s.max) continue;
-        var num = Number(val);
-        if (isNaN(num)) continue;
-        out.push({ label: s.label, val: num, max: s.max, pct: (num / s.max) * 100 });
-    }
-    return out;
-}
-
-function pdfBuildRecordAnalysis(record) {
-    var mock = record.mock || {};
-    var accuracy = pdfGetAccuracyPct(mock.correct, mock.attempted);
-    var subjPerf = pdfBuildSubjectPerf(record).slice().sort(function (a, b) { return b.pct - a.pct; });
-    var sentences = [];
-
-    var score = (mock.score === null || mock.score === undefined) ? null : Number(mock.score);
-    if (score !== null && !isNaN(score) && mock.maxScore) {
-        sentences.push('In this attempt you scored ' + pdfFmt1(score) + ' out of ' + mock.maxScore +
-            ', with an overall accuracy of ' + pdfFmt1(accuracy) + '%.');
-    } else {
-        sentences.push('This attempt logged an overall accuracy of ' + pdfFmt1(accuracy) + '%.');
-    }
-
-    if (subjPerf.length >= 2) {
-        var strongest = subjPerf[0], weakest = subjPerf[subjPerf.length - 1];
-        sentences.push(strongest.label + ' was the strongest area at ' + pdfFmt1(strongest.pct) + '% of that section\'s marks.');
-        if (weakest.label !== strongest.label) {
-            sentences.push(weakest.label + ' needs the most attention right now, coming in at ' + pdfFmt1(weakest.pct) + '%.');
-        }
-    } else if (subjPerf.length === 1) {
-        sentences.push(subjPerf[0].label + ' scored ' + pdfFmt1(subjPerf[0].pct) + '% in this attempt.');
-    } else {
-        sentences.push('No subject-wise breakdown was recorded for this mock.');
-    }
-
-    var attempted = Number(mock.attempted) || 0, unattempted = Number(mock.unattempted) || 0;
-    var totalQ = attempted + unattempted;
-    if (totalQ > 0) {
-        var attemptRate = (attempted / totalQ) * 100;
-        sentences.push('You attempted ' + pdfFmt1(attemptRate) + '% of the total questions, leaving ' + unattempted + ' unattempted.');
-    }
-
-    var negMarks = Number(mock.negativeMarks) || 0;
-    var wrong = Number(mock.wrong) || 0;
-    if (negMarks > 0) {
-        sentences.push('Negative marking cost ' + pdfFmt1(negMarks) + ' mark' + (negMarks === 1 ? '' : 's') +
-            ' from ' + wrong + ' incorrect answer' + (wrong === 1 ? '' : 's') +
-            ' — tightening accuracy here would directly raise the score.');
-    }
-
-    if (mock.percentile !== null && mock.percentile !== undefined && mock.percentile !== '') {
-        sentences.push('This attempt placed you around the ' + mock.percentile + 'th percentile among test-takers.');
-    }
-
-    return sentences.slice(0, 6).join(' ');
-}
-
-/* ---------- category-level averages (used by the last-5 / all-mocks weakness tables) ---------- */
-
-function pdfComputeGroupAverages(records) {
-    if (!records.length) return [];
-    var subjectsMeta = records[0].subjectsMeta || [];
-    return subjectsMeta.map(function (s) {
-        var vals = [];
-        records.forEach(function (r) {
-            var v = r.mock.subjects ? r.mock.subjects[s.key] : null;
-            if (v !== null && v !== undefined && v !== '' && !isNaN(Number(v))) vals.push(Number(v));
-        });
-        if (!vals.length) return { label: s.label, max: s.max, avg: null, pct: null };
-        var avg = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
-        var pct = s.max ? (avg / s.max) * 100 : null;
-        return { label: s.label, max: s.max, avg: avg, pct: pct };
-    });
-}
-
-function pdfBuildCategorySummarySentence(examName, windowLabel, avgs, count) {
-    var scored = avgs.filter(function (a) { return a.pct !== null; });
-    if (!scored.length) return 'No subject-wise data is available for ' + examName + ' in this window.';
-    scored.sort(function (a, b) { return b.pct - a.pct; });
-    var strongest = scored[0], weakest = scored[scored.length - 1];
-    var s = 'Across ' + windowLabel + ' (' + count + ' mock' + (count === 1 ? '' : 's') + '), ' + examName + ' shows ' +
-        strongest.label + ' as the strongest area at ' + pdfFmt1(strongest.pct) + '% on average';
-    if (weakest.label !== strongest.label) {
-        s += ', while ' + weakest.label + ' trails at ' + pdfFmt1(weakest.pct) + '% and is the priority for focused revision.';
-    } else {
-        s += '.';
-    }
-    return s;
-}
-
-/* ---------- cover page ---------- */
-
-function pdfDrawCoverPage(doc, opts) {
-    // opts: { appTitle, generatedAt, groups: [{examName, count, dateFrom, dateTo}], logoBase64 }
-    pdfDrawWatermark(doc, opts.logoBase64);
-    var y = 40;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.setTextColor.apply(doc, PDF_COLOR_BRAND);
-    doc.text('Tukka Meter', PDF_PAGE_W / 2, y, { align: 'center' });
-    y += 9;
-    doc.setFontSize(13);
-    doc.setTextColor.apply(doc, PDF_COLOR_SLATE_DARK);
-    doc.text('Performance Report', PDF_PAGE_W / 2, y, { align: 'center' });
-    y += 7;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9.5);
-    doc.setTextColor.apply(doc, PDF_COLOR_SLATE);
-    doc.text(opts.appTitle || '', PDF_PAGE_W / 2, y, { align: 'center' });
-    y += 5;
-    doc.setFontSize(8.5);
-    doc.text('Generated on ' + opts.generatedAt, PDF_PAGE_W / 2, y, { align: 'center' });
-
-    y += 16;
-    doc.setDrawColor.apply(doc, PDF_COLOR_BORDER);
-    doc.setLineWidth(0.3);
-    doc.line(PDF_MARGIN + 20, y, PDF_PAGE_W - PDF_MARGIN - 20, y);
-    y += 10;
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor.apply(doc, PDF_COLOR_BRAND_DARK);
-    doc.text('Included in this report', PDF_MARGIN, y);
-    y += 8;
-
-    var totalCount = 0;
-    opts.groups.forEach(function (g) {
-        totalCount += g.count;
-        doc.setFillColor.apply(doc, PDF_COLOR_SLATE_LIGHT);
-        doc.roundedRect(PDF_MARGIN, y - 4.5, PDF_PAGE_W - PDF_MARGIN * 2, 9, 1.5, 1.5, 'F');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor.apply(doc, PDF_COLOR_SLATE_DARK);
-        doc.text(g.examName, PDF_MARGIN + 3, y + 1);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor.apply(doc, PDF_COLOR_SLATE);
-        var rightText = g.count + ' record' + (g.count === 1 ? '' : 's') + (g.dateFrom ? '  ·  ' + g.dateFrom + ' to ' + g.dateTo : '');
-        doc.text(rightText, PDF_PAGE_W - PDF_MARGIN - 3, y + 1, { align: 'right' });
-        y += 12;
-    });
-
-    y += 4;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor.apply(doc, PDF_COLOR_BRAND_DARK);
-    doc.text('Total: ' + totalCount + ' mock record' + (totalCount === 1 ? '' : 's') + ' selected', PDF_MARGIN, y);
-
-    return y;
-}
-
-/* ---------- one page per record ---------- */
-
-function pdfDrawRecordPage(doc, record, logoBase64) {
-    var cursorY = pdfNewPage(doc, logoBase64);
-    var mock = record.mock || {};
-
-    // header
-    doc.setFillColor.apply(doc, PDF_COLOR_BRAND);
-    doc.roundedRect(PDF_MARGIN, cursorY, 34, 6, 1, 1, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(255, 255, 255);
-    doc.text((record.examShort || record.examName || '') + (mock.mockNo ? ' · Mock ' + mock.mockNo : ''), PDF_MARGIN + 17, cursorY + 4.2, { align: 'center' });
-    cursorY += 11;
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor.apply(doc, PDF_COLOR_SLATE_DARK);
-    var titleLines = doc.splitTextToSize(mock.testName || ('Mock ' + (mock.mockNo || '')), PDF_PAGE_W - PDF_MARGIN * 2);
-    doc.text(titleLines, PDF_MARGIN, cursorY);
-    cursorY += titleLines.length * 5.5 + 1;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor.apply(doc, PDF_COLOR_SLATE);
-    doc.text((mock.date || 'Date not recorded') + '  ·  ' + (record.examName || ''), PDF_MARGIN, cursorY);
-    cursorY += 8;
-
-    // stat grid
-    var accuracy = pdfGetAccuracyPct(mock.correct, mock.attempted);
-    var scoreVal = (mock.score === null || mock.score === undefined) ? 'N/A' : pdfFmt1(mock.score) + (mock.maxScore ? ' / ' + mock.maxScore : '');
-    var stats = [
-        { label: 'Score', value: scoreVal, color: PDF_COLOR_SLATE_DARK },
-        { label: 'Accuracy', value: pdfFmt1(accuracy) + '%', color: PDF_COLOR_BRAND },
-        { label: 'Percentile', value: (mock.percentile !== null && mock.percentile !== undefined && mock.percentile !== '') ? mock.percentile + '%' : 'N/A', color: PDF_COLOR_AVERAGE },
-        { label: 'Negatives', value: '-' + pdfFmt1(mock.negativeMarks || 0), color: PDF_COLOR_WEAK },
-        { label: 'Correct', value: String(mock.correct !== undefined && mock.correct !== null ? mock.correct : 0), color: PDF_COLOR_STRONG },
-        { label: 'Wrong', value: String(mock.wrong !== undefined && mock.wrong !== null ? mock.wrong : 0), color: PDF_COLOR_WEAK },
-        { label: 'Unattempted', value: String(mock.unattempted !== undefined && mock.unattempted !== null ? mock.unattempted : 0), color: PDF_COLOR_SLATE },
-        { label: 'Attempted', value: String(mock.attempted !== undefined && mock.attempted !== null ? mock.attempted : 0), color: PDF_COLOR_BRAND }
-    ];
-    cursorY = pdfDrawStatGrid(doc, cursorY, stats, logoBase64);
-    cursorY += 3;
-
-    // subject-wise table
-    cursorY = pdfDrawSectionHeading(doc, cursorY, 'Subject-Wise Breakdown', logoBase64);
-    var subjPerf = pdfBuildSubjectPerf(record);
-    if (subjPerf.length) {
-        var body = subjPerf.map(function (s) {
-            var tag = pdfTagForPercent(s.pct);
-            return [s.label, pdfFmt1(s.val), String(s.max), pdfFmt1(s.pct) + '%', tag.label];
-        });
-        doc.autoTable({
-            startY: cursorY,
-            margin: { left: PDF_MARGIN, right: PDF_MARGIN },
-            head: [['Subject', 'Score', 'Max', '%', 'Tag']],
-            body: body,
-            theme: 'grid',
-            styles: { font: 'helvetica', fontSize: 8, cellPadding: 2, textColor: PDF_COLOR_SLATE_DARK, lineColor: PDF_COLOR_BORDER, lineWidth: 0.2 },
-            headStyles: { fillColor: PDF_COLOR_BRAND, textColor: [255, 255, 255], fontStyle: 'bold' },
-            columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'center' } },
-            didParseCell: function (data) {
-                if (data.section === 'body' && data.column.index === 4) {
-                    var tag = pdfTagForPercent(parseFloat(body[data.row.index][3]));
-                    data.cell.styles.textColor = tag.color;
-                    data.cell.styles.fontStyle = 'bold';
-                }
-            },
-            didDrawPage: function () { pdfDrawWatermark(doc, logoBase64); }
-        });
-        cursorY = doc.lastAutoTable.finalY + 6;
-    } else {
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(8.5);
-        doc.setTextColor.apply(doc, PDF_COLOR_SLATE);
-        doc.text('No subject-wise data was recorded for this mock.', PDF_MARGIN, cursorY);
-        cursorY += 8;
-    }
-
-    // strong / weak callouts
-    if (subjPerf.length >= 1) {
-        var sorted = subjPerf.slice().sort(function (a, b) { return b.pct - a.pct; });
-        var strongest = sorted[0], weakest = sorted[sorted.length - 1];
-        cursorY = pdfDrawCalloutBox(doc, cursorY, 'Strongest: ' + strongest.label,
-            strongest.label + ' scored ' + pdfFmt1(strongest.pct) + '% — keep reinforcing this with periodic revision so it stays an edge.',
-            PDF_COLOR_STRONG, logoBase64);
-        if (weakest.label !== strongest.label) {
-            cursorY = pdfDrawCalloutBox(doc, cursorY, 'Weakest: ' + weakest.label,
-                weakest.label + ' scored ' + pdfFmt1(weakest.pct) + '% — prioritise this section in the next revision cycle.',
-                PDF_COLOR_WEAK, logoBase64);
-        }
-    }
-
-    // auto-generated analysis
-    cursorY = pdfDrawSectionHeading(doc, cursorY, 'Analysis', logoBase64);
-    cursorY = pdfDrawParagraph(doc, cursorY, pdfBuildRecordAnalysis(record), logoBase64);
-    cursorY += 4;
-
-    // notes
-    if (mock.notes && String(mock.notes).trim()) {
-        cursorY = pdfDrawSectionHeading(doc, cursorY, 'Notes', logoBase64);
-        cursorY = pdfDrawParagraph(doc, cursorY, String(mock.notes).trim(), logoBase64, { color: PDF_COLOR_SLATE });
-    }
-
-    return cursorY;
-}
-
-/* ---------- final weakness-analysis section (last 5 mocks + all mocks, per category) ---------- */
-
-function pdfDrawWeaknessSummarySection(doc, groupedByExam, logoBase64) {
-    var cursorY = pdfNewPage(doc, logoBase64);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
-    doc.setTextColor.apply(doc, PDF_COLOR_BRAND);
-    doc.text('Weakness Analysis Summary', PDF_MARGIN, cursorY);
-    cursorY += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor.apply(doc, PDF_COLOR_SLATE);
-    doc.text('Auto-generated from your saved records — last 5 mocks vs. all selected mocks, per exam category.', PDF_MARGIN, cursorY);
-    cursorY += 9;
-
-    Object.keys(groupedByExam).forEach(function (examId) {
-        var group = groupedByExam[examId]; // {examName, records: [...] sorted by date asc}
-        var records = group.records;
-        if (!records.length) return;
-
-        cursorY = pdfDrawSectionHeading(doc, cursorY, group.examName, logoBase64);
-
-        var last5 = records.slice(-5);
-        var all = records;
-        var drewAnyWindow = false;
-
-        [{ label: 'Last 5 Mocks', data: last5 }, { label: 'All Selected Mocks', data: all }].forEach(function (win) {
-            var avgs = pdfComputeGroupAverages(win.data);
-            var scored = avgs.filter(function (a) { return a.pct !== null; });
-            if (!scored.length) return;
-            drewAnyWindow = true;
-
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(9);
-            doc.setTextColor.apply(doc, PDF_COLOR_SLATE_DARK);
-            cursorY = pdfEnsureSpace(doc, cursorY, 7, logoBase64);
-            doc.text(win.label + ' (' + win.data.length + ' mock' + (win.data.length === 1 ? '' : 's') + ')', PDF_MARGIN, cursorY);
-            cursorY += 4;
-
-            var body = scored.map(function (a) {
-                var tag = pdfTagForPercent(a.pct);
-                return [a.label, pdfFmt1(a.avg), String(a.max), pdfFmt1(a.pct) + '%', tag.label];
-            });
-            doc.autoTable({
-                startY: cursorY,
-                margin: { left: PDF_MARGIN, right: PDF_MARGIN },
-                head: [['Subject', 'Avg Score', 'Max', 'Avg %', 'Tag']],
-                body: body,
-                theme: 'grid',
-                styles: { font: 'helvetica', fontSize: 8, cellPadding: 2, textColor: PDF_COLOR_SLATE_DARK, lineColor: PDF_COLOR_BORDER, lineWidth: 0.2 },
-                headStyles: { fillColor: PDF_COLOR_BRAND_DARK, textColor: [255, 255, 255], fontStyle: 'bold' },
-                columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'center' } },
-                didParseCell: function (data) {
-                    if (data.section === 'body' && data.column.index === 4) {
-                        var tag = pdfTagForPercent(parseFloat(body[data.row.index][3]));
-                        data.cell.styles.textColor = tag.color;
-                        data.cell.styles.fontStyle = 'bold';
-                    }
-                },
-                didDrawPage: function () { pdfDrawWatermark(doc, logoBase64); }
-            });
-            cursorY = doc.lastAutoTable.finalY + 4;
-
-            cursorY = pdfDrawParagraph(doc, cursorY, pdfBuildCategorySummarySentence(group.examName, win.label.toLowerCase(), avgs, win.data.length), logoBase64, { size: 8.5, color: PDF_COLOR_SLATE });
-            cursorY += 3;
-        });
-
-        if (!drewAnyWindow) {
-            cursorY = pdfDrawParagraph(doc, cursorY, 'No subject-wise data is available for ' + group.examName + ' to analyse.', logoBase64, { size: 8.5, color: PDF_COLOR_SLATE, italic: true });
-        }
-
-        cursorY += 3;
-    });
-
-    return cursorY;
-}
-
-/* ---------- footer pass (page numbers) ---------- */
-
-function pdfDrawFooters(doc, appTitle) {
-    var total = doc.internal.getNumberOfPages();
-    for (var i = 2; i <= total; i++) { // skip cover page (page 1)
-        doc.setPage(i);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor.apply(doc, PDF_COLOR_SLATE);
-        doc.text(appTitle, PDF_MARGIN, PDF_PAGE_H - 8);
-        doc.text('Page ' + (i - 1) + ' of ' + (total - 1), PDF_PAGE_W - PDF_MARGIN, PDF_PAGE_H - 8, { align: 'right' });
-    }
-}
-
-/* ---------- main orchestrator ---------- */
-
-// records: [{ uid, examId, examName, examShort, subjectsMeta, mock }], already filtered to selection
-// examOrder: array of examIds defining group ordering
-function pdfBuildReport(doc, records, examOrder, appTitle, logoBase64) {
-    // group by examId, sorted by date within group (ascending, so "last 5" = most recent 5)
-    var groups = {}; // examId -> {examName, records}
-    records.forEach(function (r) {
-        if (!groups[r.examId]) groups[r.examId] = { examName: r.examName, records: [] };
-        groups[r.examId].records.push(r);
-    });
-    Object.keys(groups).forEach(function (examId) {
-        groups[examId].records.sort(function (a, b) {
-            var da = a.mock.date || '', db = b.mock.date || '';
-            if (da !== db) return da < db ? -1 : 1;
-            return (a.mock.mockNo || 0) - (b.mock.mockNo || 0);
-        });
-    });
-
-    var order = (examOrder || []).filter(function (id) { return groups[id]; });
-    Object.keys(groups).forEach(function (id) { if (order.indexOf(id) === -1) order.push(id); });
-
-    var coverGroups = order.map(function (examId) {
-        var g = groups[examId];
-        var dates = g.records.map(function (r) { return r.mock.date; }).filter(Boolean).sort();
-        return {
-            examName: g.examName,
-            count: g.records.length,
-            dateFrom: dates[0] || null,
-            dateTo: dates[dates.length - 1] || null
-        };
-    });
-
-    pdfDrawCoverPage(doc, {
-        appTitle: appTitle,
-        generatedAt: new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        groups: coverGroups,
-        logoBase64: logoBase64
-    });
-
-    // one page per record, ordered by category then date
-    order.forEach(function (examId) {
-        groups[examId].records.forEach(function (r) {
-            pdfDrawRecordPage(doc, r, logoBase64);
-        });
-    });
-
-    // final weakness-analysis section (last 5 + all mocks, per category)
-    var orderedGroups = {};
-    order.forEach(function (examId) { orderedGroups[examId] = groups[examId]; });
-    pdfDrawWeaknessSummarySection(doc, orderedGroups, logoBase64);
-
-    pdfDrawFooters(doc, appTitle);
-
-    return doc;
-}
-
-        /* ================= Export Report (PDF) — UI glue ================= */
-        var exportReportRecords = [];
-        var exportReportSelected = new Set();
-
-        function exportGatherAllExamRecords() {
-            // Flush the in-memory (currently open) exam so it's included even if unsaved-to-disk timing is off.
-            localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
-            var records = [];
-            EXAM_ORDER.forEach(function (examId) {
-                var exam = EXAMS[examId];
-                var list;
-                if (examId === currentExamId) {
-                    list = mockData;
-                } else {
-                    try { list = JSON.parse(localStorage.getItem(getStorageKey(examId))) || []; } catch (e) { list = []; }
-                }
-                if (!Array.isArray(list)) list = [];
-                list.forEach(function (m) {
-                    records.push({
-                        uid: examId + '::' + m.id,
-                        examId: examId,
-                        examName: exam.name,
-                        examShort: exam.short,
-                        subjectsMeta: exam.subjects,
-                        mock: m
-                    });
-                });
-            });
-            return records;
-        }
-
-        function openExportReportModal() {
-            closeMobileNav();
-            exportReportRecords = exportGatherAllExamRecords();
-            if (!exportReportRecords.length) {
-                showToast('No saved mocks yet to export.', 'info');
-                return;
-            }
-            exportReportSelected = new Set(exportReportRecords.map(function (r) { return r.uid; }));
-            exportRenderReportList();
-            document.getElementById('export-report-modal').classList.remove('hidden');
-        }
-
-        function closeExportReportModal() {
-            document.getElementById('export-report-modal').classList.add('hidden');
-        }
-
-        function exportRenderReportList() {
-            var container = document.getElementById('export-report-list');
-            var groups = {};
-            exportReportRecords.forEach(function (r) {
-                if (!groups[r.examId]) groups[r.examId] = [];
-                groups[r.examId].push(r);
-            });
-            var html = '';
-            EXAM_ORDER.forEach(function (examId) {
-                var list = groups[examId];
-                if (!list || !list.length) return;
-                list.sort(function (a, b) {
-                    var da = a.mock.date || '', db = b.mock.date || '';
-                    if (da !== db) return da < db ? -1 : 1;
-                    return (a.mock.mockNo || 0) - (b.mock.mockNo || 0);
-                });
-                var allChecked = list.every(function (r) { return exportReportSelected.has(r.uid); });
-                html += '<div class="border border-slate-200 rounded-xl overflow-hidden">' +
-                    '<label class="flex items-center gap-2 px-3 py-2 bg-slate-50 border-b border-slate-200 cursor-pointer">' +
-                    '<input type="checkbox" class="w-4 h-4 accent-brand-600" id="export-group-' + examId + '" ' + (allChecked ? 'checked' : '') + ' onchange="exportToggleCategory(\'' + examId + '\', this.checked)">' +
-                    '<span class="text-xs font-bold text-slate-800">' + escapeHtml(EXAMS[examId].name) + '</span>' +
-                    '<span class="ml-auto text-[10px] text-slate-400 font-semibold">' + list.length + ' record' + (list.length > 1 ? 's' : '') + '</span>' +
-                    '</label><div class="divide-y divide-slate-100">' +
-                    list.map(function (r) {
-                        var scoreTxt = (r.mock.score !== null && r.mock.score !== undefined) ? Number(r.mock.score).toFixed(1) + '/' + r.mock.maxScore : 'N/A';
-                        return '<label class="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer">' +
-                            '<input type="checkbox" class="w-4 h-4 accent-brand-600" data-uid="' + r.uid + '" ' + (exportReportSelected.has(r.uid) ? 'checked' : '') + ' onchange="exportToggleRecord(\'' + r.uid + '\', this.checked)">' +
-                            '<span class="flex-1 min-w-0">' +
-                            '<span class="block text-xs font-semibold text-slate-700 truncate">' + escapeHtml(r.mock.testName || ('Mock ' + r.mock.mockNo)) + '</span>' +
-                            '<span class="block text-[10px] text-slate-400">' + (r.mock.date || 'No date') + ' &middot; Score ' + scoreTxt + '</span>' +
-                            '</span></label>';
-                    }).join('') +
-                    '</div></div>';
-            });
-            container.innerHTML = html;
-            exportUpdateCounter();
-        }
-
-        function exportToggleCategory(examId, checked) {
-            exportReportRecords.filter(function (r) { return r.examId === examId; }).forEach(function (r) {
-                if (checked) exportReportSelected.add(r.uid); else exportReportSelected.delete(r.uid);
-            });
-            exportRenderReportList();
-        }
-
-        function exportToggleRecord(uid, checked) {
-            if (checked) exportReportSelected.add(uid); else exportReportSelected.delete(uid);
-            var rec = exportReportRecords.find(function (r) { return r.uid === uid; });
-            if (rec) {
-                var groupList = exportReportRecords.filter(function (r) { return r.examId === rec.examId; });
-                var allChecked = groupList.every(function (r) { return exportReportSelected.has(r.uid); });
-                var groupCb = document.getElementById('export-group-' + rec.examId);
-                if (groupCb) groupCb.checked = allChecked;
-            }
-            exportUpdateCounter();
-        }
-
-        function exportReportSelectAll() {
-            exportReportSelected = new Set(exportReportRecords.map(function (r) { return r.uid; }));
-            exportRenderReportList();
-        }
-
-        function exportReportClearAll() {
-            exportReportSelected = new Set();
-            exportRenderReportList();
-        }
-
-        function exportUpdateCounter() {
-            var el = document.getElementById('export-report-counter');
-            if (el) el.textContent = exportReportSelected.size + ' selected';
-            var genBtn = document.getElementById('export-report-generate-btn');
-            if (genBtn) genBtn.disabled = exportReportSelected.size === 0;
-        }
-
-        function generateReportPDF() {
-            if (!exportReportSelected.size) { showToast('Select at least one mock to include.', 'error'); return; }
-            if (typeof window.jspdf === 'undefined') { showToast("PDF library didn't load — check your connection and try again.", 'error'); return; }
-            var btn = document.getElementById('export-report-generate-btn');
-            var originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating…';
-            try {
-                var selected = exportReportRecords.filter(function (r) { return exportReportSelected.has(r.uid); });
-                var jsPDF = window.jspdf.jsPDF;
-                var doc = new jsPDF({ unit: 'mm', format: 'a4' });
-                var appTitle = 'Tukka Meter — ' + (APP_CATEGORY_NAMES[THIS_APP_PREFIX] || '');
-                pdfBuildReport(doc, selected, EXAM_ORDER, appTitle, EXPORT_REPORT_LOGO_B64);
-                var filename = 'TukkaMeter_' + (APP_CATEGORY_NAMES[THIS_APP_PREFIX] || 'Report').replace(/\s+/g, '') + '_Report_' + new Date().toISOString().slice(0, 10) + '.pdf';
-                doc.save(filename);
-                closeExportReportModal();
-                showToast('Report PDF generated!', 'success');
-            } catch (err) {
-                console.error('Export Report PDF failed', err);
-                showToast("Couldn't generate the PDF — please try again.", 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            }
         }
     </script>
 </body>
