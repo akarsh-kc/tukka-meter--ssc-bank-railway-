@@ -605,8 +605,8 @@
                 </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-                <span class="text-xs font-bold px-3 py-1.5 rounded-lg bg-brand-50 text-brand-700 border border-brand-100 js-exam-total">200 Marks Total</span>
-                <button onclick="openExamSwitchModal()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 transition"><i class="fa-solid fa-right-left text-[11px]"></i> Switch</button>
+                <span class="text-xs font-bold px-3 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 border border-brand-100 dark:border-brand-800 js-exam-total">200 Marks Total</span>
+                <button onclick="openExamSwitchModal()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition"><i class="fa-solid fa-right-left text-[11px]"></i> Switch</button>
             </div>
         </section>
 
@@ -677,10 +677,10 @@
                 <div id="overall-performance-pill" class="shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-700 whitespace-nowrap self-start sm:self-center">-</div>
             </div>
             <div class="mb-4">
-                <button onclick="editCutoff()" id="cutoff-pill" class="text-[11px] font-semibold text-slate-500 hover:text-brand-700 flex items-center gap-1.5 transition-colors">
+                <button onclick="editCutoff()" id="cutoff-pill" class="text-xs font-bold px-3 py-1.5 rounded-lg border w-fit flex items-center gap-1.5 transition-colors bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 shadow-sm">
                     <i class="fa-solid fa-flag-checkered text-[10px]"></i>
                     <span id="cutoff-pill-text">Set expected cutoff for smarter ratings</span>
-                    <i class="fa-solid fa-pen text-[9px] text-slate-400"></i>
+                    <i class="fa-solid fa-pen text-[9px] opacity-60"></i>
                 </button>
             </div>
             <div class="space-y-4">
@@ -2091,9 +2091,15 @@
             }
             perfPill.textContent = perfLabel;
             perfPill.className = `shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg ${perfClass} whitespace-nowrap self-start sm:self-center`;
+            const cutoffPill = document.getElementById('cutoff-pill');
             const cutoffPillText = document.getElementById('cutoff-pill-text');
             if (cutoffPillText) {
                 cutoffPillText.textContent = cutoffVal !== null ? `Cutoff: ${cutoffVal} / ${totalMarks} (tap to edit)` : 'Set expected cutoff for smarter ratings';
+            }
+            if (cutoffPill) {
+                cutoffPill.className = cutoffVal !== null
+                    ? 'text-xs font-bold px-3 py-1.5 rounded-lg border w-fit flex items-center gap-1.5 transition-colors bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
+                    : 'text-xs font-bold px-3 py-1.5 rounded-lg border w-fit flex items-center gap-1.5 transition-colors bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 shadow-sm';
             }
 
             document.getElementById('bar-percentile-text').textContent = `${avgPercentile.toFixed(1)}%`;
