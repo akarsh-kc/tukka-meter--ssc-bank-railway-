@@ -445,17 +445,43 @@
             content: ''; position: absolute; inset: 8%; border-radius: 9999px; pointer-events: none;
             border: 1px solid rgba(34,211,238,0.3);
         }
+        /* ================= App boot splash: skeleton shimmer ================= */
+        .skeleton-bar {
+            background: linear-gradient(90deg, rgba(148,163,184,0.16) 25%, rgba(148,163,184,0.34) 37%, rgba(148,163,184,0.16) 63%);
+            background-size: 400% 100%;
+            animation: skeletonShimmer 1.4s ease infinite;
+        }
+        html.dark .skeleton-bar {
+            background: linear-gradient(90deg, rgba(148,163,184,0.08) 25%, rgba(148,163,184,0.22) 37%, rgba(148,163,184,0.08) 63%);
+            background-size: 400% 100%;
+        }
+        @keyframes skeletonShimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: 0 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .skeleton-bar { animation: none; background-position: 0 0; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex selection:bg-brand-500 selection:text-white">
 
-    <div id="app-loading-screen" class="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-[#05070f] transition-opacity duration-500 ease-out">
-        <div class="rounded-2xl shadow-glow overflow-hidden w-16 h-16">
+    <div id="app-loading-screen" class="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-[#05070f] transition-opacity duration-500 ease-out px-10">
+        <div class="rounded-2xl shadow-glow overflow-hidden w-14 h-14 shrink-0">
             <img src="../icon-512.png" alt="Tukka Meter Railway" class="w-full h-full object-contain">
         </div>
-        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Made by Akarsh K C❤️</p>
-        <h1 class="text-sm font-bold font-display text-slate-800 dark:text-slate-100 text-center">Tukka Meter Railway</h1>
-        <i class="fa-solid fa-spinner fa-spin text-brand-500 text-base mt-1"></i>
+        <div class="flex flex-col items-center gap-1">
+            <h1 class="text-sm font-bold font-display text-slate-800 dark:text-slate-100 text-center">Tukka Meter Railway</h1>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Made by Akarsh K C❤️</p>
+        </div>
+        <div class="w-full max-w-[200px] flex flex-col gap-2 mt-1">
+            <div class="skeleton-bar h-2.5 w-2/3 mx-auto rounded-full"></div>
+            <div class="flex gap-2">
+                <div class="skeleton-bar h-10 flex-1 rounded-xl"></div>
+                <div class="skeleton-bar h-10 flex-1 rounded-xl"></div>
+            </div>
+            <div class="skeleton-bar h-8 w-full rounded-xl"></div>
+        </div>
     </div>
 
     <header class="mobile-topbar">
