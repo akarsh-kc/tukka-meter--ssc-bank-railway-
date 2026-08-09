@@ -7,7 +7,7 @@
 
     <!-- PWA setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#5b4fe0">
+    <meta name="theme-color" content="#4f46e5">
     <meta name="color-scheme" content="light dark">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -28,29 +28,6 @@
                 if (localStorage.getItem('tukka_dark_mode') === 'true') {
                     document.documentElement.classList.add('dark');
                 }
-                // Pre-apply the saved theme color before first paint (mirrors the
-                // dark-mode approach above) so there's no flash of the default
-                // violet before switching to whatever accent color was chosen.
-                var THEME_KEYS_EARLY = ['50','100','200','300','400','500','600','700','800','900'];
-                var THEME_PRESETS_EARLY = {
-                    violet: {'50':'241 238 254','100':'227 221 253','200':'199 187 251','300':'171 153 249','400':'143 129 248','500':'123 110 246','600':'91 79 224','700':'74 63 196','800':'58 50 160','900':'43 38 120','accent2':'110 193 255'},
-                    blue: {'50':'238 244 255','100':'220 233 255','200':'185 211 255','300':'143 184 255','400':'106 160 255','500':'79 134 240','600':'61 111 217','700':'49 89 184','800':'39 71 147','900':'28 52 104','accent2':'155 144 248'},
-                    green: {'50':'236 253 246','100':'211 248 234','200':'166 240 212','300':'114 226 186','400':'63 207 158','500':'31 181 131','600':'20 154 108','700':'16 125 88','800':'12 97 70','900':'9 71 52','accent2':'110 225 208'},
-                    rose: {'50':'254 241 246','100':'253 227 238','200':'250 194 220','300':'247 156 196','400':'242 121 173','500':'232 90 151','600':'204 67 128','700':'168 53 104','800':'131 41 81','900':'94 30 59','accent2':'185 138 245'},
-                    amber: {'50':'255 247 236','100':'255 236 209','200':'255 214 163','300':'255 188 112','400':'255 161 71','500':'245 135 43','600':'214 110 28','700':'178 87 23','800':'138 67 21','900':'98 48 20','accent2':'255 157 122'},
-                    graphite: {'50':'244 244 246','100':'231 231 236','200':'207 208 216','300':'179 181 192','400':'150 152 167','500':'124 126 141','600':'101 102 122','700':'80 82 102','800':'60 61 79','900':'42 43 58','accent2':'143 146 168'},
-                    pink: {'50':'255 238 248','100':'255 214 238','200':'255 176 224','300':'255 130 207','400':'250 85 187','500':'236 42 160','600':'200 26 132','700':'161 21 105','800':'124 17 82','900':'87 12 58','accent2':'207 138 255'},
-                    red: {'50':'255 241 240','100':'255 222 219','200':'255 184 176','300':'255 138 125','400':'250 92 76','500':'234 51 35','600':'200 31 18','700':'161 24 16','800':'124 19 14','900':'86 13 10','accent2':'255 148 102'},
-                    cyan: {'50':'236 254 255','100':'207 250 254','200':'162 240 250','300':'103 226 240','400':'34 199 224','500':'10 168 194','600':'8 136 160','700':'10 109 130','800':'14 85 102','900':'15 63 77','accent2':'127 184 255'}
-                };
-                var savedTheme = localStorage.getItem('tukka_theme_color');
-                var themePreset = THEME_PRESETS_EARLY[savedTheme] || THEME_PRESETS_EARLY.violet;
-                if (savedTheme && themePreset !== THEME_PRESETS_EARLY.violet) {
-                    THEME_KEYS_EARLY.forEach(function (stop) {
-                        document.documentElement.style.setProperty('--brand-' + stop, themePreset[stop]);
-                    });
-                    document.documentElement.style.setProperty('--brand-accent2', themePreset.accent2);
-                }
             } catch (e) {}
         })();
     </script>
@@ -63,24 +40,18 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: 'rgb(var(--brand-50) / <alpha-value>)', 100: 'rgb(var(--brand-100) / <alpha-value>)',
-                            200: 'rgb(var(--brand-200) / <alpha-value>)', 300: 'rgb(var(--brand-300) / <alpha-value>)',
-                            400: 'rgb(var(--brand-400) / <alpha-value>)', 500: 'rgb(var(--brand-500) / <alpha-value>)',
-                            600: 'rgb(var(--brand-600) / <alpha-value>)', 700: 'rgb(var(--brand-700) / <alpha-value>)',
-                            800: 'rgb(var(--brand-800) / <alpha-value>)', 900: 'rgb(var(--brand-900) / <alpha-value>)',
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#2e2a6b',
                         },
-                        accent: { amber: '#f59e0b', rose: '#fb3d68', emerald: '#10d9a3', purple: 'rgb(var(--brand-300) / <alpha-value>)', cyan: 'rgb(var(--brand-accent2) / <alpha-value>)' }
+                        accent: { amber: '#f59e0b', rose: '#fb3d68', emerald: '#10d9a3', purple: '#a855f7', cyan: '#22d3ee' }
                     },
                     fontFamily: {
-                        sans: ['Roboto', 'Google Sans Text', 'system-ui', 'sans-serif'],
-                        display: ['Roboto', 'Google Sans Text', 'system-ui', 'sans-serif']
-                    },
-                    borderRadius: {
-                        lg: '14px', xl: '18px', '2xl': '24px', '3xl': '30px', '4xl': '36px'
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif']
                     },
                     boxShadow: {
-                        glow: '0 1px 2px rgba(28,20,60,0.06), 0 6px 20px -6px rgb(var(--brand-500) / 0.35)',
-                        'glow-lg': '0 2px 8px rgba(28,20,60,0.08), 0 16px 40px -10px rgb(var(--brand-500) / 0.40)',
+                        glow: '0 0 0 1px rgba(99,102,241,0.15), 0 8px 24px -8px rgba(99,102,241,0.35)',
+                        'glow-lg': '0 0 40px -8px rgba(99,102,241,0.45)',
                     }
                 }
             }
@@ -89,7 +60,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -101,59 +72,55 @@
         html { color-scheme: light; }
         html.dark { color-scheme: dark; }
 
-        :root {
-            --brand-50: 241 238 254; --brand-100: 227 221 253; --brand-200: 199 187 251; --brand-300: 171 153 249; --brand-400: 143 129 248; --brand-500: 123 110 246; --brand-600: 91 79 224; --brand-700: 74 63 196; --brand-800: 58 50 160; --brand-900: 43 38 120;
-            --brand-accent2: 110 193 255;
-        }
         html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
-        body { font-family: 'Roboto', system-ui, sans-serif; background: #f7f4fc; }
-        html.dark body { background: #15121c; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f4f6fb; }
+        html.dark body { background: #05070f; }
 
         #app-frame {
             position: fixed; inset: 0; width: 100%; height: 100dvh; border: 0; display: block;
-            background: #f7f4fc;
+            background: #f4f6fb;
         }
-        html.dark #app-frame { background: #15121c; }
+        html.dark #app-frame { background: #05070f; }
 
         #boot-loader {
             position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 12px; background: #f7f4fc; transition: opacity .4s ease;
+            justify-content: center; gap: 12px; background: #f4f6fb; transition: opacity .4s ease;
         }
-        html.dark #boot-loader { background: #15121c; }
+        html.dark #boot-loader { background: #05070f; }
 
         #switcher-overlay {
             position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center;
             padding: 16px; background: rgba(15,18,35,0.55); backdrop-filter: blur(6px);
         }
         #switcher-overlay.open { display: flex; }
-        #switcher-overlay.onboarding { background: radial-gradient(circle at 50% 0%, rgb(var(--brand-600) / 0.25), transparent 60%), #f7f4fc; backdrop-filter: none; }
-        html.dark #switcher-overlay.onboarding { background: radial-gradient(circle at 50% 0%, rgb(var(--brand-600) / 0.35), transparent 60%), #15121c; }
+        #switcher-overlay.onboarding { background: radial-gradient(circle at 50% 0%, rgba(79,70,229,0.25), transparent 60%), #f4f6fb; backdrop-filter: none; }
+        html.dark #switcher-overlay.onboarding { background: radial-gradient(circle at 50% 0%, rgba(79,70,229,0.35), transparent 60%), #05070f; }
 
         .switcher-panel {
             width: 100%; max-width: 640px; max-height: 88dvh; overflow-y: auto;
-            background: #ffffff; border-radius: 1.75rem; box-shadow: 0 0 0 1px rgb(var(--brand-500) / 0.12), 0 24px 60px -20px rgba(30,27,75,0.45);
+            background: #ffffff; border-radius: 1.75rem; box-shadow: 0 0 0 1px rgba(99,102,241,0.12), 0 24px 60px -20px rgba(30,27,75,0.45);
             padding: 22px 20px 26px;
         }
-        html.dark .switcher-panel { background: #1c1826; box-shadow: 0 0 0 1px rgb(var(--brand-500) / 0.25), 0 24px 60px -20px rgba(0,0,0,0.6); }
+        html.dark .switcher-panel { background: #0b0f20; box-shadow: 0 0 0 1px rgba(99,102,241,0.25), 0 24px 60px -20px rgba(0,0,0,0.6); }
 
         .cat-tab {
             flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px;
             border-radius: 1.1rem; border: 1.5px solid transparent; background: #f8fafc; cursor: pointer;
             transition: all .2s ease; text-align: center;
         }
-        html.dark .cat-tab { background: #231e30; }
+        html.dark .cat-tab { background: #131a30; }
         .cat-tab:hover { transform: translateY(-2px); }
         .cat-tab.active {
             border-color: var(--cat-a); background: linear-gradient(160deg, color-mix(in srgb, var(--cat-a) 12%, white), color-mix(in srgb, var(--cat-b) 8%, white));
             box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--cat-a) 55%, transparent);
         }
-        html.dark .cat-tab.active { background: linear-gradient(160deg, color-mix(in srgb, var(--cat-a) 22%, #1c1826), color-mix(in srgb, var(--cat-b) 14%, #1c1826)); }
+        html.dark .cat-tab.active { background: linear-gradient(160deg, color-mix(in srgb, var(--cat-a) 22%, #0b0f20), color-mix(in srgb, var(--cat-b) 14%, #0b0f20)); }
         .cat-tab .cat-icon {
             width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
             color: #fff; font-size: 17px; background: linear-gradient(135deg, var(--cat-a), var(--cat-b));
             box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--cat-a) 60%, transparent);
         }
-        .cat-tab .cat-name { font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 12.5px; color: #1e293b; }
+        .cat-tab .cat-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 12.5px; color: #1e293b; }
         html.dark .cat-tab .cat-name { color: #f1f5f9; }
         .cat-tab .cat-sub { font-size: 10px; color: #64748b; font-weight: 500; }
 
@@ -162,11 +129,11 @@
             border-radius: 0.9rem; border: 1px solid #e2e8f0; background: #fff; cursor: pointer;
             transition: all .15s ease; text-align: left;
         }
-        html.dark .exam-pill { background: #231e30; border-color: rgba(148,163,184,0.15); }
+        html.dark .exam-pill { background: #131a30; border-color: rgba(148,163,184,0.15); }
         .exam-pill:hover { border-color: var(--cat-a); transform: translateX(2px); }
         .exam-pill:active { transform: scale(0.98); }
         .exam-pill.current { border-color: var(--cat-a); background: color-mix(in srgb, var(--cat-a) 7%, white); }
-        html.dark .exam-pill.current { background: color-mix(in srgb, var(--cat-a) 16%, #231e30); }
+        html.dark .exam-pill.current { background: color-mix(in srgb, var(--cat-a) 16%, #131a30); }
         .exam-pill .exam-icon {
             width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
             color: #fff; font-size: 13px; background: linear-gradient(135deg, var(--cat-a), var(--cat-b)); flex-shrink: 0; margin-top: 1px;
@@ -199,7 +166,7 @@
             box-shadow: 0 0 0 1px color-mix(in srgb, var(--cat-a) 18%, transparent), 0 10px 24px -12px color-mix(in srgb, var(--cat-a) 60%, transparent);
         }
         html.dark .exam-pill-special {
-            background: linear-gradient(160deg, color-mix(in srgb, var(--cat-a) 24%, #1c1826), color-mix(in srgb, var(--cat-b) 16%, #1c1826));
+            background: linear-gradient(160deg, color-mix(in srgb, var(--cat-a) 24%, #0b0f20), color-mix(in srgb, var(--cat-b) 16%, #0b0f20));
             box-shadow: 0 0 0 1px color-mix(in srgb, var(--cat-a) 35%, transparent), 0 10px 26px -12px color-mix(in srgb, var(--cat-a) 70%, transparent);
         }
         .exam-pill-special:hover { transform: translateX(2px) translateY(-1px); }
@@ -210,7 +177,7 @@
             width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 0 2px #fff; animation: specialPulse 2.2s ease-in-out infinite;
         }
-        html.dark .exam-special-star { box-shadow: 0 0 0 2px #1c1826; }
+        html.dark .exam-special-star { box-shadow: 0 0 0 2px #0b0f20; }
         @keyframes specialPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
         .exam-special-badge {
             display: inline-block; vertical-align: middle; margin-left: 4px; padding: 1px 6px;
@@ -229,23 +196,23 @@
         #announce-overlay.open { display: flex; }
         .announce-panel {
             width: 100%; max-width: 400px; background: #ffffff; border-radius: 1.5rem;
-            box-shadow: 0 0 0 1px rgb(var(--brand-500) / 0.12), 0 24px 60px -20px rgba(30,27,75,0.45);
+            box-shadow: 0 0 0 1px rgba(99,102,241,0.12), 0 24px 60px -20px rgba(30,27,75,0.45);
             padding: 22px 20px 20px; text-align: center;
         }
-        html.dark .announce-panel { background: #1c1826; box-shadow: 0 0 0 1px rgb(var(--brand-500) / 0.25), 0 24px 60px -20px rgba(0,0,0,0.6); }
+        html.dark .announce-panel { background: #0b0f20; box-shadow: 0 0 0 1px rgba(99,102,241,0.25), 0 24px 60px -20px rgba(0,0,0,0.6); }
         .announce-icon {
             width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 21px; background: linear-gradient(135deg, rgb(var(--brand-600)), rgb(var(--brand-400)));
-            box-shadow: 0 8px 20px -8px rgb(var(--brand-600) / 0.55);
+            color: #fff; font-size: 21px; background: linear-gradient(135deg, #4f46e5, #818cf8);
+            box-shadow: 0 8px 20px -8px rgba(79,70,229,0.55);
         }
-        .announce-title { font-family: 'Roboto', sans-serif; font-weight: 700; font-size: 15.5px; color: #1e293b; margin-bottom: 6px; }
+        .announce-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15.5px; color: #1e293b; margin-bottom: 6px; }
         html.dark .announce-title { color: #f1f5f9; }
         .announce-message { font-size: 12.5px; color: #64748b; font-weight: 500; line-height: 1.6; margin-bottom: 18px; text-align: left; white-space: pre-line; }
         html.dark .announce-message { color: #94a3b8; }
         .announce-btn {
             width: 100%; padding: 11px; border-radius: 0.9rem; border: none; cursor: pointer;
-            background: linear-gradient(135deg, rgb(var(--brand-600)), rgb(var(--brand-500))); color: #fff; font-weight: 700; font-size: 13px;
-            font-family: 'Roboto', sans-serif; transition: transform .15s ease;
+            background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff; font-weight: 700; font-size: 13px;
+            font-family: 'Inter', sans-serif; transition: transform .15s ease;
         }
         .announce-btn:active { transform: scale(0.97); }
     </style>
@@ -506,7 +473,6 @@
 
         function openSwitcher(onboarding) {
             syncShellDarkModeFromStorage();
-            syncShellThemeFromStorage();
             pickerCategory = activeCategory || 'ssc';
             renderCatTabs();
             renderExamGrid();
@@ -563,39 +529,8 @@
             if (event.key === 'tukka_dark_mode') applyShellDarkMode(event.newValue === 'true');
         });
 
-        // ================= THEME COLOR (kept in sync with whichever app is
-        // loaded in the iframe, via the same 'storage' event pattern used for
-        // dark mode below) =================
-        const THEME_PRESETS = {
-            violet: { name: 'Violet', '50': '241 238 254', '100': '227 221 253', '200': '199 187 251', '300': '171 153 249', '400': '143 129 248', '500': '123 110 246', '600': '91 79 224', '700': '74 63 196', '800': '58 50 160', '900': '43 38 120', 'accent2': '110 193 255' },
-            blue: { name: 'Blue', '50': '238 244 255', '100': '220 233 255', '200': '185 211 255', '300': '143 184 255', '400': '106 160 255', '500': '79 134 240', '600': '61 111 217', '700': '49 89 184', '800': '39 71 147', '900': '28 52 104', 'accent2': '155 144 248' },
-            green: { name: 'Green', '50': '236 253 246', '100': '211 248 234', '200': '166 240 212', '300': '114 226 186', '400': '63 207 158', '500': '31 181 131', '600': '20 154 108', '700': '16 125 88', '800': '12 97 70', '900': '9 71 52', 'accent2': '110 225 208' },
-            rose: { name: 'Rose', '50': '254 241 246', '100': '253 227 238', '200': '250 194 220', '300': '247 156 196', '400': '242 121 173', '500': '232 90 151', '600': '204 67 128', '700': '168 53 104', '800': '131 41 81', '900': '94 30 59', 'accent2': '185 138 245' },
-            amber: { name: 'Amber', '50': '255 247 236', '100': '255 236 209', '200': '255 214 163', '300': '255 188 112', '400': '255 161 71', '500': '245 135 43', '600': '214 110 28', '700': '178 87 23', '800': '138 67 21', '900': '98 48 20', 'accent2': '255 157 122' },
-            graphite: { name: 'Graphite', '50': '244 244 246', '100': '231 231 236', '200': '207 208 216', '300': '179 181 192', '400': '150 152 167', '500': '124 126 141', '600': '101 102 122', '700': '80 82 102', '800': '60 61 79', '900': '42 43 58', 'accent2': '143 146 168' },
-            pink: { name: 'Pink', '50': '255 238 248', '100': '255 214 238', '200': '255 176 224', '300': '255 130 207', '400': '250 85 187', '500': '236 42 160', '600': '200 26 132', '700': '161 21 105', '800': '124 17 82', '900': '87 12 58', 'accent2': '207 138 255' },
-            red: { name: 'Red', '50': '255 241 240', '100': '255 222 219', '200': '255 184 176', '300': '255 138 125', '400': '250 92 76', '500': '234 51 35', '600': '200 31 18', '700': '161 24 16', '800': '124 19 14', '900': '86 13 10', 'accent2': '255 148 102' },
-            cyan: { name: 'Cyan', '50': '236 254 255', '100': '207 250 254', '200': '162 240 250', '300': '103 226 240', '400': '34 199 224', '500': '10 168 194', '600': '8 136 160', '700': '10 109 130', '800': '14 85 102', '900': '15 63 77', 'accent2': '127 184 255' },
-        };
-        const THEME_KEY = 'tukka_theme_color';
-        function applyShellTheme(key) {
-            const preset = THEME_PRESETS[key] || THEME_PRESETS.violet;
-            const root = document.documentElement.style;
-            ['50','100','200','300','400','500','600','700','800','900'].forEach(stop => root.setProperty('--brand-' + stop, preset[stop]));
-            root.setProperty('--brand-accent2', preset.accent2);
-            const metaTheme = document.querySelector('meta[name="theme-color"]');
-            if (metaTheme) metaTheme.setAttribute('content', 'rgb(' + preset['600'] + ')');
-        }
-        function syncShellThemeFromStorage() {
-            try { applyShellTheme(localStorage.getItem(THEME_KEY) || 'violet'); } catch (e) {}
-        }
-        window.addEventListener('storage', (event) => {
-            if (event.key === THEME_KEY && event.newValue) applyShellTheme(event.newValue);
-        });
-
         // ---- boot ----
         function boot() {
-            syncShellThemeFromStorage();
             document.getElementById('boot-loader').style.opacity = '0';
             setTimeout(() => document.getElementById('boot-loader').remove(), 400);
 

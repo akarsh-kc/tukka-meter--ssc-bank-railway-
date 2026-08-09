@@ -1,5 +1,5 @@
 // Bump this on every deploy (or automate it — see notes below).
-const CACHE_NAME = "tukka-meter-cache-v5";
+const CACHE_NAME = "tukka-meter-cache-v4";
 const CORE_ASSETS = [
   "./index.html",
   "./manifest.json",
@@ -42,15 +42,21 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Network-first for the top-level hub shell only (index.html / any direct
-  // navigation) — so a new deploy of the shell itself is picked up right
-  // away. Falls back to cache only when offline.
-  const isHubRequest =
+  // Network-first for the app shell / any HTML document — this covers the
+  // top-level hub (index.html) AND every category app loaded inside its
+  // iframe (apps/ssc.html, apps/railway.html, apps/bank.html, apps/maths.html),
+  // so a new deploy is picked up on next load instead of being served stale.
+  // Falls back to cache only when offline.
+  const isHTMLRequest =
     req.mode === "navigate" ||
-    (req.method === "GET" && url.origin === self.location.origin && url.pathname.endsWith("index.html"));
+    (req.method === "GET" && url.origin === self.location.origin && url.pathname.endsWith(".html"));
 
-  if (isHubRequest) {
+  if (isHTMLRequest) {
+    // Strip cache-busting query strings (e.g. "?ts=169...") down to the clean
+    // path before falling back to cache, so an offline exam-category switch
+    // still resolves to the right cached app page instead of the hub shell.
     const cleanUrl = url.origin + url.pathname;
+
     event.respondWith(
       fetch(req)
         .then((response) => {
@@ -61,41 +67,6 @@ self.addEventListener("fetch", (event) => {
         .catch(() =>
           caches.match(cleanUrl).then((cached) => cached || caches.match("./index.html"))
         )
-    );
-    return;
-  }
-
-  // Stale-while-revalidate for the category app pages loaded inside the
-  // iframe (apps/ssc.html, apps/railway.html, apps/bank.html, apps/maths.html).
-  // These get requested every time the user switches exam category, so
-  // waiting on the network first (as index.html does) made every switch feel
-  // slow. Instead: serve the cached copy instantly if we have one, and
-  // refresh the cache from the network in the background so the *next*
-  // switch (or next launch) picks up any new deploy — the best of both
-  // speed and freshness, without ever blocking the switch on a round-trip.
-  const isAppPageRequest =
-    req.method === "GET" && url.origin === self.location.origin && url.pathname.endsWith(".html");
-
-  if (isAppPageRequest) {
-    // Strip cache-busting query strings (e.g. "?ts=169...") down to the
-    // clean path so lookups/writes stay keyed consistently.
-    const cleanUrl = url.origin + url.pathname;
-
-    event.respondWith(
-      caches.match(cleanUrl).then((cached) => {
-        const networkFetch = fetch(req)
-          .then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(cleanUrl, clone));
-            return response;
-          })
-          .catch(() => cached || caches.match("./index.html"));
-
-        // Cached? Return it immediately (instant switch) and let the
-        // network fetch above update the cache silently in the background.
-        // Nothing cached yet (first-ever load of this app)? Wait on network.
-        return cached || networkFetch;
-      })
     );
     return;
   }
