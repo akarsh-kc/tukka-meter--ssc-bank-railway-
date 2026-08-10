@@ -609,6 +609,12 @@
         html.dark .ai-bubble.error { background: rgba(127,29,29,0.35); color: #fecaca; border-color: rgba(220,38,38,0.4); }
         .ai-bubble b, .ai-bubble strong { font-weight: 700; }
         .ai-bubble code { background: rgba(100,116,139,0.15); padding: 0.1rem 0.3rem; border-radius: 0.3rem; font-size: 0.7rem; }
+        .ai-bubble .ai-md-h { display: block; font-weight: 700; margin: 0.6rem 0 0.25rem; line-height: 1.3; }
+        .ai-bubble h2.ai-md-h { font-size: 0.92rem; }
+        .ai-bubble h3.ai-md-h { font-size: 0.85rem; }
+        .ai-bubble h4.ai-md-h, .ai-bubble h5.ai-md-h, .ai-bubble h6.ai-md-h { font-size: 0.78rem; }
+        .ai-bubble .ai-md-h:first-child { margin-top: 0; }
+        .ai-bubble .ai-md-hr { border: none; border-top: 1px solid rgba(148,163,184,0.35); margin: 0.5rem 0; }
         .ai-typing-dot { width: 5px; height: 5px; border-radius: 50%; background: #94a3b8; display: inline-block; animation: aiTypingBlink 1.2s infinite ease-in-out; }
         .ai-typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .ai-typing-dot:nth-child(3) { animation-delay: 0.4s; }
@@ -2257,20 +2263,28 @@
         }
 
         function clearGeminiKey() {
-            if (!confirm('Remove the saved Gemini API key from this browser? Your chat history stays until you clear it separately.')) return;
-            try { localStorage.removeItem(AI_KEY_STORAGE); } catch (e) {}
-            initAiAnalyzer();
+            const doClear = () => {
+                try { localStorage.removeItem(AI_KEY_STORAGE); } catch (e) {}
+                initAiAnalyzer();
+            };
+            showConfirmModal('Remove API key?', 'Remove the saved Gemini API key from this browser? Your chat history stays until you clear it separately.', doClear);
         }
 
         // Archives the current chat (if it has any messages) into the recent-sessions
         // list, capped at AI_MAX_SESSIONS, then clears the active chat for a fresh start.
         function startNewAiChat() {
-            if (aiChatHistory.length && !confirm('Start a new chat? The current conversation will be saved under Recent Chats (last 5 only).')) return;
-            archiveCurrentAiSession();
-            aiChatHistory = [];
-            removeAiAttachment();
-            saveAiChatToStorage();
-            renderAiChat();
+            const doStart = () => {
+                archiveCurrentAiSession();
+                aiChatHistory = [];
+                removeAiAttachment();
+                saveAiChatToStorage();
+                renderAiChat();
+            };
+            if (aiChatHistory.length) {
+                showConfirmModal('Start a new chat?', 'The current conversation will be saved under Recent Chats (last 5 only).', doStart);
+            } else {
+                doStart();
+            }
         }
 
         function archiveCurrentAiSession() {
@@ -2341,11 +2355,32 @@
 
         function mdToHtml(text) {
             const esc = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            return esc
+            // Handle block-level markdown (headers, horizontal rules) line-by-line first,
+            // since Gemini's responses often use ### headers and --- dividers that were
+            // previously showing up as literal text instead of being rendered.
+            const lines = esc.split('\n').map(line => {
+                const t = line.trim();
+                if (/^-{3,}$/.test(t)) return '<hr class="ai-md-hr">';
+                let m = t.match(/^(#{1,6})\s+(.*)$/);
+                if (m) {
+                    const level = Math.min(m[1].length, 2) + 1; // #→h2, ##→h3, ###+ →h4
+                    const tag = 'h' + Math.min(Math.max(level, 2), 6);
+                    return `<${tag} class="ai-md-h">${m[2]}</${tag}>`;
+                }
+                return line;
+            });
+            let html = lines.join('\n')
                 .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
                 .replace(/\n\s*[-*]\s+/g, '\n• ')
                 .replace(/\n/g, '<br>');
+            // Tidy up stray line-breaks that land right next to block-level elements.
+            html = html
+                .replace(/(<br>\s*)+(<h[2-6][^>]*>)/g, '$2')
+                .replace(/(<\/h[2-6]>)(\s*<br>\s*)+/g, '$1')
+                .replace(/(<br>\s*)+(<hr[^>]*>)/g, '$2')
+                .replace(/(<hr[^>]*>)(\s*<br>\s*)+/g, '$1');
+            return html;
         }
 
         function renderAiChat() {
@@ -2443,14 +2478,20 @@
         function loadAiSession(id) {
             const sess = aiArchivedSessions.find(s => s.id === id);
             if (!sess) return;
-            if (aiChatHistory.length && !confirm('Load this past chat? Your current conversation will be archived first (last 5 only).')) return;
-            archiveCurrentAiSession();
-            aiArchivedSessions = aiArchivedSessions.filter(s => s.id !== id); // move it out of the archive, it's now active
-            aiChatHistory = sess.messages;
-            saveAiSessionsToStorage();
-            saveAiChatToStorage();
-            renderAiChat();
-            document.getElementById('ai-recent-panel').classList.add('hidden');
+            const doLoad = () => {
+                archiveCurrentAiSession();
+                aiArchivedSessions = aiArchivedSessions.filter(s => s.id !== id); // move it out of the archive, it's now active
+                aiChatHistory = sess.messages;
+                saveAiSessionsToStorage();
+                saveAiChatToStorage();
+                renderAiChat();
+                document.getElementById('ai-recent-panel').classList.add('hidden');
+            };
+            if (aiChatHistory.length) {
+                showConfirmModal('Load this past chat?', 'Your current conversation will be archived first (last 5 only).', doLoad);
+            } else {
+                doLoad();
+            }
         }
 
         function deleteAiSession(id) {
@@ -2595,10 +2636,12 @@
             };
 
             recognition.onend = () => {
-                // Some browsers auto-end after a pause even while the mic button is
-                // still "on" — if the person hasn't pressed stop, just restart listening.
+                // Don't auto-restart: on Android Chrome, restarting a "continuous"
+                // session after it silently ends tends to re-recognize the tail of
+                // the previous phrase, producing repeated/garbled text. Simpler and
+                // more reliable to just stop cleanly — the person can tap mic again.
                 if (aiSpeechRecognition === recognition) {
-                    try { recognition.start(); } catch (e) { stopAiAudioRecording(); }
+                    stopAiAudioRecording();
                 }
             };
 
