@@ -1437,7 +1437,7 @@
 
             <div id="ai-recording-chip" class="hidden mx-4 mb-2 px-3 py-2 bg-rose-50 border border-rose-200 rounded-xl text-[11px] font-semibold text-rose-700 flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                <span>Recording audio… <span id="ai-recording-timer">0:00</span></span>
+                <span>Listening… <span id="ai-recording-timer">0:00</span></span>
                 <button onclick="stopAiAudioRecording()" class="ml-auto px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold">
                     <i class="fa-solid fa-stop mr-1"></i> Stop
                 </button>
@@ -1448,7 +1448,7 @@
                 <button onclick="document.getElementById('ai-video-input').click()" title="Attach a mock screen recording" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-violet-600 transition-colors">
                     <i class="fa-solid fa-video"></i>
                 </button>
-                <button id="ai-mic-btn" onclick="toggleAiAudioRecording()" title="Record a voice note for Gemini" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-violet-600 transition-colors">
+                <button id="ai-mic-btn" onclick="toggleAiAudioRecording()" title="Speak your question (voice-to-text)" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-violet-600 transition-colors">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
                 <textarea id="ai-chat-input" rows="1" placeholder="Ask about your mocks — e.g. 'Which topics keep costing me marks?'" class="flex-1 resize-none max-h-32 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-brand-500 font-medium" onkeydown="handleAiChatKeydown(event)"></textarea>
@@ -2183,7 +2183,7 @@
         // the key, the chat messages, or an uploaded video.
         // ===================================================================
         const AI_KEY_STORAGE = 'tukka_gemini_api_key';
-        const AI_MODEL = 'gemini‑3.5‑flash';
+        const AI_MODEL = 'gemini-3.6-flash'; // gemini-2.5-flash is no longer available to new API keys as of Aug 2026; 3.6 Flash is the current stable, multimodal Flash model
         const AI_MAX_SESSIONS = 5; // only the most recent 5 past sessions are kept, to stop local storage from growing unbounded
         // NOTE: computed lazily (not as a top-level const) because THIS_APP_PREFIX
         // is declared further down in this same script.
@@ -2198,6 +2198,9 @@
         let aiRecordedChunks = [];
         let aiRecordingStream = null;
         let aiRecordingStartedAt = 0;
+        let aiSpeechRecognition = null;   // Web Speech API instance used for mic -> text dictation
+        let aiSpeechBaseText = '';        // textarea content that existed before dictation started
+        let aiSpeechFinalText = '';       // finalized (committed) transcript segments from this dictation session
         let aiRecordingTimerHandle = null;
 
         function getGeminiKey() {
@@ -2462,8 +2465,8 @@
             document.getElementById('ai-video-input').value = '';
         }
 
-        // ---- Generic Gemini File API upload (resumable protocol) — used for both
-        // an attached video file and an in-app audio recording. ----
+        // ---- Generic Gemini File API upload (resumable protocol) — used for an
+        // attached mock screen-recording video. ----
         async function uploadMediaToGemini(blob, displayName, mimeType, kind) {
             const key = getGeminiKey();
             if (!key) { openAiKeyPanel(); return; }
@@ -2539,33 +2542,74 @@
             await uploadMediaToGemini(file, file.name, file.type || 'video/mp4', 'video');
         }
 
-        // ---- Audio recording (mic) — records in-browser, then uploads via the same
-        // Gemini File API path used for video. Triggers the browser's standard,
-        // one-time microphone-permission prompt; nothing else is required. ----
-        async function toggleAiAudioRecording() {
-            if (aiMediaRecorder && aiMediaRecorder.state === 'recording') {
+        // ---- Mic dictation (audio -> text) — uses the browser's built-in Web Speech
+        // API to transcribe speech live and type it straight into the chat box, the
+        // same way voice input works in the Claude app. Nothing is uploaded anywhere;
+        // it's a normal one-time microphone-permission prompt, handled fully on-device
+        // by the browser/OS. ----
+        function getSpeechRecognitionCtor() {
+            return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+        }
+
+        function toggleAiAudioRecording() {
+            if (aiSpeechRecognition) {
                 stopAiAudioRecording();
                 return;
             }
-            const key = getGeminiKey();
-            if (!key) { openAiKeyPanel(); return; }
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert('Audio recording is not supported in this browser.');
-                return;
-            }
-            try {
-                aiRecordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            } catch (err) {
-                alert('Microphone access was denied or is unavailable. Please allow microphone permission to record a voice note.');
-                return;
-            }
-            aiRecordedChunks = [];
-            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
-            aiMediaRecorder = mimeType ? new MediaRecorder(aiRecordingStream, { mimeType }) : new MediaRecorder(aiRecordingStream);
-            aiMediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size) aiRecordedChunks.push(e.data); };
-            aiMediaRecorder.onstop = onAiAudioRecordingStop;
-            aiMediaRecorder.start();
 
+            const SpeechRecognitionCtor = getSpeechRecognitionCtor();
+            if (!SpeechRecognitionCtor) {
+                alert("Voice-to-text isn't supported in this browser. Try Chrome, or type your question instead.");
+                return;
+            }
+
+            const input = document.getElementById('ai-chat-input');
+            aiSpeechBaseText = input.value ? (input.value.replace(/\s+$/, '') + ' ') : '';
+            aiSpeechFinalText = '';
+
+            const recognition = new SpeechRecognitionCtor();
+            recognition.lang = (navigator.language || 'en-IN');
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        aiSpeechFinalText += transcript + ' ';
+                    } else {
+                        interim += transcript;
+                    }
+                }
+                input.value = aiSpeechBaseText + aiSpeechFinalText + interim;
+                input.scrollTop = input.scrollHeight;
+            };
+
+            recognition.onerror = (event) => {
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    alert('Microphone access was denied or is unavailable. Please allow microphone permission to use voice-to-text.');
+                } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    console.error('Speech recognition error:', event.error);
+                }
+            };
+
+            recognition.onend = () => {
+                // Some browsers auto-end after a pause even while the mic button is
+                // still "on" — if the person hasn't pressed stop, just restart listening.
+                if (aiSpeechRecognition === recognition) {
+                    try { recognition.start(); } catch (e) { stopAiAudioRecording(); }
+                }
+            };
+
+            try {
+                recognition.start();
+            } catch (err) {
+                alert('Could not start voice-to-text: ' + err.message);
+                return;
+            }
+
+            aiSpeechRecognition = recognition;
             aiRecordingStartedAt = Date.now();
             document.getElementById('ai-mic-btn').classList.add('!text-rose-600', '!border-rose-300');
             document.getElementById('ai-recording-chip').classList.remove('hidden');
@@ -2577,20 +2621,15 @@
         }
 
         function stopAiAudioRecording() {
-            if (aiMediaRecorder && aiMediaRecorder.state === 'recording') aiMediaRecorder.stop();
-            if (aiRecordingStream) aiRecordingStream.getTracks().forEach(t => t.stop());
+            if (aiSpeechRecognition) {
+                const rec = aiSpeechRecognition;
+                aiSpeechRecognition = null; // clear first so onend doesn't auto-restart it
+                try { rec.onend = null; rec.stop(); } catch (e) { /* no-op */ }
+            }
             clearInterval(aiRecordingTimerHandle);
             document.getElementById('ai-mic-btn').classList.remove('!text-rose-600', '!border-rose-300');
             document.getElementById('ai-recording-chip').classList.add('hidden');
-        }
-
-        async function onAiAudioRecordingStop() {
-            if (!aiRecordedChunks.length) return;
-            const mimeType = aiRecordedChunks[0].type || 'audio/webm';
-            const blob = new Blob(aiRecordedChunks, { type: mimeType });
-            aiRecordedChunks = [];
-            const fileName = `voice-note-${Date.now()}.webm`;
-            await uploadMediaToGemini(blob, fileName, mimeType, 'audio');
+            document.getElementById('ai-chat-input').focus();
         }
 
         async function sendAiMessage() {
