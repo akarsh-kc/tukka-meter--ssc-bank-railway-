@@ -89,6 +89,12 @@
     <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
+    <!-- KaTeX: renders the LaTeX Gemini sends back in the AI Analyzer chat
+         (e.g. $\pi r^2$, \sqrt{34}) as proper math instead of raw source text. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     
     <style>
         body {
@@ -2206,9 +2212,10 @@
         let aiRecordedChunks = [];
         let aiRecordingStream = null;
         let aiRecordingStartedAt = 0;
-        let aiSpeechRecognition = null;   // Web Speech API instance used for mic -> text dictation
+        let aiSpeechRecognition = null;   // Web Speech API instance currently active (one per utterance — see toggleAiAudioRecording)
+        let aiSpeechListening = false;    // true from mic-tap until Stop is tapped; drives auto-restart between utterances
         let aiSpeechBaseText = '';        // textarea content that existed before dictation started
-        let aiSpeechFinalText = '';       // finalized (committed) transcript segments from this dictation session
+        let aiSpeechFinalText = '';       // finalized transcript from all completed utterances so far this dictation session
         let aiRecordingTimerHandle = null;
 
         function getGeminiKey() {
@@ -2404,6 +2411,30 @@
                 return `<div class="ai-msg-row ${rowAlign}"><div class="ai-bubble ${cls}">${attach}${mdToHtml(m.text)}</div></div>`;
             }).join('');
             box.scrollTop = box.scrollHeight;
+            renderAiMath(box);
+        }
+
+        // Turn Gemini's LaTeX (e.g. $\pi r^2$, $\sqrt{34}$, \(\theta\)) into properly
+        // typeset math via KaTeX. Runs after every chat render; if the KaTeX scripts
+        // (loaded with `defer`) haven't finished loading yet on the very first
+        // message, it retries shortly after instead of leaving raw LaTeX on screen.
+        function renderAiMath(box, attempt) {
+            if (!box) return;
+            if (typeof window.renderMathInElement !== 'function') {
+                if ((attempt || 0) < 10) setTimeout(() => renderAiMath(box, (attempt || 0) + 1), 300);
+                return;
+            }
+            try {
+                window.renderMathInElement(box, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false }
+                    ],
+                    throwOnError: false
+                });
+            } catch (e) { /* leave raw text if KaTeX itself errors on a bad expression */ }
         }
 
         function showAiTyping() {
@@ -2595,7 +2626,7 @@
         }
 
         function toggleAiAudioRecording() {
-            if (aiSpeechRecognition) {
+            if (aiSpeechListening) {
                 stopAiAudioRecording();
                 return;
             }
@@ -2609,22 +2640,45 @@
             const input = document.getElementById('ai-chat-input');
             aiSpeechBaseText = input.value ? (input.value.replace(/\s+$/, '') + ' ') : '';
             aiSpeechFinalText = '';
+            aiSpeechListening = true;
+            aiRecordingStartedAt = Date.now();
+            document.getElementById('ai-mic-btn').classList.add('!text-rose-600', '!border-rose-300');
+            document.getElementById('ai-recording-chip').classList.remove('hidden');
+            aiRecordingTimerHandle = setInterval(() => {
+                const secs = Math.floor((Date.now() - aiRecordingStartedAt) / 1000);
+                const m = Math.floor(secs / 60), s = secs % 60;
+                document.getElementById('ai-recording-timer').textContent = `${m}:${String(s).padStart(2, '0')}`;
+            }, 500);
+
+            startAiSpeechSession(SpeechRecognitionCtor, input);
+        }
+
+        // Starts ONE utterance's worth of recognition (continuous = false) and,
+        // once it ends, automatically starts a fresh instance for the next
+        // utterance — as long as aiSpeechListening is still true. This is a
+        // deliberate workaround for a well-known Android Chrome bug: with
+        // continuous = true, the engine periodically re-processes overlapping
+        // audio *within the same still-running session* and fires onresult with
+        // duplicate/growing text ("can you please can you please...") — that
+        // happens before onend ever fires, so it can't be fixed by controlling
+        // what happens at onend. Running short, non-continuous sessions back to
+        // back avoids the overlap entirely, since each fresh session only sees
+        // audio captured after the previous one has fully stopped.
+        function startAiSpeechSession(SpeechRecognitionCtor, input) {
+            if (!aiSpeechListening) return;
 
             const recognition = new SpeechRecognitionCtor();
             recognition.lang = (navigator.language || 'en-IN');
-            recognition.continuous = true;
+            recognition.continuous = false;
             recognition.interimResults = true;
 
+            let sessionFinalText = '';
+
             recognition.onresult = (event) => {
-                // Rebuild the transcript from scratch on every event instead of
-                // appending with event.resultIndex. On Android Chrome the engine
-                // periodically re-fires onresult for the *same* continuous session
-                // with resultIndex reset to 0 (without ever calling onend), so
-                // appending caused the same phrase to get added again each time —
-                // "can you please" doubling/tripling. event.results always holds
-                // the full, authoritative result list for the session, so a full
-                // rebuild is naturally idempotent no matter how many times or in
-                // what order the browser fires this event.
+                // Rebuild this session's transcript from scratch each event —
+                // event.results is authoritative for the current (single, short)
+                // utterance, so this stays correct regardless of how many times
+                // the event fires.
                 let finalText = '';
                 let interim = '';
                 for (let i = 0; i < event.results.length; i++) {
@@ -2635,13 +2689,14 @@
                         interim += transcript;
                     }
                 }
-                aiSpeechFinalText = finalText;
-                input.value = aiSpeechBaseText + aiSpeechFinalText + interim;
+                sessionFinalText = finalText;
+                input.value = aiSpeechBaseText + aiSpeechFinalText + sessionFinalText + interim;
                 input.scrollTop = input.scrollHeight;
             };
 
             recognition.onerror = (event) => {
                 if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    aiSpeechListening = false;
                     alert('Microphone access was denied or is unavailable. Please allow microphone permission to use voice-to-text.');
                 } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
                     console.error('Speech recognition error:', event.error);
@@ -2649,39 +2704,41 @@
             };
 
             recognition.onend = () => {
-                // Don't auto-restart: on Android Chrome, restarting a "continuous"
-                // session after it silently ends tends to re-recognize the tail of
-                // the previous phrase, producing repeated/garbled text. Simpler and
-                // more reliable to just stop cleanly — the person can tap mic again.
-                if (aiSpeechRecognition === recognition) {
-                    stopAiAudioRecording();
+                // Commit whatever this utterance finished with, then either start
+                // the next utterance's session or stop cleanly if the user tapped
+                // Stop (or the mic was closed) while this one was wrapping up.
+                if (sessionFinalText) aiSpeechFinalText += sessionFinalText;
+                if (aiSpeechRecognition === recognition) aiSpeechRecognition = null;
+                if (aiSpeechListening) {
+                    startAiSpeechSession(SpeechRecognitionCtor, input);
+                } else {
+                    finishAiAudioRecordingUi();
                 }
             };
 
             try {
                 recognition.start();
             } catch (err) {
+                aiSpeechListening = false;
+                finishAiAudioRecordingUi();
                 alert('Could not start voice-to-text: ' + err.message);
                 return;
             }
 
             aiSpeechRecognition = recognition;
-            aiRecordingStartedAt = Date.now();
-            document.getElementById('ai-mic-btn').classList.add('!text-rose-600', '!border-rose-300');
-            document.getElementById('ai-recording-chip').classList.remove('hidden');
-            aiRecordingTimerHandle = setInterval(() => {
-                const secs = Math.floor((Date.now() - aiRecordingStartedAt) / 1000);
-                const m = Math.floor(secs / 60), s = secs % 60;
-                document.getElementById('ai-recording-timer').textContent = `${m}:${String(s).padStart(2, '0')}`;
-            }, 500);
         }
 
         function stopAiAudioRecording() {
+            aiSpeechListening = false;
             if (aiSpeechRecognition) {
                 const rec = aiSpeechRecognition;
                 aiSpeechRecognition = null; // clear first so onend doesn't auto-restart it
                 try { rec.onend = null; rec.stop(); } catch (e) { /* no-op */ }
             }
+            finishAiAudioRecordingUi();
+        }
+
+        function finishAiAudioRecordingUi() {
             clearInterval(aiRecordingTimerHandle);
             document.getElementById('ai-mic-btn').classList.remove('!text-rose-600', '!border-rose-300');
             document.getElementById('ai-recording-chip').classList.add('hidden');
