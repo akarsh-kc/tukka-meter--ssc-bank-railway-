@@ -2189,7 +2189,7 @@
         // the key, the chat messages, or an uploaded video.
         // ===================================================================
         const AI_KEY_STORAGE = 'tukka_gemini_api_key';
-        const AI_MODEL = 'gemini-flash-lite-slatest'; // Google's "latest" alias — always resolves to their current-recommended Flash model, so it won't need updating every time Google renames/retires a specific version (which is what broke gemini-2.5-flash)
+        const AI_MODEL = 'gemini-flash-lite-latest'; // Google's "latest" alias — always resolves to their current-recommended Flash model, so it won't need updating every time Google renames/retires a specific version (which is what broke gemini-2.5-flash)
         const AI_MAX_SESSIONS = 5; // only the most recent 5 past sessions are kept, to stop local storage from growing unbounded
         // NOTE: computed lazily (not as a top-level const) because THIS_APP_PREFIX
         // is declared further down in this same script.
