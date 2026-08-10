@@ -85,6 +85,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+    <!-- MathJax CDN (deferred) — typesets LaTeX-style formulas (\(...\), $$...$$)
+         that the AI Analyzer's Gemini responses often include. Without this the
+         formulas were just showing up as raw backslash/dollar-sign text instead
+         of being rendered. Config must be set before the script loads. -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js" defer></script>
+
     <!-- FontAwesome CDN (loaded non-blocking — icons pop in a beat after first paint, which the splash screen already covers) -->
     <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
@@ -615,6 +630,13 @@
         .ai-bubble h4.ai-md-h, .ai-bubble h5.ai-md-h, .ai-bubble h6.ai-md-h { font-size: 0.78rem; }
         .ai-bubble .ai-md-h:first-child { margin-top: 0; }
         .ai-bubble .ai-md-hr { border: none; border-top: 1px solid rgba(148,163,184,0.35); margin: 0.5rem 0; }
+        .ai-bubble .ai-md-table-wrap { display: block; overflow-x: auto; margin: 0.5rem 0; -webkit-overflow-scrolling: touch; }
+        .ai-bubble table.ai-md-table { border-collapse: collapse; width: 100%; font-size: 0.72rem; }
+        .ai-bubble table.ai-md-table th, .ai-bubble table.ai-md-table td { border: 1px solid rgba(148,163,184,0.35); padding: 0.3rem 0.5rem; text-align: left; vertical-align: top; }
+        .ai-bubble table.ai-md-table th { background: rgba(99,102,241,0.10); font-weight: 700; white-space: nowrap; }
+        html.dark .ai-bubble table.ai-md-table th, html.dark .ai-bubble table.ai-md-table td { border-color: rgba(148,163,184,0.25); }
+        html.dark .ai-bubble table.ai-md-table th { background: rgba(99,102,241,0.18); }
+        .ai-bubble mjx-container { font-size: 100% !important; }
         .ai-typing-dot { width: 5px; height: 5px; border-radius: 50%; background: #94a3b8; display: inline-block; animation: aiTypingBlink 1.2s infinite ease-in-out; }
         .ai-typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .ai-typing-dot:nth-child(3) { animation-delay: 0.4s; }
@@ -695,6 +717,10 @@
             <button onclick="openMockModal()" class="nav-cta w-full px-3 py-2.5 text-white text-xs font-semibold rounded-xl transition-all duration-400 flex items-center justify-center lg:justify-start gap-3" title="Add New Mock">
                 <span class="nav-icon-wrap !bg-white/20 !text-white"><i class="fa-solid fa-plus"></i></span>
                 <span class="hidden lg:inline">Add New Mock</span>
+            </button>
+            <button onclick="openImportMockModal()" id="nav-import-mock-btn" class="nav-pill" style="--pill-a:#8b5cf6;--pill-b:#22d3ee;--pill-glow:rgba(139,92,246,.55)" title="Import Mock from Video — Gemini reads your result screen and fills the form for you">
+                <span class="nav-icon-wrap"><i class="fa-solid fa-film"></i></span>
+                <span class="hidden lg:inline truncate">Import from Video</span>
             </button>
             <button onclick="showIndividualMockView()" id="nav-individual-btn" class="nav-pill" style="--pill-a:#a855f7;--pill-b:#ec4899;--pill-glow:rgba(168,85,247,.55)" title="Individual Mock Analyzer">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
@@ -1562,6 +1588,45 @@
         </div>
     </div>
 
+    <!-- IMPORT MOCK FROM VIDEO — user records their result/review screen, Gemini
+         watches it and extracts score + mistakes, then we open the same Add Mock
+         modal pre-filled so the user can double-check before saving. -->
+    <div id="importMockModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-panel border border-slate-200 bg-white rounded-2xl max-w-md w-full shadow-2xl my-auto">
+            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-film text-violet-600"></i> Import Mock from Video
+                </h3>
+                <button onclick="closeImportMockModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4 text-xs">
+                <div class="p-3 bg-violet-50 border border-violet-200 rounded-xl text-violet-800 leading-relaxed">
+                    <p class="font-semibold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> How to record</p>
+                    <p>Solve your mock first. Then screen-record yourself going through the <strong>result / answer-review screen</strong> — pause about 1–2 seconds on each question so Gemini can read it clearly. Keep the recording short (a couple of minutes is enough); it doesn't need to cover the full live attempt.</p>
+                </div>
+                <div>
+                    <label class="block text-slate-700 font-medium mb-1.5">Review-screen recording</label>
+                    <input type="file" id="import-mock-video-input" accept="video/*" onchange="handleImportMockVideoSelect(event)" class="hidden">
+                    <button type="button" onclick="document.getElementById('import-mock-video-input').click()" class="w-full px-3 py-2.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-violet-400 hover:text-violet-600 hover:bg-violet-50/50 transition-colors flex items-center justify-center gap-2 font-semibold">
+                        <i class="fa-solid fa-upload"></i> <span id="import-mock-file-label">Choose video…</span>
+                    </button>
+                </div>
+                <div id="import-mock-status" class="hidden text-[11px] font-semibold text-slate-500 flex items-center gap-1.5"></div>
+                <p class="text-[10.5px] text-slate-400 leading-relaxed">Uses your own Gemini API key — the video goes straight from your phone to Google, same as the AI Analyzer chat. Extracted numbers can be wrong sometimes, so you'll get a chance to review everything before it's saved.</p>
+            </div>
+            <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 rounded-b-2xl flex items-center justify-end gap-3">
+                <button onclick="closeImportMockModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg text-xs transition-colors">
+                    Cancel
+                </button>
+                <button id="btn-import-mock-extract" onclick="extractMockFromVideo()" disabled class="px-5 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold rounded-lg text-xs shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                    Extract &amp; Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Confirmation Modal -->
     <!-- First-run notice: lets new users know the app ships with sample mocks -->
     <div id="sampleDataNoticeModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
@@ -2208,6 +2273,7 @@
         let aiSpeechBaseText = '';        // textarea content that existed before dictation started
         let aiSpeechFinalText = '';       // finalized (committed) transcript segments from this dictation session
         let aiRecordingTimerHandle = null;
+        let importMockSelectedFile = null;   // File picked in the "Import Mock from Video" modal, before it's uploaded
 
         function getGeminiKey() {
             try { return localStorage.getItem(AI_KEY_STORAGE) || ''; } catch (e) { return ''; }
@@ -2355,10 +2421,49 @@
 
         function mdToHtml(text) {
             const esc = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            // Handle block-level markdown (headers, horizontal rules) line-by-line first,
+            const rawLines = esc.split('\n');
+
+            // ---- GFM-style pipe tables -----------------------------------
+            // Gemini often summarises formulas/comparisons as markdown tables
+            // ("| Col | Col |" header + "|---|---|" separator + data rows).
+            // These were previously showing up as raw pipe/dash text instead
+            // of an actual table, so detect and convert them into <table>
+            // markup up front, before any other line-based processing.
+            const isTableRow = (l) => /\|/.test(l) && l.trim() !== '';
+            const isSeparatorRow = (l) => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l) && l.includes('-');
+            const splitCells = (l) => {
+                let t = l.trim();
+                if (t.startsWith('|')) t = t.slice(1);
+                if (t.endsWith('|')) t = t.slice(0, -1);
+                return t.split('|').map(c => c.trim());
+            };
+
+            const blocks = [];
+            for (let i = 0; i < rawLines.length; i++) {
+                const line = rawLines[i];
+                const next = rawLines[i + 1];
+                if (isTableRow(line) && next !== undefined && isSeparatorRow(next)) {
+                    const header = splitCells(line);
+                    let j = i + 2;
+                    const rows = [];
+                    while (j < rawLines.length && isTableRow(rawLines[j])) {
+                        rows.push(splitCells(rawLines[j]));
+                        j++;
+                    }
+                    const thead = `<thead><tr>${header.map(h => `<th>${h}</th>`).join('')}</tr></thead>`;
+                    const tbody = `<tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+                    blocks.push(`<div class="ai-md-table-wrap"><table class="ai-md-table">${thead}${tbody}</table></div>`);
+                    i = j - 1;
+                    continue;
+                }
+                blocks.push(line);
+            }
+
+            // Handle block-level markdown (headers, horizontal rules) line-by-line,
             // since Gemini's responses often use ### headers and --- dividers that were
             // previously showing up as literal text instead of being rendered.
-            const lines = esc.split('\n').map(line => {
+            const lines = blocks.map(line => {
+                if (line.indexOf('<div class="ai-md-table-wrap">') === 0) return line; // already HTML
                 const t = line.trim();
                 if (/^-{3,}$/.test(t)) return '<hr class="ai-md-hr">';
                 let m = t.match(/^(#{1,6})\s+(.*)$/);
@@ -2376,6 +2481,8 @@
                 .replace(/\n/g, '<br>');
             // Tidy up stray line-breaks that land right next to block-level elements.
             html = html
+                .replace(/(<br>\s*)+(<div class="ai-md-table-wrap">)/g, '$2')
+                .replace(/(<\/div>)(\s*<br>\s*)+/g, '$1')
                 .replace(/(<br>\s*)+(<h[2-6][^>]*>)/g, '$2')
                 .replace(/(<\/h[2-6]>)(\s*<br>\s*)+/g, '$1')
                 .replace(/(<br>\s*)+(<hr[^>]*>)/g, '$2')
@@ -2402,6 +2509,11 @@
                 return `<div class="ai-msg-row ${rowAlign}"><div class="ai-bubble ${cls}">${attach}${mdToHtml(m.text)}</div></div>`;
             }).join('');
             box.scrollTop = box.scrollHeight;
+            // Typeset any \(...\) / $$...$$ formulas Gemini included. MathJax loads
+            // deferred, so it may not be on window yet the very first time this runs.
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([box]).catch(() => {});
+            }
         }
 
         function showAiTyping() {
@@ -2506,8 +2618,54 @@
             document.getElementById('ai-video-input').value = '';
         }
 
-        // ---- Generic Gemini File API upload (resumable protocol) — used for an
-        // attached mock screen-recording video. ----
+        // ---- Generic Gemini File API upload (resumable protocol) — shared by the
+        // AI Analyzer chat's attachments and the "Import Mock from Video" flow. ----
+        async function geminiUploadFile(blob, displayName, mimeType, onStatus) {
+            const key = getGeminiKey();
+            if (!key) throw new Error('No Gemini API key saved yet.');
+
+            if (onStatus) onStatus('uploading');
+            const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${encodeURIComponent(key)}`, {
+                method: 'POST',
+                headers: {
+                    'X-Goog-Upload-Protocol': 'resumable',
+                    'X-Goog-Upload-Command': 'start',
+                    'X-Goog-Upload-Header-Content-Length': String(blob.size),
+                    'X-Goog-Upload-Header-Content-Type': mimeType,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ file: { display_name: displayName } })
+            });
+            if (!startRes.ok) throw new Error(`Upload init failed (${startRes.status})`);
+            const uploadUrl = startRes.headers.get('x-goog-upload-url');
+            if (!uploadUrl) throw new Error('Gemini did not return an upload URL.');
+
+            const uploadRes = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Length': String(blob.size),
+                    'X-Goog-Upload-Offset': '0',
+                    'X-Goog-Upload-Command': 'upload, finalize'
+                },
+                body: blob
+            });
+            if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
+            const uploadJson = await uploadRes.json();
+            let fileMeta = uploadJson.file;
+            if (!fileMeta || !fileMeta.uri) throw new Error('Upload succeeded but no file URI was returned.');
+
+            if (onStatus) onStatus('processing');
+            let attempts = 0;
+            while (fileMeta.state === 'PROCESSING' && attempts < 30) {
+                await new Promise(r => setTimeout(r, 2000));
+                const pollRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileMeta.name}?key=${encodeURIComponent(key)}`);
+                if (pollRes.ok) fileMeta = await pollRes.json();
+                attempts++;
+            }
+            if (fileMeta.state === 'FAILED') throw new Error('Gemini failed to process this file.');
+            return fileMeta;
+        }
+
         async function uploadMediaToGemini(blob, displayName, mimeType, kind) {
             const key = getGeminiKey();
             if (!key) { openAiKeyPanel(); return; }
@@ -2523,48 +2681,11 @@
             aiIsUploading = true;
 
             try {
-                // Step 1: start a resumable upload session
-                const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${encodeURIComponent(key)}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Goog-Upload-Protocol': 'resumable',
-                        'X-Goog-Upload-Command': 'start',
-                        'X-Goog-Upload-Header-Content-Length': String(blob.size),
-                        'X-Goog-Upload-Header-Content-Type': mimeType,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ file: { display_name: displayName } })
+                const fileMeta = await geminiUploadFile(blob, displayName, mimeType, (phase) => {
+                    statusEl.innerHTML = phase === 'processing'
+                        ? `<i class="fa-solid fa-spinner fa-spin"></i> Processing ${kind}…`
+                        : '<i class="fa-solid fa-spinner fa-spin"></i> Uploading…';
                 });
-                if (!startRes.ok) throw new Error(`Upload init failed (${startRes.status})`);
-                const uploadUrl = startRes.headers.get('x-goog-upload-url');
-                if (!uploadUrl) throw new Error('Gemini did not return an upload URL.');
-
-                // Step 2: push the actual bytes
-                const uploadRes = await fetch(uploadUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Length': String(blob.size),
-                        'X-Goog-Upload-Offset': '0',
-                        'X-Goog-Upload-Command': 'upload, finalize'
-                    },
-                    body: blob
-                });
-                if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
-                const uploadJson = await uploadRes.json();
-                let fileMeta = uploadJson.file;
-                if (!fileMeta || !fileMeta.uri) throw new Error('Upload succeeded but no file URI was returned.');
-
-                // Step 3: poll until Gemini finishes processing (mainly relevant for video)
-                statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing ${kind}…`;
-                let attempts = 0;
-                while (fileMeta.state === 'PROCESSING' && attempts < 30) {
-                    await new Promise(r => setTimeout(r, 2000));
-                    const pollRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileMeta.name}?key=${encodeURIComponent(key)}`);
-                    if (pollRes.ok) fileMeta = await pollRes.json();
-                    attempts++;
-                }
-                if (fileMeta.state === 'FAILED') throw new Error(`Gemini failed to process this ${kind}.`);
-
                 aiPendingAttachment = { name: displayName, mimeType: fileMeta.mimeType || mimeType, uri: fileMeta.uri, state: fileMeta.state, kind };
                 statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Ready';
             } catch (err) {
@@ -2581,6 +2702,177 @@
             const file = event.target.files && event.target.files[0];
             if (!file) return;
             await uploadMediaToGemini(file, file.name, file.type || 'video/mp4', 'video');
+        }
+
+        // ===================================================================
+        // IMPORT MOCK FROM VIDEO — separate from the AI Analyzer chat above.
+        // User records their result/review screen, we send it to Gemini with a
+        // fixed instruction asking for strict JSON (not chat text), then use
+        // that JSON to pre-fill the existing "Add New Mock" form so the user
+        // just has to review and hit Save — nothing is written automatically.
+        // ===================================================================
+        function openImportMockModal() {
+            importMockSelectedFile = null;
+            const fileInput = document.getElementById('import-mock-video-input');
+            if (fileInput) fileInput.value = '';
+            const labelEl = document.getElementById('import-mock-file-label');
+            if (labelEl) labelEl.textContent = 'Choose video…';
+            const btn = document.getElementById('btn-import-mock-extract');
+            if (btn) { btn.disabled = true; btn.textContent = 'Extract & Continue'; }
+            const statusEl = document.getElementById('import-mock-status');
+            if (statusEl) { statusEl.classList.add('hidden'); statusEl.innerHTML = ''; }
+            const modal = document.getElementById('importMockModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeImportMockModal() {
+            const modal = document.getElementById('importMockModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function handleImportMockVideoSelect(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            importMockSelectedFile = file;
+            const labelEl = document.getElementById('import-mock-file-label');
+            if (labelEl) labelEl.textContent = file.name;
+            const btn = document.getElementById('btn-import-mock-extract');
+            if (btn) btn.disabled = false;
+            const statusEl = document.getElementById('import-mock-status');
+            if (statusEl) statusEl.classList.add('hidden');
+        }
+
+        // Fixed instruction (not a free-form chat prompt) telling Gemini exactly
+        // what to look for and how to reply, so the app can parse the answer
+        // directly instead of the user copy-pasting numbers out of a chat.
+        function importMockExtractionInstruction() {
+            const topicList = Object.keys(CGL_TOPICS).join(', ');
+            const reasonList = MISTAKE_REASONS.join(', ');
+            return `You are extracting structured results from a screen recording for "Tukka Meter", a maths mock-test tracker for SSC/Bank/Railway exam aspirants in India. The video shows the user flipping through their mock test's result / answer-review screen, pausing briefly on each question — read whatever score summary and per-question review details are visible.
+
+Extract:
+1. correct — total number of correctly answered questions
+2. incorrect — total number of incorrectly answered questions
+3. unattempted — total number of questions left unattempted
+4. percentile — the percentile shown, if visible (else null)
+5. date — the mock's date if visible, in YYYY-MM-DD format (else null)
+6. name — the mock's name/title/series if visible, e.g. "Testbook Mock 12" (else null)
+7. mistakes — one entry for EVERY wrong or unattempted question you can identify, each with:
+   - topic: the closest match from this exact list (use one of these strings verbatim): ${topicList}
+   - subtopic: a short 3-8 word description of the specific question type/concept
+   - reason: the closest match from this exact list (use one of these strings verbatim): ${reasonList}
+   - note: one short line (under 20 words) noting what went wrong and how to fix it next time
+
+Reply with ONLY raw JSON — no markdown code fences, no commentary before or after — in exactly this shape:
+{"name": string|null, "date": string|null, "percentile": number|null, "correct": number, "incorrect": number, "unattempted": number, "mistakes": [{"topic": string, "subtopic": string, "reason": string, "note": string}]}
+
+Make your best estimate for any number you can't read with full confidence rather than leaving it out. If the video clearly isn't a mock-test review screen at all, reply with exactly: {"error": "not_a_mock_review"}`;
+        }
+
+        async function extractMockFromVideo() {
+            const key = getGeminiKey();
+            if (!key) {
+                closeImportMockModal();
+                showAiAnalyzerView();
+                openAiKeyPanel();
+                showToast('Add your Gemini API key first, then try importing again.', 'info');
+                return;
+            }
+            if (!importMockSelectedFile) return;
+
+            const btn = document.getElementById('btn-import-mock-extract');
+            const statusEl = document.getElementById('import-mock-status');
+            btn.disabled = true;
+            btn.textContent = 'Extracting…';
+            statusEl.classList.remove('hidden');
+            statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading video to Gemini…';
+
+            try {
+                const fileMeta = await geminiUploadFile(
+                    importMockSelectedFile,
+                    importMockSelectedFile.name,
+                    importMockSelectedFile.type || 'video/mp4',
+                    (phase) => {
+                        statusEl.innerHTML = phase === 'processing'
+                            ? '<i class="fa-solid fa-spinner fa-spin"></i> Gemini is processing the video…'
+                            : '<i class="fa-solid fa-spinner fa-spin"></i> Uploading video to Gemini…';
+                    }
+                );
+
+                statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reading your mock results…';
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            role: 'user',
+                            parts: [
+                                { text: importMockExtractionInstruction() },
+                                { fileData: { fileUri: fileMeta.uri, mimeType: fileMeta.mimeType } }
+                            ]
+                        }]
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    const msg = (data && data.error && data.error.message) || `Request failed (${res.status})`;
+                    throw new Error(msg);
+                }
+                const candidate = data.candidates && data.candidates[0];
+                const replyText = candidate && candidate.content && candidate.content.parts
+                    ? candidate.content.parts.map(p => p.text || '').join('')
+                    : '';
+
+                const cleaned = replyText.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+                let parsed;
+                try {
+                    parsed = JSON.parse(cleaned);
+                } catch (e) {
+                    throw new Error("Gemini's reply wasn't valid data — try a clearer recording (pause a bit longer on each question).");
+                }
+                if (parsed.error) {
+                    throw new Error("That didn't look like a mock review screen — make sure the recording shows your result/answer review page.");
+                }
+
+                applyImportedMockData(parsed);
+                closeImportMockModal();
+            } catch (err) {
+                console.error('Import mock from video error:', err);
+                statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-500"></i> ${String(err.message || 'Something went wrong.').replace(/</g, '&lt;')}`;
+                btn.disabled = false;
+                btn.textContent = 'Extract & Continue';
+            }
+        }
+
+        // Opens the existing Add-Mock modal and overwrites its fields with
+        // Gemini's extracted data. Nothing is saved to mockData here — the
+        // user still has to review and hit "Save Mock Record" themselves.
+        function applyImportedMockData(parsed) {
+            openMockModal(null);
+
+            const nameEl = document.getElementById('input-mock-name');
+            const dateEl = document.getElementById('input-mock-date');
+            const percEl = document.getElementById('input-mock-percentile');
+            if (nameEl) nameEl.value = parsed.name || `Mock ${mockData.length + 1} (from video)`;
+            if (dateEl && parsed.date) dateEl.value = parsed.date;
+            if (percEl && parsed.percentile !== null && parsed.percentile !== undefined) percEl.value = parsed.percentile;
+            document.getElementById('input-correct-count').value = parsed.correct || 0;
+            document.getElementById('input-incorrect-count').value = parsed.incorrect || 0;
+            document.getElementById('input-unattempted-count').value = parsed.unattempted || 0;
+            calculateMockScore();
+
+            const list = document.getElementById('mistakes-input-list');
+            if (list) list.innerHTML = '';
+            if (parsed.mistakes && parsed.mistakes.length) {
+                parsed.mistakes.forEach(mk => addMistakeRow(mk.topic || '', mk.subtopic || '', mk.reason || '', mk.note || ''));
+            } else {
+                addMistakeRow();
+            }
+
+            const titleLabel = document.getElementById('modal-title-label');
+            if (titleLabel) titleLabel.textContent = 'Review Imported Mock (from video)';
+            showToast('Extracted from your video — double-check the numbers, then save.', 'info');
         }
 
         // ---- Mic dictation (audio -> text) — uses the browser's built-in Web Speech
@@ -2614,15 +2906,25 @@
             recognition.interimResults = true;
 
             recognition.onresult = (event) => {
+                // Rebuild the finalized transcript from ALL results every time,
+                // rather than appending only from event.resultIndex onward. On
+                // Android Chrome, "continuous" recognition periodically restarts
+                // itself internally and can resend already-finalized results
+                // starting again from index 0 — appending those (the old
+                // behaviour) is what caused speech to get typed twice/three
+                // times. Recomputing the full final text each time is immune
+                // to that, since re-sent results just produce the same value.
+                let finalText = '';
                 let interim = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
+                for (let i = 0; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        aiSpeechFinalText += transcript + ' ';
+                        finalText += transcript + ' ';
                     } else {
                         interim += transcript;
                     }
                 }
+                aiSpeechFinalText = finalText;
                 input.value = aiSpeechBaseText + aiSpeechFinalText + interim;
                 input.scrollTop = input.scrollHeight;
             };
