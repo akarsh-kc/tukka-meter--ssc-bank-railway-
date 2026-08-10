@@ -1385,9 +1385,13 @@
         </div>
 
         <!-- Usage reminder: this is the user's own Gemini key/account -->
-        <p class="text-[10.5px] text-slate-400 font-medium -mt-2 mb-3 flex items-center gap-1.5">
+        <p class="text-[10.5px] text-slate-400 font-medium -mt-2 mb-1 flex items-center gap-1.5">
             <i class="fa-solid fa-shield-halved text-[10px]"></i>
             You're chatting using your own Gemini API key — please don't use it to request vulgar, abusive, or otherwise harmful content; you're bound by Google's usage policies for anything you send here.
+        </p>
+        <p class="text-[10.5px] text-slate-400 font-medium mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i>
+            Your logged mock scores, mistakes, and topics are sent along with each chat so Gemini can give personalized answers — straight from your browser to Google, nothing passes through a Tukka Meter server.
         </p>
 
         <!-- STATE 1: API key setup -->
@@ -1426,12 +1430,6 @@
 
         <!-- STATE 2: Chat interface -->
         <div id="ai-chat-panel" class="hidden flex-1 flex flex-col glass-panel rounded-2xl overflow-hidden">
-            <div class="px-4 py-2.5 border-b border-slate-100 bg-amber-50/70 flex items-start gap-2">
-                <i class="fa-solid fa-circle-info text-amber-500 text-xs mt-0.5 shrink-0"></i>
-                <p class="text-[10.5px] text-amber-800 leading-snug">
-                    Context from your logged mocks (scores, mistakes, topics) is sent to Gemini with every chat so it can give personalized answers. Requests go straight from your browser to Google — nothing passes through a Tukka Meter server.
-                </p>
-            </div>
             <div id="ai-chat-messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-[40vh] max-h-[55vh]"></div>
 
             <div id="ai-attachment-chip" class="hidden mx-4 mb-2 px-3 py-2 bg-violet-50 border border-violet-200 rounded-xl text-[11px] font-semibold text-violet-800 flex items-center gap-2">
@@ -1449,6 +1447,10 @@
                 </button>
             </div>
 
+            <p class="px-4 pt-2 -mb-1 text-[10px] text-slate-400 font-medium flex items-center gap-1.5">
+                <i class="fa-solid fa-video text-[9px]"></i>
+                Tip: screen record yourself attempting a past mock, then tap the video icon below to attach and analyze it.
+            </p>
             <div class="p-3 border-t border-slate-100 bg-white flex items-end gap-2">
                 <input type="file" id="ai-video-input" accept="video/*" class="hidden" onchange="handleAiVideoSelect(event)">
                 <button onclick="document.getElementById('ai-video-input').click()" title="Attach a mock screen recording" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-violet-600 transition-colors">
@@ -2614,15 +2616,26 @@
             recognition.interimResults = true;
 
             recognition.onresult = (event) => {
+                // Rebuild the transcript from scratch on every event instead of
+                // appending with event.resultIndex. On Android Chrome the engine
+                // periodically re-fires onresult for the *same* continuous session
+                // with resultIndex reset to 0 (without ever calling onend), so
+                // appending caused the same phrase to get added again each time —
+                // "can you please" doubling/tripling. event.results always holds
+                // the full, authoritative result list for the session, so a full
+                // rebuild is naturally idempotent no matter how many times or in
+                // what order the browser fires this event.
+                let finalText = '';
                 let interim = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
+                for (let i = 0; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        aiSpeechFinalText += transcript + ' ';
+                        finalText += transcript + ' ';
                     } else {
                         interim += transcript;
                     }
                 }
+                aiSpeechFinalText = finalText;
                 input.value = aiSpeechBaseText + aiSpeechFinalText + interim;
                 input.scrollTop = input.scrollHeight;
             };
