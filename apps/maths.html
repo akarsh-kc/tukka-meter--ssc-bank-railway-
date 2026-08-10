@@ -89,12 +89,6 @@
     <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
-
-    <!-- KaTeX: renders the LaTeX Gemini sends back in the AI Analyzer chat
-         (e.g. $\pi r^2$, \sqrt{34}) as proper math instead of raw source text. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     
     <style>
         body {
@@ -615,12 +609,6 @@
         html.dark .ai-bubble.error { background: rgba(127,29,29,0.35); color: #fecaca; border-color: rgba(220,38,38,0.4); }
         .ai-bubble b, .ai-bubble strong { font-weight: 700; }
         .ai-bubble code { background: rgba(100,116,139,0.15); padding: 0.1rem 0.3rem; border-radius: 0.3rem; font-size: 0.7rem; }
-        .ai-bubble .ai-md-h { display: block; font-weight: 700; margin: 0.6rem 0 0.25rem; line-height: 1.3; }
-        .ai-bubble h2.ai-md-h { font-size: 0.92rem; }
-        .ai-bubble h3.ai-md-h { font-size: 0.85rem; }
-        .ai-bubble h4.ai-md-h, .ai-bubble h5.ai-md-h, .ai-bubble h6.ai-md-h { font-size: 0.78rem; }
-        .ai-bubble .ai-md-h:first-child { margin-top: 0; }
-        .ai-bubble .ai-md-hr { border: none; border-top: 1px solid rgba(148,163,184,0.35); margin: 0.5rem 0; }
         .ai-typing-dot { width: 5px; height: 5px; border-radius: 50%; background: #94a3b8; display: inline-block; animation: aiTypingBlink 1.2s infinite ease-in-out; }
         .ai-typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .ai-typing-dot:nth-child(3) { animation-delay: 0.4s; }
@@ -1361,7 +1349,7 @@
     <section id="ai-analyzer-view" class="hidden flex-1 max-w-5xl w-full mx-auto p-4 lg:p-6 flex flex-col">
         <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
             <div class="flex items-center gap-3">
-                <button onclick="hideAiAnalyzerView()" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all shrink-0">
+                <button onclick="backFromAiAnalyzer()" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all shrink-0">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
                 <div>
@@ -1391,14 +1379,62 @@
         </div>
 
         <!-- Usage reminder: this is the user's own Gemini key/account -->
-        <p class="text-[10.5px] text-slate-400 font-medium -mt-2 mb-1 flex items-center gap-1.5">
+        <p class="text-[10.5px] text-slate-400 font-medium -mt-2 mb-3 flex items-center gap-1.5">
             <i class="fa-solid fa-shield-halved text-[10px]"></i>
             You're chatting using your own Gemini API key — please don't use it to request vulgar, abusive, or otherwise harmful content; you're bound by Google's usage policies for anything you send here.
         </p>
-        <p class="text-[10.5px] text-slate-400 font-medium mb-3 flex items-center gap-1.5">
-            <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i>
-            Your logged mock scores, mistakes, and topics are sent along with each chat so Gemini can give personalized answers — straight from your browser to Google, nothing passes through a Tukka Meter server.
-        </p>
+
+        <!-- STATE 0: choose what you want to do -->
+        <div id="ai-mode-chooser" class="glass-panel rounded-2xl p-5 max-w-lg w-full mx-auto space-y-3">
+            <p class="text-xs text-slate-500 font-medium text-center mb-1">What would you like to do?</p>
+            <button onclick="selectAiMode('chat')" class="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-violet-300 hover:bg-violet-50/50 transition-all flex items-start gap-3">
+                <span class="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-white text-sm"><i class="fa-solid fa-comments"></i></span>
+                <span class="min-w-0">
+                    <span class="block text-sm font-bold text-slate-900">Chat with AI</span>
+                    <span class="block text-[11px] text-slate-500 mt-0.5 leading-relaxed">Ask Gemini about your logged mocks — weak topics, progress trends, exam strategy.</span>
+                </span>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-xs mt-3 shrink-0"></i>
+            </button>
+            <button onclick="selectAiMode('import')" class="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50/50 transition-all flex items-start gap-3">
+                <span class="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center text-white text-sm"><i class="fa-solid fa-file-video"></i></span>
+                <span class="min-w-0">
+                    <span class="block text-sm font-bold text-slate-900">Import Mock from Recording</span>
+                    <span class="block text-[11px] text-slate-500 mt-0.5 leading-relaxed">Attach a screen recording — Gemini reads your score & mistakes and pre-fills a new mock entry for you to review and save.</span>
+                </span>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-xs mt-3 shrink-0"></i>
+            </button>
+        </div>
+
+        <!-- STATE X: Import Mock from Recording -->
+        <div id="ai-import-panel" class="hidden flex-1 flex flex-col glass-panel rounded-2xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100 bg-cyan-50/70 flex items-start gap-2">
+                <i class="fa-solid fa-circle-info text-cyan-600 text-xs mt-0.5 shrink-0"></i>
+                <p class="text-[11px] text-cyan-800 leading-relaxed">
+                    Solve your mock first. Then screen-record yourself scrolling through the <b>result / review screen</b>, pausing about 1–2 seconds on each question so Gemini can read it clearly. Keep the recording short — a couple of minutes covering all questions is enough, it doesn't need to show your full attempt.
+                </p>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center justify-center p-6 text-center gap-4">
+                <div class="w-full max-w-md">
+                    <input type="file" id="ai-import-video-input" accept="video/*" class="hidden" onchange="handleImportVideoSelect(event)">
+                    <button onclick="document.getElementById('ai-import-video-input').click()" id="ai-import-picker-btn" class="w-full border-2 border-dashed border-slate-300 hover:border-cyan-400 hover:bg-cyan-50/40 rounded-2xl py-10 flex flex-col items-center gap-2 transition-all">
+                        <span class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center text-white text-lg"><i class="fa-solid fa-video"></i></span>
+                        <span class="text-xs font-bold text-slate-700">Select mock review recording</span>
+                        <span class="text-[10.5px] text-slate-400">Tap to choose a video from your device</span>
+                    </button>
+                </div>
+
+                <div id="ai-import-status" class="hidden w-full max-w-md p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-600 flex items-center gap-2 justify-center">
+                    <i id="ai-import-status-icon" class="fa-solid fa-spinner fa-spin"></i>
+                    <span id="ai-import-status-text">Uploading…</span>
+                </div>
+                <p id="ai-import-error" class="hidden text-[11px] font-semibold text-rose-600 max-w-md"></p>
+
+                <button onclick="openAiKeyPanel()" class="text-[10.5px] font-semibold text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-key mr-1"></i> Change Gemini API key
+                </button>
+            </div>
+        </div>
 
         <!-- STATE 1: API key setup -->
         <div id="ai-key-setup" class="glass-panel rounded-2xl p-6 max-w-lg w-full mx-auto text-center space-y-4">
@@ -1436,6 +1472,12 @@
 
         <!-- STATE 2: Chat interface -->
         <div id="ai-chat-panel" class="hidden flex-1 flex flex-col glass-panel rounded-2xl overflow-hidden">
+            <div class="px-4 py-2.5 border-b border-slate-100 bg-amber-50/70 flex items-start gap-2">
+                <i class="fa-solid fa-circle-info text-amber-500 text-xs mt-0.5 shrink-0"></i>
+                <p class="text-[10.5px] text-amber-800 leading-snug">
+                    Context from your logged mocks (scores, mistakes, topics) is sent to Gemini with every chat so it can give personalized answers. Requests go straight from your browser to Google — nothing passes through a Tukka Meter server.
+                </p>
+            </div>
             <div id="ai-chat-messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-[40vh] max-h-[55vh]"></div>
 
             <div id="ai-attachment-chip" class="hidden mx-4 mb-2 px-3 py-2 bg-violet-50 border border-violet-200 rounded-xl text-[11px] font-semibold text-violet-800 flex items-center gap-2">
@@ -1447,22 +1489,18 @@
 
             <div id="ai-recording-chip" class="hidden mx-4 mb-2 px-3 py-2 bg-rose-50 border border-rose-200 rounded-xl text-[11px] font-semibold text-rose-700 flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                <span>Listening… <span id="ai-recording-timer">0:00</span></span>
+                <span>Recording audio… <span id="ai-recording-timer">0:00</span></span>
                 <button onclick="stopAiAudioRecording()" class="ml-auto px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[10px] font-bold">
                     <i class="fa-solid fa-stop mr-1"></i> Stop
                 </button>
             </div>
 
-            <p class="px-4 pt-2 -mb-1 text-[10px] text-slate-400 font-medium flex items-center gap-1.5">
-                <i class="fa-solid fa-video text-[9px]"></i>
-                Tip: screen record yourself attempting a past mock, then tap the video icon below to attach and analyze it.
-            </p>
             <div class="p-3 border-t border-slate-100 bg-white flex items-end gap-2">
                 <input type="file" id="ai-video-input" accept="video/*" class="hidden" onchange="handleAiVideoSelect(event)">
                 <button onclick="document.getElementById('ai-video-input').click()" title="Attach a mock screen recording" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-violet-600 transition-colors">
                     <i class="fa-solid fa-video"></i>
                 </button>
-                <button id="ai-mic-btn" onclick="toggleAiAudioRecording()" title="Speak your question (voice-to-text)" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-violet-600 transition-colors">
+                <button id="ai-mic-btn" onclick="toggleAiAudioRecording()" title="Record a voice note for Gemini" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-violet-600 transition-colors">
                     <i class="fa-solid fa-microphone"></i>
                 </button>
                 <textarea id="ai-chat-input" rows="1" placeholder="Ask about your mocks — e.g. 'Which topics keep costing me marks?'" class="flex-1 resize-none max-h-32 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-brand-500 font-medium" onkeydown="handleAiChatKeydown(event)"></textarea>
@@ -2178,7 +2216,7 @@
             view.classList.remove('hidden');
             view.classList.add('flex-1');
             setActiveNav('nav-ai-btn');
-            initAiAnalyzer();
+            showAiModeChooser();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2186,6 +2224,74 @@
             document.getElementById('ai-analyzer-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+        }
+
+        // The header's back arrow: if a mode (chat/import/key-setup) is active,
+        // go back to the chooser first; only leave the AI Analyzer entirely
+        // when the chooser itself is what's showing.
+        function backFromAiAnalyzer() {
+            const chooserHidden = document.getElementById('ai-mode-chooser').classList.contains('hidden');
+            if (chooserHidden) {
+                showAiModeChooser();
+            } else {
+                hideAiAnalyzerView();
+            }
+        }
+
+        // ---------- AI Analyzer mode chooser: Chat vs Import-from-Recording ----------
+        let aiActiveMode = 'chat'; // 'chat' | 'import'
+
+        function showAiModeChooser() {
+            document.getElementById('ai-mode-chooser').classList.remove('hidden');
+            document.getElementById('ai-key-setup').classList.add('hidden');
+            document.getElementById('ai-chat-panel').classList.add('hidden');
+            document.getElementById('ai-chat-panel').classList.remove('flex');
+            document.getElementById('ai-import-panel').classList.add('hidden');
+            document.getElementById('ai-import-panel').classList.remove('flex');
+            const headerActions = document.getElementById('ai-header-actions');
+            headerActions.classList.add('hidden');
+            headerActions.classList.remove('flex');
+        }
+
+        function selectAiMode(mode) {
+            aiActiveMode = mode;
+            document.getElementById('ai-mode-chooser').classList.add('hidden');
+            initAiAnalyzerFlow();
+        }
+
+        // Replaces the old initAiAnalyzer(): shows the key-setup screen if no key
+        // is saved yet, otherwise routes to whichever mode (chat / import) is active.
+        function initAiAnalyzerFlow() {
+            const key = getGeminiKey();
+            const headerActions = document.getElementById('ai-header-actions');
+            if (!key) {
+                document.getElementById('ai-chat-panel').classList.add('hidden');
+                document.getElementById('ai-chat-panel').classList.remove('flex');
+                document.getElementById('ai-import-panel').classList.add('hidden');
+                document.getElementById('ai-import-panel').classList.remove('flex');
+                document.getElementById('ai-key-setup').classList.remove('hidden');
+                headerActions.classList.add('hidden');
+                headerActions.classList.remove('flex');
+                return;
+            }
+            document.getElementById('ai-key-setup').classList.add('hidden');
+            if (aiActiveMode === 'import') {
+                document.getElementById('ai-chat-panel').classList.add('hidden');
+                document.getElementById('ai-chat-panel').classList.remove('flex');
+                document.getElementById('ai-import-panel').classList.remove('hidden');
+                document.getElementById('ai-import-panel').classList.add('flex');
+                headerActions.classList.add('hidden');
+                headerActions.classList.remove('flex');
+            } else {
+                document.getElementById('ai-import-panel').classList.add('hidden');
+                document.getElementById('ai-import-panel').classList.remove('flex');
+                document.getElementById('ai-chat-panel').classList.remove('hidden');
+                document.getElementById('ai-chat-panel').classList.add('flex');
+                headerActions.classList.remove('hidden');
+                headerActions.classList.add('flex');
+                loadAiChatFromStorage();
+                renderAiChat();
+            }
         }
 
         // ===================================================================
@@ -2197,7 +2303,7 @@
         // the key, the chat messages, or an uploaded video.
         // ===================================================================
         const AI_KEY_STORAGE = 'tukka_gemini_api_key';
-        const AI_MODEL = 'gemini-flash-lite-latest'; // Google's "latest" alias — always resolves to their current-recommended Flash model, so it won't need updating every time Google renames/retires a specific version (which is what broke gemini-2.5-flash)
+        const AI_MODEL = 'gemini-2.5-flash';
         const AI_MAX_SESSIONS = 5; // only the most recent 5 past sessions are kept, to stop local storage from growing unbounded
         // NOTE: computed lazily (not as a top-level const) because THIS_APP_PREFIX
         // is declared further down in this same script.
@@ -2212,39 +2318,17 @@
         let aiRecordedChunks = [];
         let aiRecordingStream = null;
         let aiRecordingStartedAt = 0;
-        let aiSpeechRecognition = null;   // Web Speech API instance currently active (one per utterance — see toggleAiAudioRecording)
-        let aiSpeechListening = false;    // true from mic-tap until Stop is tapped; drives auto-restart between utterances
-        let aiSpeechBaseText = '';        // textarea content that existed before dictation started
-        let aiSpeechFinalText = '';       // finalized transcript from all completed utterances so far this dictation session
         let aiRecordingTimerHandle = null;
 
         function getGeminiKey() {
             try { return localStorage.getItem(AI_KEY_STORAGE) || ''; } catch (e) { return ''; }
         }
 
-        function initAiAnalyzer() {
-            const key = getGeminiKey();
-            const headerActions = document.getElementById('ai-header-actions');
-            if (key) {
-                document.getElementById('ai-key-setup').classList.add('hidden');
-                document.getElementById('ai-chat-panel').classList.remove('hidden');
-                document.getElementById('ai-chat-panel').classList.add('flex');
-                headerActions.classList.remove('hidden');
-                headerActions.classList.add('flex');
-                loadAiChatFromStorage();
-                renderAiChat();
-            } else {
-                document.getElementById('ai-chat-panel').classList.add('hidden');
-                document.getElementById('ai-chat-panel').classList.remove('flex');
-                document.getElementById('ai-key-setup').classList.remove('hidden');
-                headerActions.classList.add('hidden');
-                headerActions.classList.remove('flex');
-            }
-        }
-
         function openAiKeyPanel() {
             document.getElementById('ai-chat-panel').classList.add('hidden');
             document.getElementById('ai-chat-panel').classList.remove('flex');
+            document.getElementById('ai-import-panel').classList.add('hidden');
+            document.getElementById('ai-import-panel').classList.remove('flex');
             document.getElementById('ai-key-setup').classList.remove('hidden');
             const input = document.getElementById('ai-key-input');
             input.value = getGeminiKey();
@@ -2268,32 +2352,24 @@
                 return;
             }
             errEl.classList.add('hidden');
-            initAiAnalyzer();
+            initAiAnalyzerFlow();
         }
 
         function clearGeminiKey() {
-            const doClear = () => {
-                try { localStorage.removeItem(AI_KEY_STORAGE); } catch (e) {}
-                initAiAnalyzer();
-            };
-            showConfirmModal('Remove API key?', 'Remove the saved Gemini API key from this browser? Your chat history stays until you clear it separately.', doClear);
+            if (!confirm('Remove the saved Gemini API key from this browser? Your chat history stays until you clear it separately.')) return;
+            try { localStorage.removeItem(AI_KEY_STORAGE); } catch (e) {}
+            initAiAnalyzerFlow();
         }
 
         // Archives the current chat (if it has any messages) into the recent-sessions
         // list, capped at AI_MAX_SESSIONS, then clears the active chat for a fresh start.
         function startNewAiChat() {
-            const doStart = () => {
-                archiveCurrentAiSession();
-                aiChatHistory = [];
-                removeAiAttachment();
-                saveAiChatToStorage();
-                renderAiChat();
-            };
-            if (aiChatHistory.length) {
-                showConfirmModal('Start a new chat?', 'The current conversation will be saved under Recent Chats (last 5 only).', doStart);
-            } else {
-                doStart();
-            }
+            if (aiChatHistory.length && !confirm('Start a new chat? The current conversation will be saved under Recent Chats (last 5 only).')) return;
+            archiveCurrentAiSession();
+            aiChatHistory = [];
+            removeAiAttachment();
+            saveAiChatToStorage();
+            renderAiChat();
         }
 
         function archiveCurrentAiSession() {
@@ -2364,32 +2440,11 @@
 
         function mdToHtml(text) {
             const esc = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            // Handle block-level markdown (headers, horizontal rules) line-by-line first,
-            // since Gemini's responses often use ### headers and --- dividers that were
-            // previously showing up as literal text instead of being rendered.
-            const lines = esc.split('\n').map(line => {
-                const t = line.trim();
-                if (/^-{3,}$/.test(t)) return '<hr class="ai-md-hr">';
-                let m = t.match(/^(#{1,6})\s+(.*)$/);
-                if (m) {
-                    const level = Math.min(m[1].length, 2) + 1; // #→h2, ##→h3, ###+ →h4
-                    const tag = 'h' + Math.min(Math.max(level, 2), 6);
-                    return `<${tag} class="ai-md-h">${m[2]}</${tag}>`;
-                }
-                return line;
-            });
-            let html = lines.join('\n')
+            return esc
                 .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
                 .replace(/\n\s*[-*]\s+/g, '\n• ')
                 .replace(/\n/g, '<br>');
-            // Tidy up stray line-breaks that land right next to block-level elements.
-            html = html
-                .replace(/(<br>\s*)+(<h[2-6][^>]*>)/g, '$2')
-                .replace(/(<\/h[2-6]>)(\s*<br>\s*)+/g, '$1')
-                .replace(/(<br>\s*)+(<hr[^>]*>)/g, '$2')
-                .replace(/(<hr[^>]*>)(\s*<br>\s*)+/g, '$1');
-            return html;
         }
 
         function renderAiChat() {
@@ -2411,30 +2466,6 @@
                 return `<div class="ai-msg-row ${rowAlign}"><div class="ai-bubble ${cls}">${attach}${mdToHtml(m.text)}</div></div>`;
             }).join('');
             box.scrollTop = box.scrollHeight;
-            renderAiMath(box);
-        }
-
-        // Turn Gemini's LaTeX (e.g. $\pi r^2$, $\sqrt{34}$, \(\theta\)) into properly
-        // typeset math via KaTeX. Runs after every chat render; if the KaTeX scripts
-        // (loaded with `defer`) haven't finished loading yet on the very first
-        // message, it retries shortly after instead of leaving raw LaTeX on screen.
-        function renderAiMath(box, attempt) {
-            if (!box) return;
-            if (typeof window.renderMathInElement !== 'function') {
-                if ((attempt || 0) < 10) setTimeout(() => renderAiMath(box, (attempt || 0) + 1), 300);
-                return;
-            }
-            try {
-                window.renderMathInElement(box, {
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },
-                        { left: '\\[', right: '\\]', display: true },
-                        { left: '$', right: '$', display: false },
-                        { left: '\\(', right: '\\)', display: false }
-                    ],
-                    throwOnError: false
-                });
-            } catch (e) { /* leave raw text if KaTeX itself errors on a bad expression */ }
         }
 
         function showAiTyping() {
@@ -2511,20 +2542,14 @@
         function loadAiSession(id) {
             const sess = aiArchivedSessions.find(s => s.id === id);
             if (!sess) return;
-            const doLoad = () => {
-                archiveCurrentAiSession();
-                aiArchivedSessions = aiArchivedSessions.filter(s => s.id !== id); // move it out of the archive, it's now active
-                aiChatHistory = sess.messages;
-                saveAiSessionsToStorage();
-                saveAiChatToStorage();
-                renderAiChat();
-                document.getElementById('ai-recent-panel').classList.add('hidden');
-            };
-            if (aiChatHistory.length) {
-                showConfirmModal('Load this past chat?', 'Your current conversation will be archived first (last 5 only).', doLoad);
-            } else {
-                doLoad();
-            }
+            if (aiChatHistory.length && !confirm('Load this past chat? Your current conversation will be archived first (last 5 only).')) return;
+            archiveCurrentAiSession();
+            aiArchivedSessions = aiArchivedSessions.filter(s => s.id !== id); // move it out of the archive, it's now active
+            aiChatHistory = sess.messages;
+            saveAiSessionsToStorage();
+            saveAiChatToStorage();
+            renderAiChat();
+            document.getElementById('ai-recent-panel').classList.add('hidden');
         }
 
         function deleteAiSession(id) {
@@ -2539,8 +2564,8 @@
             document.getElementById('ai-video-input').value = '';
         }
 
-        // ---- Generic Gemini File API upload (resumable protocol) — used for an
-        // attached mock screen-recording video. ----
+        // ---- Generic Gemini File API upload (resumable protocol) — used for both
+        // an attached video file and an in-app audio recording. ----
         async function uploadMediaToGemini(blob, displayName, mimeType, kind) {
             const key = getGeminiKey();
             if (!key) { openAiKeyPanel(); return; }
@@ -2616,31 +2641,254 @@
             await uploadMediaToGemini(file, file.name, file.type || 'video/mp4', 'video');
         }
 
-        // ---- Mic dictation (audio -> text) — uses the browser's built-in Web Speech
-        // API to transcribe speech live and type it straight into the chat box, the
-        // same way voice input works in the Claude app. Nothing is uploaded anywhere;
-        // it's a normal one-time microphone-permission prompt, handled fully on-device
-        // by the browser/OS. ----
-        function getSpeechRecognitionCtor() {
-            return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+        // ===================================================================
+        // IMPORT MOCK FROM RECORDING — a separate one-shot pipeline from the
+        // chat feature above. It uploads the video, asks Gemini to return a
+        // strict JSON summary (score + per-question mistakes matched against
+        // this app's own topic/subtopic list), then pre-fills the existing
+        // "Add New Mock" form for the user to review and save. Nothing here
+        // touches mockData or the chat history directly — the user still has
+        // to hit "Save Mock Record" themselves.
+        // ===================================================================
+
+        // Bare-bones resumable upload to the Gemini File API (same protocol as
+        // uploadMediaToGemini, but without any chat-chip UI wiring) so this
+        // flow can drive its own status text.
+        async function uploadFileToGeminiRaw(blob, displayName, mimeType, key, onStatus) {
+            if (onStatus) onStatus('Uploading recording…');
+            const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${encodeURIComponent(key)}`, {
+                method: 'POST',
+                headers: {
+                    'X-Goog-Upload-Protocol': 'resumable',
+                    'X-Goog-Upload-Command': 'start',
+                    'X-Goog-Upload-Header-Content-Length': String(blob.size),
+                    'X-Goog-Upload-Header-Content-Type': mimeType,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ file: { display_name: displayName } })
+            });
+            if (!startRes.ok) throw new Error(`Upload init failed (${startRes.status})`);
+            const uploadUrl = startRes.headers.get('x-goog-upload-url');
+            if (!uploadUrl) throw new Error('Gemini did not return an upload URL.');
+
+            const uploadRes = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Length': String(blob.size),
+                    'X-Goog-Upload-Offset': '0',
+                    'X-Goog-Upload-Command': 'upload, finalize'
+                },
+                body: blob
+            });
+            if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
+            const uploadJson = await uploadRes.json();
+            let fileMeta = uploadJson.file;
+            if (!fileMeta || !fileMeta.uri) throw new Error('Upload succeeded but no file URI was returned.');
+
+            if (onStatus) onStatus('Gemini is processing the video…');
+            let attempts = 0;
+            while (fileMeta.state === 'PROCESSING' && attempts < 30) {
+                await new Promise(r => setTimeout(r, 2000));
+                const pollRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileMeta.name}?key=${encodeURIComponent(key)}`);
+                if (pollRes.ok) fileMeta = await pollRes.json();
+                attempts++;
+            }
+            if (fileMeta.state === 'FAILED') throw new Error('Gemini failed to process this video.');
+            return fileMeta;
         }
 
-        function toggleAiAudioRecording() {
-            if (aiSpeechListening) {
+        // Reads local video duration via the browser (no upload needed) so we
+        // can nudge the user before spending time/tokens on an overly long clip.
+        function getVideoDuration(file) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const v = document.createElement('video');
+                v.preload = 'metadata';
+                v.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(v.duration); };
+                v.onerror = () => { URL.revokeObjectURL(url); reject(new Error('metadata read failed')); };
+                v.src = url;
+            });
+        }
+
+        // Builds the fixed extraction instruction, including the app's own
+        // topic/subtopic list and mistake-reason list, so Gemini matches against
+        // them instead of inventing new labels.
+        function buildImportExtractionPrompt() {
+            const topicList = Object.keys(CGL_TOPICS).map(t => `- ${t}: ${CGL_TOPICS[t].join(' | ')}`).join('\n');
+            const reasonList = MISTAKE_REASONS.join(', ');
+            return `You are extracting structured mock-test data from a screen recording inside Tukka Meter, an SSC/Bank/Railway maths mock-tracking app. The video shows a student scrolling through the review/results screen of a maths mock test they already attempted, question by question (correct/incorrect markings and/or a results summary).
+
+Watch the video and return ONLY a single JSON object — no markdown fences, no commentary, no extra text — with exactly this shape:
+{
+  "correct": <integer, total correct answers if visible, else your best estimate, else 0>,
+  "incorrect": <integer, total incorrect answers if visible, else your best estimate, else 0>,
+  "unattempted": <integer, total unattempted/skipped questions if visible, else your best estimate, else 0>,
+  "mistakes": [
+    {
+      "question": "<short reference for this question, e.g. 'Q7', exactly as shown or inferable>",
+      "topic": "<the single closest match from the MAIN TOPIC list below, copied exactly as written there>",
+      "subtopic": "<the single closest match from that topic's subtopic list below, copied exactly as written there. Only if truly nothing in the list fits this question, write a short original subtopic name instead>",
+      "reason": "<the single closest match from this list, copied exactly as written: ${reasonList}>",
+      "note": "<one short sentence: what the question was about and specifically what went wrong or took too long, referencing that question number>"
+    }
+  ]
+}
+
+Only include an entry in "mistakes" for questions that were incorrect or unattempted/skipped — never for correctly-answered questions. If a wrong/skipped question isn't fully clear in the video, still include it with your best-guess topic/subtopic and a note saying the detail wasn't fully visible, rather than skipping it.
+
+MAIN TOPICS AND THEIR SUBTOPICS (choose only from this list unless a question genuinely matches none of them):
+${topicList}`;
+        }
+
+        async function extractMockDataFromVideo(fileMeta, key) {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        role: 'user',
+                        parts: [
+                            { text: buildImportExtractionPrompt() },
+                            { fileData: { fileUri: fileMeta.uri, mimeType: fileMeta.mimeType } }
+                        ]
+                    }],
+                    generationConfig: { responseMimeType: 'application/json' }
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                const msg = (data && data.error && data.error.message) || `Request failed (${res.status})`;
+                throw new Error(msg);
+            }
+            const candidate = data.candidates && data.candidates[0];
+            const raw = candidate && candidate.content && candidate.content.parts
+                ? candidate.content.parts.map(p => p.text || '').join('')
+                : '';
+            if (!raw) throw new Error('Gemini did not return any data for this video.');
+            const cleaned = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+            try {
+                return JSON.parse(cleaned);
+            } catch (e) {
+                throw new Error("Could not understand Gemini's response.");
+            }
+        }
+
+        async function handleImportVideoSelect(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const key = getGeminiKey();
+            if (!key) { openAiKeyPanel(); return; }
+
+            const errEl = document.getElementById('ai-import-error');
+            const statusBox = document.getElementById('ai-import-status');
+            const statusIcon = document.getElementById('ai-import-status-icon');
+            const statusText = document.getElementById('ai-import-status-text');
+            const pickerBtn = document.getElementById('ai-import-picker-btn');
+            errEl.classList.add('hidden');
+
+            // Soft nudge if the recording is much longer than the "flip through
+            // your review screen, ~1-2s per question" approach needs.
+            try {
+                const duration = await getVideoDuration(file);
+                if (duration && duration > 15 * 60) {
+                    const mins = Math.round(duration / 60);
+                    const proceed = confirm(`This recording is about ${mins} minutes long. For best results, keep it short — just scroll through your review screen pausing 1-2 seconds per question, rather than recording the full attempt. Continue with this video anyway?`);
+                    if (!proceed) { event.target.value = ''; return; }
+                }
+            } catch (e) { /* duration check is best-effort only */ }
+
+            pickerBtn.disabled = true;
+            statusBox.classList.remove('hidden');
+            statusIcon.className = 'fa-solid fa-spinner fa-spin';
+            statusText.textContent = 'Uploading recording…';
+
+            try {
+                const fileMeta = await uploadFileToGeminiRaw(file, file.name, file.type || 'video/mp4', key, (msg) => { statusText.textContent = msg; });
+                statusText.textContent = 'Reading your mock attempt…';
+                const extracted = await extractMockDataFromVideo(fileMeta, key);
+                statusBox.classList.add('hidden');
+                openMockModalFromExtraction(extracted);
+            } catch (err) {
+                console.error('Import from video failed:', err);
+                statusBox.classList.add('hidden');
+                errEl.textContent = 'Could not read the recording: ' + err.message + ' — you can still add this mock manually.';
+                errEl.classList.remove('hidden');
+            } finally {
+                pickerBtn.disabled = false;
+                event.target.value = '';
+            }
+        }
+
+        // Opens the existing "Add New Mock" modal, pre-filled from Gemini's
+        // extracted JSON. Reuses addMistakeRow(), which already auto-selects a
+        // matching dropdown option or falls back to the custom subtopic field
+        // when the value isn't in CGL_TOPICS — exactly the behaviour we want here.
+        function openMockModalFromExtraction(data) {
+            editingMockId = null;
+            const titleLabel = document.getElementById('modal-title-label');
+            const saveBtn = document.getElementById('btn-save-mock');
+            const list = document.getElementById('mistakes-input-list');
+            if (list) list.innerHTML = '';
+
+            if (titleLabel) titleLabel.textContent = 'Log Mock — from video (review before saving)';
+            if (saveBtn) saveBtn.textContent = 'Save Mock Record';
+
+            document.getElementById('input-mock-name').value = `Mock ${mockData.length + 1}`;
+            document.getElementById('input-mock-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('input-mock-percentile').value = '';
+            document.getElementById('input-correct-count').value = parseInt(data && data.correct, 10) || 0;
+            document.getElementById('input-incorrect-count').value = parseInt(data && data.incorrect, 10) || 0;
+            document.getElementById('input-unattempted-count').value = parseInt(data && data.unattempted, 10) || 0;
+            calculateMockScore();
+
+            const mistakes = (data && Array.isArray(data.mistakes)) ? data.mistakes : [];
+            if (mistakes.length) {
+                mistakes.forEach(mst => {
+                    const note = mst.question ? `${mst.question}: ${mst.note || ''}`.trim() : (mst.note || '');
+                    addMistakeRow(mst.topic || '', mst.subtopic || '', mst.reason || '', note);
+                });
+            } else {
+                addMistakeRow();
+                addMistakeRow();
+            }
+
+            setTimeout(maybeShowSubtopicMaxNotice, 350);
+
+            const modal = document.getElementById('mockModal');
+            if (modal) modal.classList.remove('hidden');
+
+            // Reset the AI Analyzer back to its chooser for next time, since the
+            // user's attention now moves to the mock modal above it.
+            showAiModeChooser();
+        }
+
+        // ---- Audio recording (mic) — records in-browser, then uploads via the same
+        // Gemini File API path used for video. Triggers the browser's standard,
+        // one-time microphone-permission prompt; nothing else is required. ----
+        async function toggleAiAudioRecording() {
+            if (aiMediaRecorder && aiMediaRecorder.state === 'recording') {
                 stopAiAudioRecording();
                 return;
             }
-
-            const SpeechRecognitionCtor = getSpeechRecognitionCtor();
-            if (!SpeechRecognitionCtor) {
-                alert("Voice-to-text isn't supported in this browser. Try Chrome, or type your question instead.");
+            const key = getGeminiKey();
+            if (!key) { openAiKeyPanel(); return; }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Audio recording is not supported in this browser.');
                 return;
             }
+            try {
+                aiRecordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err) {
+                alert('Microphone access was denied or is unavailable. Please allow microphone permission to record a voice note.');
+                return;
+            }
+            aiRecordedChunks = [];
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+            aiMediaRecorder = mimeType ? new MediaRecorder(aiRecordingStream, { mimeType }) : new MediaRecorder(aiRecordingStream);
+            aiMediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size) aiRecordedChunks.push(e.data); };
+            aiMediaRecorder.onstop = onAiAudioRecordingStop;
+            aiMediaRecorder.start();
 
-            const input = document.getElementById('ai-chat-input');
-            aiSpeechBaseText = input.value ? (input.value.replace(/\s+$/, '') + ' ') : '';
-            aiSpeechFinalText = '';
-            aiSpeechListening = true;
             aiRecordingStartedAt = Date.now();
             document.getElementById('ai-mic-btn').classList.add('!text-rose-600', '!border-rose-300');
             document.getElementById('ai-recording-chip').classList.remove('hidden');
@@ -2649,100 +2897,23 @@
                 const m = Math.floor(secs / 60), s = secs % 60;
                 document.getElementById('ai-recording-timer').textContent = `${m}:${String(s).padStart(2, '0')}`;
             }, 500);
-
-            startAiSpeechSession(SpeechRecognitionCtor, input);
-        }
-
-        // Starts ONE utterance's worth of recognition (continuous = false) and,
-        // once it ends, automatically starts a fresh instance for the next
-        // utterance — as long as aiSpeechListening is still true. This is a
-        // deliberate workaround for a well-known Android Chrome bug: with
-        // continuous = true, the engine periodically re-processes overlapping
-        // audio *within the same still-running session* and fires onresult with
-        // duplicate/growing text ("can you please can you please...") — that
-        // happens before onend ever fires, so it can't be fixed by controlling
-        // what happens at onend. Running short, non-continuous sessions back to
-        // back avoids the overlap entirely, since each fresh session only sees
-        // audio captured after the previous one has fully stopped.
-        function startAiSpeechSession(SpeechRecognitionCtor, input) {
-            if (!aiSpeechListening) return;
-
-            const recognition = new SpeechRecognitionCtor();
-            recognition.lang = (navigator.language || 'en-IN');
-            recognition.continuous = false;
-            recognition.interimResults = true;
-
-            let sessionFinalText = '';
-
-            recognition.onresult = (event) => {
-                // Rebuild this session's transcript from scratch each event —
-                // event.results is authoritative for the current (single, short)
-                // utterance, so this stays correct regardless of how many times
-                // the event fires.
-                let finalText = '';
-                let interim = '';
-                for (let i = 0; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        finalText += transcript + ' ';
-                    } else {
-                        interim += transcript;
-                    }
-                }
-                sessionFinalText = finalText;
-                input.value = aiSpeechBaseText + aiSpeechFinalText + sessionFinalText + interim;
-                input.scrollTop = input.scrollHeight;
-            };
-
-            recognition.onerror = (event) => {
-                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                    aiSpeechListening = false;
-                    alert('Microphone access was denied or is unavailable. Please allow microphone permission to use voice-to-text.');
-                } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
-                    console.error('Speech recognition error:', event.error);
-                }
-            };
-
-            recognition.onend = () => {
-                // Commit whatever this utterance finished with, then either start
-                // the next utterance's session or stop cleanly if the user tapped
-                // Stop (or the mic was closed) while this one was wrapping up.
-                if (sessionFinalText) aiSpeechFinalText += sessionFinalText;
-                if (aiSpeechRecognition === recognition) aiSpeechRecognition = null;
-                if (aiSpeechListening) {
-                    startAiSpeechSession(SpeechRecognitionCtor, input);
-                } else {
-                    finishAiAudioRecordingUi();
-                }
-            };
-
-            try {
-                recognition.start();
-            } catch (err) {
-                aiSpeechListening = false;
-                finishAiAudioRecordingUi();
-                alert('Could not start voice-to-text: ' + err.message);
-                return;
-            }
-
-            aiSpeechRecognition = recognition;
         }
 
         function stopAiAudioRecording() {
-            aiSpeechListening = false;
-            if (aiSpeechRecognition) {
-                const rec = aiSpeechRecognition;
-                aiSpeechRecognition = null; // clear first so onend doesn't auto-restart it
-                try { rec.onend = null; rec.stop(); } catch (e) { /* no-op */ }
-            }
-            finishAiAudioRecordingUi();
-        }
-
-        function finishAiAudioRecordingUi() {
+            if (aiMediaRecorder && aiMediaRecorder.state === 'recording') aiMediaRecorder.stop();
+            if (aiRecordingStream) aiRecordingStream.getTracks().forEach(t => t.stop());
             clearInterval(aiRecordingTimerHandle);
             document.getElementById('ai-mic-btn').classList.remove('!text-rose-600', '!border-rose-300');
             document.getElementById('ai-recording-chip').classList.add('hidden');
-            document.getElementById('ai-chat-input').focus();
+        }
+
+        async function onAiAudioRecordingStop() {
+            if (!aiRecordedChunks.length) return;
+            const mimeType = aiRecordedChunks[0].type || 'audio/webm';
+            const blob = new Blob(aiRecordedChunks, { type: mimeType });
+            aiRecordedChunks = [];
+            const fileName = `voice-note-${Date.now()}.webm`;
+            await uploadMediaToGemini(blob, fileName, mimeType, 'audio');
         }
 
         async function sendAiMessage() {
