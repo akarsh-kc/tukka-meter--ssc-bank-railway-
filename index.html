@@ -389,6 +389,15 @@
                     { id: 'rrb_clerk_pre', short: 'RRB Clerk Pre', desc: 'IBPS RRB Office Assistant — Prelims', icon: 'fa-user-group' },
                     { id: 'rrb_clerk_mains', short: 'RRB Clerk Mains', desc: 'IBPS RRB Office Assistant — Mains', icon: 'fa-people-group' }
                 ]
+            },
+            english: {
+                id: 'english', file: 'apps/english.html', examKey: 'english_current_exam',
+                name: 'Skill Booster', sub: 'English, Maths & more', icon: 'fa-bolt',
+                colorA: '#7c3aed', colorB: '#c084fc',
+                exams: [
+                    { id: 'english_analyzer', short: 'English Analyzer', desc: 'Upload mock mistakes — Gemini sorts them into Vocabulary, Grammar & Reading folders automatically', icon: 'fa-language' },
+                    { id: 'maths_speed_booster', short: 'Maths Speed Booster', desc: 'Quick calculation drills to sharpen your speed and accuracy', icon: 'fa-bolt', file: 'apps/maths-speed-booster.html' }
+                ]
             }
         };
 
@@ -484,7 +493,7 @@
             } else {
                 overlay.classList.remove('onboarding');
                 closeBtn.classList.remove('hidden');
-                tagline.textContent = 'Switch between SSC, Railway & Bank anytime';
+                tagline.textContent = 'Switch between SSC, Railway, Bank & Skill Booster anytime';
             }
         }
 
