@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maths Speed Booster — Tukka Meter</title>
+
+    <!-- PWA setup -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="color-scheme" content="light dark">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Maths Speed Booster">
+    <link rel="icon" href="../icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="../icon-192.png">
+
+    <script>
+        // Apply saved dark-mode preference immediately to avoid a flash of light theme.
+        // Shares the 'tukka_dark_mode' key with the other Tukka Meter apps so the
+        // theme stays in sync across the whole hub, not just this app.
+        (function () {
+            try {
+                if (localStorage.getItem('tukka_dark_mode') === 'true') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#2e2a6b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif']
+                    },
+                    boxShadow: {
+                        glow: '0 0 0 1px rgba(124,58,237,0.15), 0 8px 24px -8px rgba(124,58,237,0.35)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        html, body { height: 100%; margin: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f4f6fb; }
+        html.dark body { background: #05070f; }
+        .glass-panel { background: #ffffff; }
+        html.dark .glass-panel { background: #0b0f20; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="glass-panel rounded-3xl shadow-glow max-w-md w-full p-8 text-center">
+        <button onclick="tukkaSwitchCategory()" class="mb-5 inline-flex items-center gap-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
+            <i class="fa-solid fa-arrow-left"></i> Switch exam / category
+        </button>
+
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 flex items-center justify-center text-white text-2xl shadow-glow mb-4">
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+
+        <h1 class="text-lg font-bold font-display text-slate-900 dark:text-slate-100">Maths Speed Booster</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-2 leading-relaxed">
+            This tool is on its way. Quick calculation drills to help you shave seconds off every question in your mocks — details coming soon.
+        </p>
+
+        <button onclick="toggleDarkMode()" id="dark-mode-toggle" class="mt-6 inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-100 dark:bg-white/10 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors">
+            <i id="dark-mode-icon" class="fa-solid fa-moon text-[10px]"></i>
+            <span>Toggle theme</span>
+        </button>
+    </div>
+
+    <script>
+        function isDarkMode() { return document.documentElement.classList.contains('dark'); }
+
+        function toggleDarkMode() {
+            const isDark = !isDarkMode();
+            document.documentElement.classList.toggle('dark', isDark);
+            try { localStorage.setItem('tukka_dark_mode', isDark ? 'true' : 'false'); } catch (e) {}
+            document.getElementById('dark-mode-icon').className = isDark ? 'fa-solid fa-sun text-[10px]' : 'fa-solid fa-moon text-[10px]';
+            try { window.parent.postMessage({ type: 'tukka:darkModeChanged', dark: isDark }, '*'); } catch (e) {}
+        }
+
+        function tukkaSwitchCategory() {
+            try { window.parent.postMessage({ type: 'tukka:openSwitcher' }, '*'); } catch (e) {}
+        }
+
+        document.getElementById('dark-mode-icon').className = isDarkMode() ? 'fa-solid fa-sun text-[10px]' : 'fa-solid fa-moon text-[10px]';
+
+        // Let the parent shell know we've loaded, in case its own <html class="dark">
+        // has drifted from the saved preference (same pattern as the other apps).
+        try { window.parent.postMessage({ type: 'tukka:darkModeChanged', dark: isDarkMode() }, '*'); } catch (e) {}
+    </script>
+</body>
+</html>

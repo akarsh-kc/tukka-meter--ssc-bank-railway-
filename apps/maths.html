@@ -718,10 +718,6 @@
                 <span class="nav-icon-wrap !bg-white/20 !text-white"><i class="fa-solid fa-plus"></i></span>
                 <span class="hidden lg:inline">Add New Mock</span>
             </button>
-            <button onclick="openImportMockModal()" id="nav-import-mock-btn" class="nav-pill" style="--pill-a:#8b5cf6;--pill-b:#22d3ee;--pill-glow:rgba(139,92,246,.55)" title="Import Mock from Video — Gemini reads your result screen and fills the form for you">
-                <span class="nav-icon-wrap"><i class="fa-solid fa-film"></i></span>
-                <span class="hidden lg:inline truncate">Import from Video</span>
-            </button>
             <button onclick="showIndividualMockView()" id="nav-individual-btn" class="nav-pill" style="--pill-a:#a855f7;--pill-b:#ec4899;--pill-glow:rgba(168,85,247,.55)" title="Individual Mock Analyzer">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
                 <span class="hidden lg:inline">Individual Mock Analyzer</span>
@@ -740,7 +736,7 @@
 
             <div class="nav-divider"></div>
 
-            <button onclick="showAiAnalyzerView()" id="nav-ai-btn" class="nav-pill" style="--pill-a:#8b5cf6;--pill-b:#06b6d4;--pill-glow:rgba(139,92,246,.55)" title="AI Analyzer — chat with Gemini about your mocks">
+            <button onclick="showAiAnalyzerView()" id="nav-ai-btn" class="nav-pill" style="--pill-a:#8b5cf6;--pill-b:#06b6d4;--pill-glow:rgba(139,92,246,.55)" title="AI Analyzer — chat with Gemini about your mocks, or import a mock from screenshots">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
                 <span class="hidden lg:inline truncate">AI Analyzer</span>
                 <span class="nav-active-dot hidden lg:block"></span>
@@ -1381,7 +1377,7 @@
     <section id="ai-analyzer-view" class="hidden flex-1 max-w-5xl w-full mx-auto p-4 lg:p-6 flex flex-col">
         <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
             <div class="flex items-center gap-3">
-                <button onclick="hideAiAnalyzerView()" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all shrink-0">
+                <button onclick="backFromAiAnalyzer()" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all shrink-0">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
                 <div>
@@ -1416,8 +1412,26 @@
             You're chatting using your own Gemini API key — please don't use it to request vulgar, abusive, or otherwise harmful content; you're bound by Google's usage policies for anything you send here.
         </p>
 
+        <!-- STATE 0: Choice screen — chat/analyse existing data, or import a mock from screenshots -->
+        <div id="ai-analyzer-choice" class="max-w-2xl w-full mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button onclick="openAiChatSubView()" class="glass-panel rounded-2xl p-6 text-left border border-slate-200 hover:border-violet-300 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-white text-lg shadow-lg mb-3 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1">AI Analyse My Mocks</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Chat with Gemini about all your existing logged mock data — scores, weak topics, mistake patterns and a personalized strategy.</p>
+            </button>
+            <button onclick="closeAiAnalyzerAndOpenImport()" class="glass-panel rounded-2xl p-6 text-left border border-slate-200 hover:border-fuchsia-300 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-rose-500 flex items-center justify-center text-white text-lg shadow-lg mb-3 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-images"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1">Import from Screenshots or Video</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Upload screenshots, or a short screen recording, of your result and wrong-question review screens — Gemini reads them and fills the mock form for you.</p>
+            </button>
+        </div>
+
         <!-- STATE 1: API key setup -->
-        <div id="ai-key-setup" class="glass-panel rounded-2xl p-6 max-w-lg w-full mx-auto text-center space-y-4">
+        <div id="ai-key-setup" class="hidden glass-panel rounded-2xl p-6 max-w-lg w-full mx-auto text-center space-y-4">
             <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-white text-xl shadow-lg">
                 <i class="fa-solid fa-key"></i>
             </div>
@@ -1588,39 +1602,42 @@
         </div>
     </div>
 
-    <!-- IMPORT MOCK FROM VIDEO — user records their result/review screen, Gemini
-         watches it and extracts score + mistakes, then we open the same Add Mock
-         modal pre-filled so the user can double-check before saving. -->
+    <!-- IMPORT MOCK FROM SCREENSHOTS — user uploads screenshots of their overall
+         result screen plus the wrong-question review screens, Gemini reads them
+         and extracts score + mistakes, then we open the same Add Mock modal
+         pre-filled so the user can double-check before saving. -->
     <div id="importMockModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="glass-panel border border-slate-200 bg-white rounded-2xl max-w-md w-full shadow-2xl my-auto">
             <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-film text-violet-600"></i> Import Mock from Video
+                    <i class="fa-solid fa-images text-violet-600"></i> Import Mock from Screenshots or Video
                 </h3>
                 <button onclick="closeImportMockModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
             <div class="p-5 space-y-4 text-xs">
-                <div class="p-3 bg-violet-50 border border-violet-200 rounded-xl text-violet-800 leading-relaxed">
-                    <p class="font-semibold mb-1"><i class="fa-solid fa-circle-info mr-1"></i> How to record</p>
-                    <p>Solve your mock first. Then screen-record yourself going through the <strong>result / answer-review screen</strong> — pause about 1–2 seconds on each question so Gemini can read it clearly. Keep the recording short (a couple of minutes is enough); it doesn't need to cover the full live attempt.</p>
+                <div class="p-3 bg-violet-50 border border-violet-200 rounded-xl text-violet-800 leading-relaxed space-y-2">
+                    <p class="font-semibold"><i class="fa-solid fa-circle-info mr-1"></i> Screenshots (preferred)</p>
+                    <p>Solve your mock first. Then take screenshots of the <strong>overall result/score summary screen</strong> and every <strong>wrong / unattempted question's review screen</strong>. You can select multiple screenshots at once — the more complete, the better Gemini's read will be.</p>
+                    <p class="font-semibold pt-1 border-t border-violet-200/70"><i class="fa-solid fa-circle-info mr-1"></i> How to record (if screen recording instead)</p>
+                    <p>Solve your mock first. Then screen-record yourself going through the result / answer-review screen — pause about 1–2 seconds on each question so Gemini can read it clearly. Keep the recording short (a couple of minutes is enough); it doesn't need to cover the full live attempt.</p>
                 </div>
                 <div>
-                    <label class="block text-slate-700 font-medium mb-1.5">Review-screen recording</label>
-                    <input type="file" id="import-mock-video-input" accept="video/*" onchange="handleImportMockVideoSelect(event)" class="hidden">
-                    <button type="button" onclick="document.getElementById('import-mock-video-input').click()" class="w-full px-3 py-2.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-violet-400 hover:text-violet-600 hover:bg-violet-50/50 transition-colors flex items-center justify-center gap-2 font-semibold">
-                        <i class="fa-solid fa-upload"></i> <span id="import-mock-file-label">Choose video…</span>
+                    <label class="block text-slate-700 font-medium mb-1.5">Result &amp; wrong-question screenshots or video</label>
+                    <input type="file" id="import-mock-screenshots-input" accept="image/*,video/*" multiple onchange="handleImportMockScreenshotSelect(event)" class="hidden">
+                    <button type="button" onclick="document.getElementById('import-mock-screenshots-input').click()" class="w-full px-3 py-2.5 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-violet-400 hover:text-violet-600 hover:bg-violet-50/50 transition-colors flex items-center justify-center gap-2 font-semibold">
+                        <i class="fa-solid fa-upload"></i> <span id="import-mock-file-label">Choose screenshots or a video…</span>
                     </button>
                 </div>
                 <div id="import-mock-status" class="hidden text-[11px] font-semibold text-slate-500 flex items-center gap-1.5"></div>
-                <p class="text-[10.5px] text-slate-400 leading-relaxed">Uses your own Gemini API key — the video goes straight from your phone to Google, same as the AI Analyzer chat. Extracted numbers can be wrong sometimes, so you'll get a chance to review everything before it's saved.</p>
+                <p class="text-[10.5px] text-slate-400 leading-relaxed">Uses your own Gemini API key — files go straight from your phone to Google, same as the AI Analyzer chat. Extracted numbers can be wrong sometimes, so you'll get a chance to review everything before it's saved.</p>
             </div>
             <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 rounded-b-2xl flex items-center justify-end gap-3">
                 <button onclick="closeImportMockModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg text-xs transition-colors">
                     Cancel
                 </button>
-                <button id="btn-import-mock-extract" onclick="extractMockFromVideo()" disabled class="px-5 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold rounded-lg text-xs shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <button id="btn-import-mock-extract" onclick="extractMockFromScreenshots()" disabled class="px-5 py-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold rounded-lg text-xs shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                     Extract &amp; Continue
                 </button>
             </div>
@@ -2235,7 +2252,14 @@
             view.classList.remove('hidden');
             view.classList.add('flex-1');
             setActiveNav('nav-ai-btn');
-            initAiAnalyzer();
+            // Land on the choice screen (Analyse existing data vs Import from
+            // Screenshots) rather than jumping straight into the chat.
+            document.getElementById('ai-analyzer-choice').classList.remove('hidden');
+            document.getElementById('ai-key-setup').classList.add('hidden');
+            document.getElementById('ai-chat-panel').classList.add('hidden');
+            document.getElementById('ai-chat-panel').classList.remove('flex');
+            document.getElementById('ai-header-actions').classList.add('hidden');
+            document.getElementById('ai-header-actions').classList.remove('flex');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2243,6 +2267,35 @@
             document.getElementById('ai-analyzer-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+        }
+
+        // Opens the "chat about my existing mocks" sub-view from the choice screen.
+        function openAiChatSubView() {
+            document.getElementById('ai-analyzer-choice').classList.add('hidden');
+            initAiAnalyzer();
+        }
+
+        // "Import from Screenshots" option on the choice screen — closes the AI
+        // Analyzer view and opens the existing import modal (now screenshot-based).
+        function closeAiAnalyzerAndOpenImport() {
+            hideAiAnalyzerView();
+            openImportMockModal();
+        }
+
+        // Back arrow in the AI Analyzer header: from the chat/key sub-view it
+        // returns to the choice screen; from the choice screen it exits to the dashboard.
+        function backFromAiAnalyzer() {
+            const choice = document.getElementById('ai-analyzer-choice');
+            if (choice && choice.classList.contains('hidden')) {
+                choice.classList.remove('hidden');
+                document.getElementById('ai-key-setup').classList.add('hidden');
+                document.getElementById('ai-chat-panel').classList.add('hidden');
+                document.getElementById('ai-chat-panel').classList.remove('flex');
+                document.getElementById('ai-header-actions').classList.add('hidden');
+                document.getElementById('ai-header-actions').classList.remove('flex');
+            } else {
+                hideAiAnalyzerView();
+            }
         }
 
         // ===================================================================
@@ -2273,7 +2326,7 @@
         let aiSpeechBaseText = '';        // textarea content that existed before dictation started
         let aiSpeechFinalText = '';       // finalized (committed) transcript segments from this dictation session
         let aiRecordingTimerHandle = null;
-        let importMockSelectedFile = null;   // File picked in the "Import Mock from Video" modal, before it's uploaded
+        let importMockSelectedFiles = [];   // Screenshot(s) picked in the "Import Mock from Screenshots" modal, before they're sent
 
         function getGeminiKey() {
             try { return localStorage.getItem(AI_KEY_STORAGE) || ''; } catch (e) { return ''; }
@@ -2618,8 +2671,8 @@
             document.getElementById('ai-video-input').value = '';
         }
 
-        // ---- Generic Gemini File API upload (resumable protocol) — shared by the
-        // AI Analyzer chat's attachments and the "Import Mock from Video" flow. ----
+        // ---- Generic Gemini File API upload (resumable protocol) — used by the
+        // AI Analyzer chat's video/audio attachments. ----
         async function geminiUploadFile(blob, displayName, mimeType, onStatus) {
             const key = getGeminiKey();
             if (!key) throw new Error('No Gemini API key saved yet.');
@@ -2705,18 +2758,19 @@
         }
 
         // ===================================================================
-        // IMPORT MOCK FROM VIDEO — separate from the AI Analyzer chat above.
-        // User records their result/review screen, we send it to Gemini with a
-        // fixed instruction asking for strict JSON (not chat text), then use
-        // that JSON to pre-fill the existing "Add New Mock" form so the user
+        // IMPORT MOCK FROM SCREENSHOTS OR VIDEO — separate from the AI Analyzer
+        // chat above. User uploads screenshots and/or a screen recording of their
+        // result summary + wrong-question review screens, we send them to Gemini
+        // with a fixed instruction asking for strict JSON (not chat text), then
+        // use that JSON to pre-fill the existing "Add New Mock" form so the user
         // just has to review and hit Save — nothing is written automatically.
         // ===================================================================
         function openImportMockModal() {
-            importMockSelectedFile = null;
-            const fileInput = document.getElementById('import-mock-video-input');
+            importMockSelectedFiles = [];
+            const fileInput = document.getElementById('import-mock-screenshots-input');
             if (fileInput) fileInput.value = '';
             const labelEl = document.getElementById('import-mock-file-label');
-            if (labelEl) labelEl.textContent = 'Choose video…';
+            if (labelEl) labelEl.textContent = 'Choose screenshots or a video…';
             const btn = document.getElementById('btn-import-mock-extract');
             if (btn) { btn.disabled = true; btn.textContent = 'Extract & Continue'; }
             const statusEl = document.getElementById('import-mock-status');
@@ -2730,16 +2784,35 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        function handleImportMockVideoSelect(event) {
-            const file = event.target.files && event.target.files[0];
-            if (!file) return;
-            importMockSelectedFile = file;
+        function handleImportMockScreenshotSelect(event) {
+            const files = event.target.files ? Array.from(event.target.files) : [];
+            if (!files.length) return;
+            importMockSelectedFiles = files;
             const labelEl = document.getElementById('import-mock-file-label');
-            if (labelEl) labelEl.textContent = file.name;
+            if (files.length === 1) {
+                labelEl.textContent = files[0].name;
+            } else {
+                const videoCount = files.filter(f => (f.type || '').startsWith('video/')).length;
+                const imgCount = files.length - videoCount;
+                const parts = [];
+                if (imgCount) parts.push(`${imgCount} screenshot${imgCount > 1 ? 's' : ''}`);
+                if (videoCount) parts.push(`${videoCount} video${videoCount > 1 ? 's' : ''}`);
+                if (labelEl) labelEl.textContent = `${parts.join(' + ')} selected`;
+            }
             const btn = document.getElementById('btn-import-mock-extract');
             if (btn) btn.disabled = false;
             const statusEl = document.getElementById('import-mock-status');
             if (statusEl) statusEl.classList.add('hidden');
+        }
+
+        // Reads a File/Blob into a base64 string (no data: prefix) for Gemini's inlineData parts.
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+                reader.onerror = () => reject(new Error('Could not read file: ' + file.name));
+                reader.readAsDataURL(file);
+            });
         }
 
         // Fixed instruction (not a free-form chat prompt) telling Gemini exactly
@@ -2748,7 +2821,7 @@
         function importMockExtractionInstruction() {
             const topicList = Object.keys(CGL_TOPICS).join(', ');
             const reasonList = MISTAKE_REASONS.join(', ');
-            return `You are extracting structured results from a screen recording for "Tukka Meter", a maths mock-test tracker for SSC/Bank/Railway exam aspirants in India. The video shows the user flipping through their mock test's result / answer-review screen, pausing briefly on each question — read whatever score summary and per-question review details are visible.
+            return `You are extracting structured results from a set of screenshots and/or a screen recording for "Tukka Meter", a maths mock-test tracker for SSC/Bank/Railway exam aspirants in India. The media shows the user's mock test's overall result/score summary screen and the answer-review screens for questions they got wrong or left unattempted — read whatever score summary and per-question review details are visible across ALL the files together (they're all from the same mock attempt). If a video is included, it's the user flipping through their review screen, pausing briefly on each question.
 
 Extract:
 1. correct — total number of correctly answered questions
@@ -2757,47 +2830,67 @@ Extract:
 4. percentile — the percentile shown, if visible (else null)
 5. date — the mock's date if visible, in YYYY-MM-DD format (else null)
 6. name — the mock's name/title/series if visible, e.g. "Testbook Mock 12" (else null)
-7. mistakes — one entry for EVERY wrong or unattempted question you can identify, each with:
+7. mistakes — one entry for EVERY wrong or unattempted question shown, each with:
+   - questionNumber: the question number/serial as shown on screen (e.g. 14), or null if it isn't visible
    - topic: the closest match from this exact list (use one of these strings verbatim): ${topicList}
    - subtopic: a short 3-8 word description of the specific question type/concept
    - reason: the closest match from this exact list (use one of these strings verbatim): ${reasonList}
-   - note: one short line (under 20 words) noting what went wrong and how to fix it next time
+   - note: one short line (under 20 words) noting what went wrong and how to fix it next time. ALWAYS start this note by naming which question it's about, e.g. "Q14: ..." (use "Q?" if the question number isn't visible)
 
 Reply with ONLY raw JSON — no markdown code fences, no commentary before or after — in exactly this shape:
-{"name": string|null, "date": string|null, "percentile": number|null, "correct": number, "incorrect": number, "unattempted": number, "mistakes": [{"topic": string, "subtopic": string, "reason": string, "note": string}]}
+{"name": string|null, "date": string|null, "percentile": number|null, "correct": number, "incorrect": number, "unattempted": number, "mistakes": [{"questionNumber": number|null, "topic": string, "subtopic": string, "reason": string, "note": string}]}
 
-Make your best estimate for any number you can't read with full confidence rather than leaving it out. If the video clearly isn't a mock-test review screen at all, reply with exactly: {"error": "not_a_mock_review"}`;
+Make your best estimate for any number you can't read with full confidence rather than leaving it out. If the media clearly isn't from a mock-test result/review screen at all, reply with exactly: {"error": "not_a_mock_review"}`;
         }
 
-        async function extractMockFromVideo() {
+        async function extractMockFromScreenshots() {
             const key = getGeminiKey();
             if (!key) {
                 closeImportMockModal();
                 showAiAnalyzerView();
+                openAiChatSubView();
                 openAiKeyPanel();
                 showToast('Add your Gemini API key first, then try importing again.', 'info');
                 return;
             }
-            if (!importMockSelectedFile) return;
+            if (!importMockSelectedFiles.length) return;
 
             const btn = document.getElementById('btn-import-mock-extract');
             const statusEl = document.getElementById('import-mock-status');
             btn.disabled = true;
             btn.textContent = 'Extracting…';
             statusEl.classList.remove('hidden');
-            statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading video to Gemini…';
+            statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Reading ${importMockSelectedFiles.length} file${importMockSelectedFiles.length > 1 ? 's' : ''}…`;
 
             try {
-                const fileMeta = await geminiUploadFile(
-                    importMockSelectedFile,
-                    importMockSelectedFile.name,
-                    importMockSelectedFile.type || 'video/mp4',
-                    (phase) => {
-                        statusEl.innerHTML = phase === 'processing'
-                            ? '<i class="fa-solid fa-spinner fa-spin"></i> Gemini is processing the video…'
-                            : '<i class="fa-solid fa-spinner fa-spin"></i> Uploading video to Gemini…';
+                // Screenshots are small, so send them inline as base64. Videos go
+                // through the resumable Files API (same one the AI Analyzer chat
+                // uses for its own video attachments) since they can be much larger.
+                const mediaParts = [];
+                for (const file of importMockSelectedFiles) {
+                    const isVideo = (file.type || '').startsWith('video/');
+                    if (isVideo) {
+                        statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Uploading ${file.name} to Gemini…`;
+                        const fileMeta = await geminiUploadFile(
+                            file,
+                            file.name,
+                            file.type || 'video/mp4',
+                            (phase) => {
+                                statusEl.innerHTML = phase === 'processing'
+                                    ? `<i class="fa-solid fa-spinner fa-spin"></i> Gemini is processing ${file.name}…`
+                                    : `<i class="fa-solid fa-spinner fa-spin"></i> Uploading ${file.name} to Gemini…`;
+                            }
+                        );
+                        mediaParts.push({ fileData: { fileUri: fileMeta.uri, mimeType: fileMeta.mimeType } });
+                    } else {
+                        mediaParts.push({
+                            inlineData: {
+                                mimeType: file.type || 'image/jpeg',
+                                data: await fileToBase64(file)
+                            }
+                        });
                     }
-                );
+                }
 
                 statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reading your mock results…';
 
@@ -2809,7 +2902,7 @@ Make your best estimate for any number you can't read with full confidence rathe
                             role: 'user',
                             parts: [
                                 { text: importMockExtractionInstruction() },
-                                { fileData: { fileUri: fileMeta.uri, mimeType: fileMeta.mimeType } }
+                                ...mediaParts
                             ]
                         }]
                     })
@@ -2829,16 +2922,16 @@ Make your best estimate for any number you can't read with full confidence rathe
                 try {
                     parsed = JSON.parse(cleaned);
                 } catch (e) {
-                    throw new Error("Gemini's reply wasn't valid data — try a clearer recording (pause a bit longer on each question).");
+                    throw new Error("Gemini's reply wasn't valid data — try clearer/closer screenshots, or a slower-paced video, of the result and review screens.");
                 }
                 if (parsed.error) {
-                    throw new Error("That didn't look like a mock review screen — make sure the recording shows your result/answer review page.");
+                    throw new Error("That didn't look like a mock review screen — make sure your upload shows the result/answer review page.");
                 }
 
                 applyImportedMockData(parsed);
                 closeImportMockModal();
             } catch (err) {
-                console.error('Import mock from video error:', err);
+                console.error('Import mock from screenshots/video error:', err);
                 statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-500"></i> ${String(err.message || 'Something went wrong.').replace(/</g, '&lt;')}`;
                 btn.disabled = false;
                 btn.textContent = 'Extract & Continue';
@@ -2854,7 +2947,7 @@ Make your best estimate for any number you can't read with full confidence rathe
             const nameEl = document.getElementById('input-mock-name');
             const dateEl = document.getElementById('input-mock-date');
             const percEl = document.getElementById('input-mock-percentile');
-            if (nameEl) nameEl.value = parsed.name || `Mock ${mockData.length + 1} (from video)`;
+            if (nameEl) nameEl.value = parsed.name || `Mock ${mockData.length + 1} (imported)`;
             if (dateEl && parsed.date) dateEl.value = parsed.date;
             if (percEl && parsed.percentile !== null && parsed.percentile !== undefined) percEl.value = parsed.percentile;
             document.getElementById('input-correct-count').value = parsed.correct || 0;
@@ -2865,14 +2958,23 @@ Make your best estimate for any number you can't read with full confidence rathe
             const list = document.getElementById('mistakes-input-list');
             if (list) list.innerHTML = '';
             if (parsed.mistakes && parsed.mistakes.length) {
-                parsed.mistakes.forEach(mk => addMistakeRow(mk.topic || '', mk.subtopic || '', mk.reason || '', mk.note || ''));
+                parsed.mistakes.forEach(mk => {
+                    // Make sure the note always names which question it's about,
+                    // even if Gemini forgot to prefix it despite the instruction.
+                    let note = (mk.note || '').trim();
+                    const qLabel = (mk.questionNumber !== null && mk.questionNumber !== undefined && mk.questionNumber !== '') ? `Q${mk.questionNumber}` : 'Q?';
+                    if (!/^q\s*\??\d*\s*:/i.test(note)) {
+                        note = note ? `${qLabel}: ${note}` : `${qLabel}: `;
+                    }
+                    addMistakeRow(mk.topic || '', mk.subtopic || '', mk.reason || '', note);
+                });
             } else {
                 addMistakeRow();
             }
 
             const titleLabel = document.getElementById('modal-title-label');
-            if (titleLabel) titleLabel.textContent = 'Review Imported Mock (from video)';
-            showToast('Extracted from your video — double-check the numbers, then save.', 'info');
+            if (titleLabel) titleLabel.textContent = 'Review Imported Mock';
+            showToast('Extracted from your upload — double-check the numbers, then save.', 'info');
         }
 
         // ---- Mic dictation (audio -> text) — uses the browser's built-in Web Speech
