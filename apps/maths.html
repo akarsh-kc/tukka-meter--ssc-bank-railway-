@@ -2111,6 +2111,39 @@
             closeMobileNav();
         }
 
+        // ================= IN-APP BACK BUTTON / GESTURE HANDLING =================
+        // Screens (weightage, individual mock, logged mocks, about, backup, AI
+        // analyzer) used to be plain show/hide with no browser history entry, so
+        // the phone's back button/gesture had nothing app-related to undo and
+        // jumped straight to whatever app was previously loaded in the Tukka
+        // Meter hub. Now every screen open pushes a history entry, so back steps
+        // through in-app screens first, and only leaves the app once you're back
+        // at the dashboard.
+        let tukkaSuppressPush = false;
+        function tukkaPushScreen(name) {
+            if (tukkaSuppressPush) return;
+            try { history.pushState({ tukkaScreen: name }, '', location.href); } catch (e) {}
+        }
+        function tukkaReplaceScreen(name) {
+            if (tukkaSuppressPush) return;
+            try { history.replaceState({ tukkaScreen: name }, '', location.href); } catch (e) {}
+        }
+        window.addEventListener('popstate', (e) => {
+            tukkaSuppressPush = true;
+            const screen = (e.state && e.state.tukkaScreen) || 'home';
+            try {
+                switch (screen) {
+                    case 'weightage': showWeightageView(); break;
+                    case 'individual': showIndividualMockView(); break;
+                    case 'logged': showLoggedMocksView(); break;
+                    case 'about': showAboutView(); break;
+                    case 'backup': showBackupView(); break;
+                    case 'ai': showAiAnalyzerView(); break;
+                    default: goHome();
+                }
+            } finally { tukkaSuppressPush = false; }
+        });
+
         function goHome() {
             document.getElementById('weightage-view').classList.add('hidden');
             document.getElementById('individual-mock-view').classList.add('hidden');
@@ -2120,6 +2153,7 @@
             document.getElementById('ai-analyzer-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2134,6 +2168,7 @@
             view.classList.remove('hidden');
             view.classList.add('flex-1');
             setActiveNav('nav-about-btn');
+            tukkaPushScreen('about');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2141,6 +2176,7 @@
             document.getElementById('about-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
         }
 
         // ---------- Backup & Restore (merged export/import) ----------
@@ -2155,6 +2191,7 @@
             view.classList.remove('hidden');
             view.classList.add('flex-1');
             setActiveNav('nav-backup-btn');
+            tukkaPushScreen('backup');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2162,6 +2199,7 @@
             document.getElementById('backup-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
         }
 
         function showWeightageView() {
@@ -2181,6 +2219,7 @@
                 selectWeightageSubject(weightagePayload.order[0]);
             }
             setActiveNav('nav-weightage-btn');
+            tukkaPushScreen('weightage');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2188,6 +2227,7 @@
             document.getElementById('weightage-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
         }
 
         // ---------- Individual Mock Analyzer ----------
@@ -2208,6 +2248,7 @@
             renderIndividualMockSidebar();
             renderIndividualMockContent();
             setActiveNav('nav-individual-btn');
+            tukkaPushScreen('individual');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2215,6 +2256,7 @@
             document.getElementById('individual-mock-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
         }
 
         // ---------- Logged Mocks / Previous Mock Highlights ----------
@@ -2231,6 +2273,7 @@
             renderMockList();
             renderSelectedMockDetails();
             setActiveNav('nav-logged-mocks-btn');
+            tukkaPushScreen('logged');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2238,6 +2281,7 @@
             document.getElementById('logged-mocks-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
         }
 
         // ---------- AI Analyzer (Gemini chat) ----------
@@ -2260,6 +2304,7 @@
             document.getElementById('ai-chat-panel').classList.remove('flex');
             document.getElementById('ai-header-actions').classList.add('hidden');
             document.getElementById('ai-header-actions').classList.remove('flex');
+            tukkaPushScreen('ai');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2267,6 +2312,7 @@
             document.getElementById('ai-analyzer-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
         }
 
         // Opens the "chat about my existing mocks" sub-view from the choice screen.
@@ -3937,22 +3983,36 @@ Make your best estimate for any number you can't read with full confidence rathe
                     const text = await readDriveFile(fileId, interactive);
                     const parsed = JSON.parse(text);
                     if (parsed && parsed.data && typeof parsed.data === 'object') {
+                        // Merge instead of overwrite: a mock added while the sign-in
+                        // token had expired never made it up to Drive, so blindly
+                        // replacing local data with what's on Drive would silently
+                        // wipe it out. Union by id, keep everything, then push the
+                        // merged result back up so Drive catches up too.
+                        let hadLocalOnly = false;
                         Object.keys(parsed.data).forEach(prefix => {
                             if (!APP_CATEGORY_NAMES[prefix]) return;
                             const exams = parsed.data[prefix].exams || {};
                             Object.keys(exams).forEach(id => {
                                 const entry = exams[id];
                                 const incomingMocks = Array.isArray(entry.mockData) ? entry.mockData : [];
-                                localStorage.setItem(prefix + '_mock_data__' + id, JSON.stringify(incomingMocks));
+                                let existingMocks = [];
+                                try { existingMocks = JSON.parse(localStorage.getItem(prefix + '_mock_data__' + id)) || []; } catch (e) {}
+                                if (!Array.isArray(existingMocks)) existingMocks = [];
+                                const incomingIds = new Set(incomingMocks.map(m => m.id));
+                                const localOnly = existingMocks.filter(m => !incomingIds.has(m.id));
+                                if (localOnly.length) hadLocalOnly = true;
+                                const mergedMocks = incomingMocks.concat(localOnly);
+                                localStorage.setItem(prefix + '_mock_data__' + id, JSON.stringify(mergedMocks));
                                 if (entry.cutoff !== undefined && entry.cutoff !== null) localStorage.setItem(prefix + '_cutoff__' + id, String(entry.cutoff));
                                 else localStorage.removeItem(prefix + '_cutoff__' + id);
                                 if (Array.isArray(entry.resolveItems)) localStorage.setItem(prefix + '_mock_data__' + id + '__resolve', JSON.stringify(entry.resolveItems));
                                 if (prefix === THIS_APP_PREFIX && id === MATHS_EXAM_ID) {
-                                    mockData = incomingMocks;
+                                    mockData = mergedMocks;
                                     resolveItems = Array.isArray(entry.resolveItems) ? entry.resolveItems : [];
                                 }
                             });
                         });
+                        if (hadLocalOnly) pushToCloud();
                         if (mockData.length > 0) selectedMockId = mockData[0].id;
                         populateTopicFilterDropdowns();
                         renderDashboard();
@@ -5595,6 +5655,7 @@ Make your best estimate for any number you can't read with full confidence rathe
 
         // App Initialization
         window.addEventListener('DOMContentLoaded', async () => {
+            try { history.replaceState({ tukkaScreen: 'home' }, '', location.href); } catch (e) {}
             initChartDefaults();
             initData();
             populateTopicFilterDropdowns();

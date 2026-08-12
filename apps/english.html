@@ -649,6 +649,63 @@
             50%  { transform: scale(1.12); box-shadow: 0 0 0 6px rgba(139,92,246,0); }
             100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(139,92,246,0); }
         }
+        /* ================= AI ANALYZER CHAT ================= */
+        .ai-msg-row { display: flex; }
+        .ai-msg-row.user { justify-content: flex-end; }
+        .ai-bubble {
+            max-width: 82%;
+            padding: 0.6rem 0.85rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .ai-bubble.user {
+            background: linear-gradient(135deg, #7c3aed, #d946ef);
+            color: #fff;
+            border-bottom-right-radius: 0.3rem;
+        }
+        .ai-bubble.model {
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid rgba(148,163,184,0.25);
+            border-bottom-left-radius: 0.3rem;
+        }
+        .ai-bubble.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        html.dark .ai-bubble.model { background: rgba(30,41,59,0.85); color: #e2e8f0; border-color: rgba(139,92,246,0.25); }
+        html.dark .ai-bubble.error { background: rgba(127,29,29,0.35); color: #fecaca; border-color: rgba(220,38,38,0.4); }
+        .ai-bubble b, .ai-bubble strong { font-weight: 700; }
+        .ai-bubble code { background: rgba(100,116,139,0.15); padding: 0.1rem 0.3rem; border-radius: 0.3rem; font-size: 0.7rem; }
+        .ai-bubble .ai-md-h { display: block; font-weight: 700; margin: 0.6rem 0 0.25rem; line-height: 1.3; }
+        .ai-bubble h2.ai-md-h { font-size: 0.92rem; }
+        .ai-bubble h3.ai-md-h { font-size: 0.85rem; }
+        .ai-bubble h4.ai-md-h, .ai-bubble h5.ai-md-h, .ai-bubble h6.ai-md-h { font-size: 0.78rem; }
+        .ai-bubble .ai-md-h:first-child { margin-top: 0; }
+        .ai-bubble .ai-md-hr { border: none; border-top: 1px solid rgba(148,163,184,0.35); margin: 0.5rem 0; }
+        .ai-bubble .ai-md-table-wrap { display: block; overflow-x: auto; margin: 0.5rem 0; -webkit-overflow-scrolling: touch; }
+        .ai-bubble table.ai-md-table { border-collapse: collapse; width: 100%; font-size: 0.72rem; }
+        .ai-bubble table.ai-md-table th, .ai-bubble table.ai-md-table td { border: 1px solid rgba(148,163,184,0.35); padding: 0.3rem 0.5rem; text-align: left; vertical-align: top; }
+        .ai-bubble table.ai-md-table th { background: rgba(124,58,237,0.10); font-weight: 700; white-space: nowrap; }
+        html.dark .ai-bubble table.ai-md-table th, html.dark .ai-bubble table.ai-md-table td { border-color: rgba(148,163,184,0.25); }
+        html.dark .ai-bubble table.ai-md-table th { background: rgba(124,58,237,0.18); }
+        .ai-bubble mjx-container { font-size: 100% !important; }
+        .ai-typing-dot { width: 5px; height: 5px; border-radius: 50%; background: #94a3b8; display: inline-block; animation: aiTypingBlink 1.2s infinite ease-in-out; }
+        .ai-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .ai-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes aiTypingBlink { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-2px); } }
+        .ai-thinking-bubble { display: flex; align-items: center; gap: 0.5rem; }
+        .ai-thinking-logo { width: 22px; height: 22px; border-radius: 7px; animation: aiThinkingPulse 1.3s infinite ease-in-out; box-shadow: 0 0 0 0 rgba(139,92,246,0.5); }
+        .ai-thinking-text { font-size: 0.7rem; font-weight: 600; color: #94a3b8; }
+        @keyframes aiThinkingPulse {
+            0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(139,92,246,0.45); }
+            50%  { transform: scale(1.12); box-shadow: 0 0 0 6px rgba(139,92,246,0); }
+            100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(139,92,246,0); }
+        }
     </style>
 </head><body class="bg-slate-50 text-slate-800 min-h-screen flex selection:bg-brand-500 selection:text-white">
 
@@ -735,6 +792,11 @@
             <button onclick="showHistoryView()" id="nav-history-btn" class="nav-pill" style="--pill-a:#0891b2;--pill-b:#22d3ee;--pill-glow:rgba(8,145,178,.55)" title="History — everything you've added, by date">
                 <span class="nav-icon-wrap"><i class="fa-solid fa-clock-rotate-left"></i></span>
                 <span class="hidden lg:inline truncate">History</span>
+                <span class="nav-active-dot hidden lg:block"></span>
+            </button>
+            <button onclick="showAiAnalyzerView()" id="nav-ai-btn" class="nav-pill" style="--pill-a:#7c3aed;--pill-b:#d946ef;--pill-glow:rgba(124,58,237,.55)" title="AI Analyzer — chat with Gemini about your logged mistakes">
+                <span class="nav-icon-wrap"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                <span class="hidden lg:inline truncate">AI Analyzer</span>
                 <span class="nav-active-dot hidden lg:block"></span>
             </button>
 
@@ -878,6 +940,127 @@
         </div>
         <div id="history-empty-state" class="hidden glass-panel rounded-2xl p-8 text-center">
             <p class="text-xs text-slate-500">Nothing logged yet — anything you add will show up here, grouped by the date it was added.</p>
+        </div>
+    </section>
+
+    <!-- AI ANALYZER VIEW — chat with Gemini about logged mistakes, or jump to screenshot import -->
+    <section id="ai-analyzer-view" class="hidden flex-1 max-w-5xl w-full mx-auto p-4 lg:p-6 flex flex-col">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+                <button onclick="backFromAiAnalyzer()" class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 shadow-sm transition-all shrink-0">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-violet-600"></i> AI Analyzer
+                    </h2>
+                    <p class="text-xs text-slate-500 font-medium">Chat with Google Gemini about your logged mistakes — using your own free API key</p>
+                </div>
+            </div>
+            <div id="ai-header-actions" class="hidden items-center gap-2 relative">
+                <button onclick="toggleAiRecentChatsPanel()" id="ai-recent-btn" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 shadow-sm transition-colors">
+                    <i class="fa-solid fa-clock-rotate-left text-[10px]"></i> Recent Chats
+                </button>
+                <button onclick="startNewAiChat()" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 shadow-sm transition-colors">
+                    <i class="fa-solid fa-broom text-[10px]"></i> New Chat
+                </button>
+                <button onclick="openAiKeyPanel()" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 shadow-sm transition-colors">
+                    <i class="fa-solid fa-key text-[10px]"></i> API Key
+                </button>
+
+                <!-- Recent Chats dropdown (last 5 sessions only — older ones are dropped automatically) -->
+                <div id="ai-recent-panel" class="hidden absolute right-0 top-11 w-72 max-h-80 overflow-y-auto glass-panel bg-white rounded-xl shadow-xl border border-slate-200 z-20 p-2">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 pb-1.5">Last 5 sessions — older chats auto-clear</p>
+                    <div id="ai-recent-list" class="space-y-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage reminder: this is the user's own Gemini key/account -->
+        <p class="text-[10.5px] text-slate-400 font-medium -mt-2 mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved text-[10px]"></i>
+            You're chatting using your own Gemini API key — please don't use it to request vulgar, abusive, or otherwise harmful content; you're bound by Google's usage policies for anything you send here.
+        </p>
+
+        <!-- STATE 0: Choice screen — chat about existing entries, or import a mistake from screenshots -->
+        <div id="ai-analyzer-choice" class="max-w-2xl w-full mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button onclick="openAiChatSubView()" class="glass-panel rounded-2xl p-6 text-left border border-slate-200 hover:border-violet-300 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-lg shadow-lg mb-3 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1">AI Analyse My Mistakes</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Chat with Gemini about everything you've logged — recurring mistake patterns, weak spots, and a personalized study plan. Can also quiz you on your own saved words.</p>
+            </button>
+            <button onclick="closeAiAnalyzerAndOpenImport()" class="glass-panel rounded-2xl p-6 text-left border border-slate-200 hover:border-fuchsia-300 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-rose-500 flex items-center justify-center text-white text-lg shadow-lg mb-3 group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-images"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 mb-1">Import from Screenshots or Video</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Upload screenshots, or a short screen recording, of the questions you got wrong — Gemini reads them and files each mistake into the right folder for you.</p>
+            </button>
+        </div>
+
+        <!-- STATE 1: API key setup -->
+        <div id="ai-key-setup" class="hidden glass-panel rounded-2xl p-6 max-w-lg w-full mx-auto text-center space-y-4">
+            <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-xl shadow-lg">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Connect your Gemini API key</h3>
+                <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Tukka Meter has no server of its own — this app runs entirely in your browser. Your key is saved only in <b>this device's local storage</b> and every chat request is sent <b>directly from your browser to Google's Gemini API</b>. We never see your key or your conversations.
+                </p>
+            </div>
+            <div class="text-left">
+                <label class="block text-slate-700 font-medium mb-1 text-xs">Gemini API Key</label>
+                <input type="password" id="ai-key-panel-input" placeholder="AIza..." autocomplete="off" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-slate-900 text-xs focus:outline-none focus:bg-white focus:border-brand-500 font-medium">
+                <label class="flex items-center gap-1.5 mt-2 text-[11px] text-slate-500 font-medium">
+                    <input type="checkbox" id="ai-key-panel-show" onchange="document.getElementById('ai-key-panel-input').type = this.checked ? 'text' : 'password'"> Show key
+                </label>
+            </div>
+            <button onclick="saveGeminiKeyFromPanel()" class="w-full px-4 py-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold rounded-lg text-xs shadow-md transition-all">
+                Save &amp; Start Chatting
+            </button>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="block text-[11px] font-semibold text-brand-600 hover:text-brand-700">
+                <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Don't have a key? Get a free one from Google AI Studio
+            </a>
+            <p class="text-[10.5px] text-slate-400 font-medium leading-relaxed flex items-start gap-1.5 text-left">
+                <i class="fa-solid fa-shield-halved text-[10px] mt-0.5 shrink-0"></i>
+                <span>This is <b>your own</b> Gemini key/account — please don't use it to request vulgar, abusive, or otherwise harmful content. You're bound by Google's usage policies for anything sent through it.</span>
+            </p>
+            <button onclick="clearGeminiKeyFromPanel()" class="block w-full text-center text-[11px] font-semibold text-rose-500 hover:text-rose-600">
+                <i class="fa-solid fa-trash mr-1"></i> Remove saved key from this device
+            </button>
+            <p id="ai-key-panel-error" class="hidden text-[11px] font-semibold text-rose-600"></p>
+        </div>
+
+        <!-- STATE 2: Chat interface -->
+        <div id="ai-chat-panel" class="hidden flex-1 flex flex-col glass-panel rounded-2xl overflow-hidden">
+            <div class="px-4 py-2.5 border-b border-slate-100 bg-amber-50/70 flex items-start gap-2">
+                <i class="fa-solid fa-circle-info text-amber-500 text-xs mt-0.5 shrink-0"></i>
+                <p class="text-[10.5px] text-amber-800 leading-snug">
+                    Context from your logged mistakes (words, grammar/reading mistakes) is sent to Gemini with every chat so it can give personalized answers. Requests go straight from your browser to Google — nothing passes through a Tukka Meter server.
+                </p>
+            </div>
+            <div id="ai-chat-messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-[40vh] max-h-[55vh]"></div>
+
+            <div id="ai-attachment-chip" class="hidden mx-4 mb-2 px-3 py-2 bg-violet-50 border border-violet-200 rounded-xl text-[11px] font-semibold text-violet-800 flex items-center gap-2">
+                <i id="ai-attachment-icon" class="fa-solid fa-file-image"></i>
+                <span id="ai-attachment-name" class="truncate flex-1"></span>
+                <span id="ai-attachment-status" class="text-violet-500 shrink-0"></span>
+                <button onclick="removeAiAttachment()" class="text-violet-400 hover:text-violet-700 shrink-0" title="Remove attachment"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-3 border-t border-slate-100 bg-white flex items-end gap-2">
+                <input type="file" id="ai-chat-file-input" accept="image/*,video/*" class="hidden" onchange="handleAiChatFileSelect(event)">
+                <button onclick="document.getElementById('ai-chat-file-input').click()" title="Attach a screenshot or screen recording" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-violet-600 transition-colors">
+                    <i class="fa-solid fa-paperclip"></i>
+                </button>
+                <textarea id="ai-chat-input" rows="1" placeholder="Ask about your mistakes — e.g. 'Which grammar rules do I keep messing up?'" class="flex-1 resize-none max-h-32 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-brand-500 font-medium" onkeydown="handleAiChatKeydown(event)"></textarea>
+                <button id="ai-send-btn" onclick="sendAiMessage()" class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-md transition-all">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </div>
         </div>
     </section>
 
@@ -1362,6 +1545,7 @@
             document.getElementById('backup-view').classList.add('hidden');
             document.getElementById('history-view').classList.add('hidden');
             document.getElementById('entries-view').classList.add('hidden');
+            document.getElementById('ai-analyzer-view').classList.add('hidden');
             const view = document.getElementById('group-view');
             view.classList.remove('hidden');
 
@@ -1384,6 +1568,7 @@
                 </button>`;
             }).join('');
 
+            tukkaPushScreen('group');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1402,6 +1587,7 @@
             document.getElementById('backup-view').classList.add('hidden');
             document.getElementById('history-view').classList.add('hidden');
             document.getElementById('group-view').classList.add('hidden');
+            document.getElementById('ai-analyzer-view').classList.add('hidden');
             document.getElementById('entries-view').classList.remove('hidden');
 
             document.getElementById('entries-view-title').textContent = subfolder;
@@ -1418,6 +1604,7 @@
             setActiveNav(navIdMap[currentGroupName] || 'nav-home-btn');
 
             renderEntriesList();
+            tukkaPushScreen('entries');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1838,6 +2025,577 @@ If a file clearly isn't from an English mock-test review screen at all, just ski
             return { uri: fileObj.uri, mimeType: fileObj.mimeType || mimeType };
         }
 
+        // ===================================================================
+        // AI ANALYZER — Gemini-powered chat about the user's own logged
+        // mistakes. Everything here runs client-side only: the API key is
+        // kept in this browser's localStorage (shared with the other Tukka
+        // Meter apps via AI_KEY_STORAGE/getGeminiKey, defined above) and
+        // every request goes straight from the browser to Google's
+        // Generative Language API.
+        // ===================================================================
+        function showAiAnalyzerView() {
+            document.getElementById('dashboard-main').classList.add('hidden');
+            document.getElementById('group-view').classList.add('hidden');
+            document.getElementById('entries-view').classList.add('hidden');
+            document.getElementById('history-view').classList.add('hidden');
+            document.getElementById('about-view').classList.add('hidden');
+            document.getElementById('backup-view').classList.add('hidden');
+            const view = document.getElementById('ai-analyzer-view');
+            view.classList.remove('hidden');
+            view.classList.add('flex-1');
+            setActiveNav('nav-ai-btn');
+            // Land on the choice screen (Analyse existing data vs Import from
+            // Screenshots) rather than jumping straight into the chat.
+            document.getElementById('ai-analyzer-choice').classList.remove('hidden');
+            document.getElementById('ai-key-setup').classList.add('hidden');
+            document.getElementById('ai-chat-panel').classList.add('hidden');
+            document.getElementById('ai-chat-panel').classList.remove('flex');
+            document.getElementById('ai-header-actions').classList.add('hidden');
+            document.getElementById('ai-header-actions').classList.remove('flex');
+            tukkaPushScreen('ai');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideAiAnalyzerView() {
+            document.getElementById('ai-analyzer-view').classList.add('hidden');
+            document.getElementById('dashboard-main').classList.remove('hidden');
+            setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
+        }
+
+        // Opens the "chat about my existing mistakes" sub-view from the choice screen.
+        function openAiChatSubView() {
+            document.getElementById('ai-analyzer-choice').classList.add('hidden');
+            initAiAnalyzer();
+        }
+
+        // "Import from Screenshots" option on the choice screen — closes the AI
+        // Analyzer view and opens the existing import modal.
+        function closeAiAnalyzerAndOpenImport() {
+            hideAiAnalyzerView();
+            openAddMistakeModal();
+        }
+
+        // Back arrow in the AI Analyzer header: from the chat/key sub-view it
+        // returns to the choice screen; from the choice screen it exits to the dashboard.
+        function backFromAiAnalyzer() {
+            const choice = document.getElementById('ai-analyzer-choice');
+            if (choice && choice.classList.contains('hidden')) {
+                choice.classList.remove('hidden');
+                document.getElementById('ai-key-setup').classList.add('hidden');
+                document.getElementById('ai-chat-panel').classList.add('hidden');
+                document.getElementById('ai-chat-panel').classList.remove('flex');
+                document.getElementById('ai-header-actions').classList.add('hidden');
+                document.getElementById('ai-header-actions').classList.remove('flex');
+            } else {
+                hideAiAnalyzerView();
+            }
+        }
+
+        const AI_MAX_SESSIONS = 5; // only the most recent 5 past sessions are kept, to stop local storage from growing unbounded
+        function getAiChatStorageKey() { return THIS_APP_PREFIX + '_gemini_chat'; }
+        function getAiSessionsStorageKey() { return getAiChatStorageKey() + '_sessions'; }
+        let aiChatHistory = [];           // [{ role: 'user'|'model', text, fileInfo? }]  -- the ACTIVE session
+        let aiArchivedSessions = [];      // [{ id, startedAt, messages }]  -- up to AI_MAX_SESSIONS past sessions
+        let aiPendingAttachment = null;   // { name, mimeType, kind: 'image'|'video', uri?, inlineData? } for the next message
+        let aiIsUploading = false;
+        let aiIsSending = false;
+
+        function initAiAnalyzer() {
+            const key = getGeminiKey();
+            const headerActions = document.getElementById('ai-header-actions');
+            if (key) {
+                document.getElementById('ai-key-setup').classList.add('hidden');
+                document.getElementById('ai-chat-panel').classList.remove('hidden');
+                document.getElementById('ai-chat-panel').classList.add('flex');
+                headerActions.classList.remove('hidden');
+                headerActions.classList.add('flex');
+                loadAiChatFromStorage();
+                renderAiChat();
+            } else {
+                document.getElementById('ai-chat-panel').classList.add('hidden');
+                document.getElementById('ai-chat-panel').classList.remove('flex');
+                document.getElementById('ai-key-setup').classList.remove('hidden');
+                headerActions.classList.add('hidden');
+                headerActions.classList.remove('flex');
+            }
+        }
+
+        function openAiKeyPanel() {
+            document.getElementById('ai-chat-panel').classList.add('hidden');
+            document.getElementById('ai-chat-panel').classList.remove('flex');
+            document.getElementById('ai-key-setup').classList.remove('hidden');
+            const input = document.getElementById('ai-key-panel-input');
+            input.value = getGeminiKey();
+            document.getElementById('ai-key-panel-error').classList.add('hidden');
+        }
+
+        // Saves from the AI Analyzer's own key panel (separate input element from
+        // the shared aiKeyModal used by the screenshot-import flow, but writes to
+        // the same AI_KEY_STORAGE key so either entry point works for both).
+        function saveGeminiKeyFromPanel() {
+            const input = document.getElementById('ai-key-panel-input');
+            const key = (input.value || '').trim();
+            const errEl = document.getElementById('ai-key-panel-error');
+            if (!key) {
+                errEl.textContent = 'Please paste your Gemini API key first.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            try {
+                localStorage.setItem(AI_KEY_STORAGE, key);
+            } catch (e) {
+                errEl.textContent = 'Could not save the key in this browser (storage blocked).';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            errEl.classList.add('hidden');
+            initAiAnalyzer();
+        }
+
+        function clearGeminiKeyFromPanel() {
+            const doClear = () => {
+                try { localStorage.removeItem(AI_KEY_STORAGE); } catch (e) {}
+                initAiAnalyzer();
+            };
+            showConfirmModal('Remove API key?', 'Remove the saved Gemini API key from this browser? Your chat history stays until you clear it separately.', doClear);
+        }
+
+        // Archives the current chat (if it has any messages) into the recent-sessions
+        // list, capped at AI_MAX_SESSIONS, then clears the active chat for a fresh start.
+        function startNewAiChat() {
+            const doStart = () => {
+                archiveCurrentAiSession();
+                aiChatHistory = [];
+                removeAiAttachment();
+                saveAiChatToStorage();
+                renderAiChat();
+            };
+            if (aiChatHistory.length) {
+                showConfirmModal('Start a new chat?', 'The current conversation will be saved under Recent Chats (last 5 only).', doStart);
+            } else {
+                doStart();
+            }
+        }
+
+        function archiveCurrentAiSession() {
+            if (!aiChatHistory.length) return;
+            aiArchivedSessions.unshift({
+                id: 'sess_' + Date.now(),
+                startedAt: new Date().toISOString(),
+                messages: aiChatHistory
+            });
+            if (aiArchivedSessions.length > AI_MAX_SESSIONS) {
+                aiArchivedSessions = aiArchivedSessions.slice(0, AI_MAX_SESSIONS);
+            }
+            saveAiSessionsToStorage();
+        }
+
+        function loadAiChatFromStorage() {
+            try {
+                const raw = localStorage.getItem(getAiChatStorageKey());
+                aiChatHistory = raw ? JSON.parse(raw) : [];
+            } catch (e) { aiChatHistory = []; }
+            try {
+                const rawSessions = localStorage.getItem(getAiSessionsStorageKey());
+                aiArchivedSessions = rawSessions ? JSON.parse(rawSessions) : [];
+                if (aiArchivedSessions.length > AI_MAX_SESSIONS) {
+                    aiArchivedSessions = aiArchivedSessions.slice(0, AI_MAX_SESSIONS);
+                    saveAiSessionsToStorage();
+                }
+            } catch (e) { aiArchivedSessions = []; }
+        }
+
+        function saveAiSessionsToStorage() {
+            try { localStorage.setItem(getAiSessionsStorageKey(), JSON.stringify(aiArchivedSessions)); } catch (e) {}
+        }
+
+        function saveAiChatToStorage() {
+            try { localStorage.setItem(getAiChatStorageKey(), JSON.stringify(aiChatHistory)); } catch (e) {}
+        }
+
+        // Turns the app's stored `entries` array into a compact text briefing so
+        // Gemini has real context about the user's actual mistakes, without us
+        // running our own server or database to hold it. Capped at the 150 most
+        // recent entries so the prompt stays a reasonable size even for a
+        // heavy user with a large collection.
+        const AI_CONTEXT_ENTRY_CAP = 150;
+        function buildEntriesContextSummary() {
+            if (!entries.length) {
+                return 'The user has not logged any mistakes yet in Tukka Meter — English Analyzer.';
+            }
+            const lines = [];
+            lines.push(`The user is preparing for SSC/Bank/Railway style English sections and tracks mistakes in an app called Tukka Meter. They have logged ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} total.`);
+
+            const groupCounts = {};
+            const folderCounts = {};
+            entries.forEach(e => {
+                if (e.group) groupCounts[e.group] = (groupCounts[e.group] || 0) + 1;
+                if (e.folder) folderCounts[e.folder] = (folderCounts[e.folder] || 0) + 1;
+            });
+            lines.push('');
+            lines.push('Breakdown by top-level folder:');
+            Object.keys(groupCounts).forEach(g => lines.push(`  - ${g}: ${groupCounts[g]}`));
+            lines.push('Breakdown by subfolder:');
+            Object.keys(folderCounts).forEach(f => lines.push(`  - ${f}: ${folderCounts[f]}`));
+
+            // Most recent entries first, capped so the prompt doesn't grow unbounded.
+            const recent = entries.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).slice(0, AI_CONTEXT_ENTRY_CAP);
+            if (entries.length > AI_CONTEXT_ENTRY_CAP) {
+                lines.push('');
+                lines.push(`Showing the ${AI_CONTEXT_ENTRY_CAP} most recent entries below (out of ${entries.length} total — older ones are omitted from this context but the folder/subfolder counts above cover everything).`);
+            }
+
+            lines.push('');
+            lines.push('=== Vocabulary entries ===');
+            const vocabEntries = recent.filter(e => e.type === 'vocab');
+            if (!vocabEntries.length) {
+                lines.push('(none among the entries shown)');
+            } else {
+                vocabEntries.forEach(e => {
+                    const syn = (e.synonyms && e.synonyms.length) ? ` | Synonyms: ${e.synonyms.join(', ')}` : '';
+                    const ant = (e.antonyms && e.antonyms.length) ? ` | Antonyms: ${e.antonyms.join(', ')}` : '';
+                    lines.push(`- [${e.folder}] "${e.word}" — ${e.meaning || 'no meaning saved'}${syn}${ant}`);
+                });
+            }
+
+            lines.push('');
+            lines.push('=== Grammar / Reading & Logic mistakes ===');
+            const qaEntries = recent.filter(e => e.type !== 'vocab');
+            if (!qaEntries.length) {
+                lines.push('(none among the entries shown)');
+            } else {
+                qaEntries.forEach(e => {
+                    const opts = (e.options && e.options.length) ? ` | Options: ${e.options.join(' / ')}` : '';
+                    lines.push(`- [${e.folder}] Q: "${e.question}"${opts} | Correct answer: ${e.correctAnswer || 'N/A'}${e.explanation ? ` | Why: ${e.explanation}` : ''}`);
+                });
+            }
+
+            return lines.join('\n');
+        }
+
+        function aiSystemInstruction() {
+            return `You are the "AI Analyzer" inside Tukka Meter, an English-mistake-tracking app for SSC/Bank/Railway exam aspirants in India. The student uploads screenshots of vocabulary, grammar, and reading-comprehension questions they got wrong, and the app has sorted them into folders. Speak directly to the student, be encouraging but honest, and keep answers focused and practical (short paragraphs or bullet points, not walls of text). You can be asked about their logged mistakes (given below), general English exam strategy, or asked to quiz them on their own saved words/mistakes.\n\n=== USER'S LOGGED MISTAKES ===\n${buildEntriesContextSummary()}\n=== END OF LOGGED MISTAKES ===`;
+        }
+
+        function mdToHtml(text) {
+            const esc = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const rawLines = esc.split('\n');
+
+            // ---- GFM-style pipe tables -----------------------------------
+            // Gemini often summarises comparisons as markdown tables
+            // ("| Col | Col |" header + "|---|---|" separator + data rows).
+            // These were previously showing up as raw pipe/dash text instead
+            // of an actual table, so detect and convert them into <table>
+            // markup up front, before any other line-based processing.
+            const isTableRow = (l) => /\|/.test(l) && l.trim() !== '';
+            const isSeparatorRow = (l) => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l) && l.includes('-');
+            const splitCells = (l) => {
+                let t = l.trim();
+                if (t.startsWith('|')) t = t.slice(1);
+                if (t.endsWith('|')) t = t.slice(0, -1);
+                return t.split('|').map(c => c.trim());
+            };
+
+            const blocks = [];
+            for (let i = 0; i < rawLines.length; i++) {
+                const line = rawLines[i];
+                const next = rawLines[i + 1];
+                if (isTableRow(line) && next !== undefined && isSeparatorRow(next)) {
+                    const header = splitCells(line);
+                    let j = i + 2;
+                    const rows = [];
+                    while (j < rawLines.length && isTableRow(rawLines[j])) {
+                        rows.push(splitCells(rawLines[j]));
+                        j++;
+                    }
+                    const thead = `<thead><tr>${header.map(h => `<th>${h}</th>`).join('')}</tr></thead>`;
+                    const tbody = `<tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+                    blocks.push(`<div class="ai-md-table-wrap"><table class="ai-md-table">${thead}${tbody}</table></div>`);
+                    i = j - 1;
+                    continue;
+                }
+                blocks.push(line);
+            }
+
+            // Handle block-level markdown (headers, horizontal rules) line-by-line,
+            // since Gemini's responses often use ### headers and --- dividers that were
+            // previously showing up as literal text instead of being rendered.
+            const lines = blocks.map(line => {
+                if (line.indexOf('<div class="ai-md-table-wrap">') === 0) return line; // already HTML
+                const t = line.trim();
+                if (/^-{3,}$/.test(t)) return '<hr class="ai-md-hr">';
+                let m = t.match(/^(#{1,6})\s+(.*)$/);
+                if (m) {
+                    const level = Math.min(m[1].length, 2) + 1; // #→h2, ##→h3, ###+ →h4
+                    const tag = 'h' + Math.min(Math.max(level, 2), 6);
+                    return `<${tag} class="ai-md-h">${m[2]}</${tag}>`;
+                }
+                return line;
+            });
+            let html = lines.join('\n')
+                .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\n\s*[-*]\s+/g, '\n• ')
+                .replace(/\n/g, '<br>');
+            // Tidy up stray line-breaks that land right next to block-level elements.
+            html = html
+                .replace(/(<br>\s*)+(<div class="ai-md-table-wrap">)/g, '$2')
+                .replace(/(<\/div>)(\s*<br>\s*)+/g, '$1')
+                .replace(/(<br>\s*)+(<h[2-6][^>]*>)/g, '$2')
+                .replace(/(<\/h[2-6]>)(\s*<br>\s*)+/g, '$1')
+                .replace(/(<br>\s*)+(<hr[^>]*>)/g, '$2')
+                .replace(/(<hr[^>]*>)(\s*<br>\s*)+/g, '$1');
+            return html;
+        }
+
+        function renderAiChat() {
+            const box = document.getElementById('ai-chat-messages');
+            if (!box) return;
+            if (!aiChatHistory.length) {
+                box.innerHTML = `
+                    <div class="text-center py-10 text-slate-400">
+                        <i class="fa-solid fa-comments text-2xl mb-2 block"></i>
+                        <p class="text-xs font-semibold">Ask Gemini anything about your logged mistakes —</p>
+                        <p class="text-[11px] mt-1">"Which grammar rules do I keep messing up?" · "Quiz me on my saved words" · attach a screenshot to ask about it</p>
+                    </div>`;
+                return;
+            }
+            box.innerHTML = aiChatHistory.map(m => {
+                const cls = m.role === 'user' ? 'user' : (m.role === 'error' ? 'error' : 'model');
+                const rowAlign = m.role === 'user' ? 'user' : '';
+                const attach = m.fileInfo ? `<div class="mb-1.5 text-[10px] font-semibold opacity-80"><i class="fa-solid ${m.fileKind === 'video' ? 'fa-file-video' : 'fa-file-image'} mr-1"></i>${m.fileInfo}</div>` : '';
+                return `<div class="ai-msg-row ${rowAlign}"><div class="ai-bubble ${cls}">${attach}${mdToHtml(m.text)}</div></div>`;
+            }).join('');
+            box.scrollTop = box.scrollHeight;
+            // Typeset any \(...\) / $$...$$ formulas Gemini included. MathJax loads
+            // deferred, so it may not be on window yet the very first time this runs.
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([box]).catch(() => {});
+            }
+        }
+
+        function showAiTyping() {
+            const box = document.getElementById('ai-chat-messages');
+            const el = document.createElement('div');
+            el.id = 'ai-typing-row';
+            el.className = 'ai-msg-row';
+            el.innerHTML = `<div class="ai-bubble model ai-thinking-bubble">
+                <img src="../icon-192.png" alt="Tukka Meter" class="ai-thinking-logo">
+                <span class="ai-thinking-text">Thinking…</span>
+            </div>`;
+            box.appendChild(el);
+            box.scrollTop = box.scrollHeight;
+        }
+        function hideAiTyping() {
+            const el = document.getElementById('ai-typing-row');
+            if (el) el.remove();
+        }
+
+        function handleAiChatKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAiMessage();
+            }
+        }
+
+        // ---------- Recent Chats (last 5 sessions) ----------
+        function toggleAiRecentChatsPanel() {
+            const panel = document.getElementById('ai-recent-panel');
+            const isHidden = panel.classList.contains('hidden');
+            if (isHidden) {
+                renderAiRecentChatsList();
+                panel.classList.remove('hidden');
+                setTimeout(() => document.addEventListener('click', aiRecentPanelOutsideClick), 0);
+            } else {
+                panel.classList.add('hidden');
+                document.removeEventListener('click', aiRecentPanelOutsideClick);
+            }
+        }
+
+        function aiRecentPanelOutsideClick(e) {
+            const panel = document.getElementById('ai-recent-panel');
+            const btn = document.getElementById('ai-recent-btn');
+            if (panel && !panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+                panel.classList.add('hidden');
+                document.removeEventListener('click', aiRecentPanelOutsideClick);
+            }
+        }
+
+        function renderAiRecentChatsList() {
+            const list = document.getElementById('ai-recent-list');
+            if (!aiArchivedSessions.length) {
+                list.innerHTML = `<p class="text-[11px] text-slate-400 px-2 py-3 text-center">No past sessions yet — hit "New Chat" to archive the current one.</p>`;
+                return;
+            }
+            list.innerHTML = aiArchivedSessions.map(sess => {
+                const firstUserMsg = (sess.messages.find(m => m.role === 'user') || {}).text || '(empty)';
+                const preview = firstUserMsg.length > 60 ? firstUserMsg.slice(0, 60) + '…' : firstUserMsg;
+                const when = new Date(sess.startedAt);
+                const whenText = isNaN(when) ? '' : when.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return `
+                    <div class="flex items-start gap-1.5 p-2 rounded-lg hover:bg-slate-50 group">
+                        <button onclick="loadAiSession('${sess.id}')" class="flex-1 text-left min-w-0">
+                            <p class="text-[10px] font-bold text-slate-400">${whenText}</p>
+                            <p class="text-[11px] font-semibold text-slate-700 truncate">${preview.replace(/</g,'&lt;')}</p>
+                        </button>
+                        <button onclick="deleteAiSession('${sess.id}')" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 shrink-0 p-1" title="Delete this session">
+                            <i class="fa-solid fa-trash text-[10px]"></i>
+                        </button>
+                    </div>`;
+            }).join('');
+        }
+
+        function loadAiSession(id) {
+            const sess = aiArchivedSessions.find(s => s.id === id);
+            if (!sess) return;
+            const doLoad = () => {
+                archiveCurrentAiSession();
+                aiArchivedSessions = aiArchivedSessions.filter(s => s.id !== id); // move it out of the archive, it's now active
+                aiChatHistory = sess.messages;
+                saveAiSessionsToStorage();
+                saveAiChatToStorage();
+                renderAiChat();
+                document.getElementById('ai-recent-panel').classList.add('hidden');
+            };
+            if (aiChatHistory.length) {
+                showConfirmModal('Load this past chat?', 'Your current conversation will be archived first (last 5 only).', doLoad);
+            } else {
+                doLoad();
+            }
+        }
+
+        function deleteAiSession(id) {
+            aiArchivedSessions = aiArchivedSessions.filter(s => s.id !== id);
+            saveAiSessionsToStorage();
+            renderAiRecentChatsList();
+        }
+
+        // ---------- Chat attachments (screenshot or video, one at a time) ----------
+        // Images are small enough to send inline as base64 (reusing fileToBase64,
+        // already defined above for the screenshot-import feature). Videos go
+        // through the resumable Files API (geminiUploadFile, also already defined
+        // above and shared with the import feature) since they can be much larger.
+        function removeAiAttachment() {
+            aiPendingAttachment = null;
+            document.getElementById('ai-attachment-chip').classList.add('hidden');
+            document.getElementById('ai-chat-file-input').value = '';
+        }
+
+        async function handleAiChatFileSelect(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const key = getGeminiKey();
+            if (!key) { openAiKeyPanel(); return; }
+
+            const isVideo = (file.type || '').startsWith('video/');
+            const kind = isVideo ? 'video' : 'image';
+            const chip = document.getElementById('ai-attachment-chip');
+            const iconEl = document.getElementById('ai-attachment-icon');
+            const nameEl = document.getElementById('ai-attachment-name');
+            const statusEl = document.getElementById('ai-attachment-status');
+            iconEl.className = isVideo ? 'fa-solid fa-file-video' : 'fa-solid fa-file-image';
+            chip.classList.remove('hidden');
+            nameEl.textContent = file.name;
+            aiIsUploading = true;
+
+            try {
+                if (isVideo) {
+                    statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading…';
+                    const fileMeta = await geminiUploadFile(file, file.name, file.type || 'video/mp4', (phase) => {
+                        statusEl.innerHTML = phase === 'processing'
+                            ? '<i class="fa-solid fa-spinner fa-spin"></i> Processing video…'
+                            : '<i class="fa-solid fa-spinner fa-spin"></i> Uploading…';
+                    });
+                    aiPendingAttachment = { name: file.name, mimeType: fileMeta.mimeType, kind, uri: fileMeta.uri };
+                } else {
+                    statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Reading…';
+                    const base64 = await fileToBase64(file);
+                    aiPendingAttachment = { name: file.name, mimeType: file.type || 'image/jpeg', kind, inlineData: base64 };
+                }
+                statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Ready';
+            } catch (err) {
+                console.error('Gemini attachment error:', err);
+                statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Failed';
+                aiPendingAttachment = null;
+                setTimeout(() => showToast(`Could not attach that ${kind}: ` + err.message, 'error'), 50);
+            } finally {
+                aiIsUploading = false;
+            }
+        }
+
+        async function sendAiMessage() {
+            if (aiIsSending) return;
+            const key = getGeminiKey();
+            if (!key) { openAiKeyPanel(); return; }
+            if (aiIsUploading) { showToast('Please wait for the attachment to finish uploading first.', 'info'); return; }
+
+            const input = document.getElementById('ai-chat-input');
+            const text = (input.value || '').trim();
+            if (!text && !aiPendingAttachment) return;
+
+            const userMsg = { role: 'user', text: text || `(Attached a ${aiPendingAttachment && aiPendingAttachment.kind === 'video' ? 'screen recording' : 'screenshot'} — please look at it.)` };
+            if (aiPendingAttachment) { userMsg.fileInfo = aiPendingAttachment.name; userMsg.fileKind = aiPendingAttachment.kind; }
+            aiChatHistory.push(userMsg);
+            input.value = '';
+            renderAiChat();
+            saveAiChatToStorage();
+
+            // Build the Gemini "contents" array from chat history, attaching the
+            // uploaded/inline file (if any) to this latest user turn only.
+            const pendingAttachment = aiPendingAttachment;
+            const contents = aiChatHistory
+                .filter(m => m.role === 'user' || m.role === 'model')
+                .map((m, idx, arr) => {
+                    const parts = [{ text: m.text }];
+                    if (m === arr[arr.length - 1] && pendingAttachment) {
+                        if (pendingAttachment.kind === 'video') {
+                            parts.push({ fileData: { fileUri: pendingAttachment.uri, mimeType: pendingAttachment.mimeType } });
+                        } else {
+                            parts.push({ inlineData: { mimeType: pendingAttachment.mimeType, data: pendingAttachment.inlineData } });
+                        }
+                    }
+                    return { role: m.role, parts };
+                });
+
+            const attachmentUsed = !!pendingAttachment;
+            removeAiAttachment();
+            aiIsSending = true;
+            document.getElementById('ai-send-btn').disabled = true;
+            showAiTyping();
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: aiSystemInstruction() }] },
+                        contents
+                    })
+                });
+                const data = await res.json();
+                hideAiTyping();
+                if (!res.ok) {
+                    const msg = (data && data.error && data.error.message) || `Request failed (${res.status})`;
+                    throw new Error(msg);
+                }
+                const candidate = data.candidates && data.candidates[0];
+                const replyText = candidate && candidate.content && candidate.content.parts
+                    ? candidate.content.parts.map(p => p.text || '').join('')
+                    : "I couldn't generate a response for that — try rephrasing.";
+                aiChatHistory.push({ role: 'model', text: replyText || "I couldn't generate a response for that — try rephrasing." });
+            } catch (err) {
+                hideAiTyping();
+                console.error('Gemini chat error:', err);
+                aiChatHistory.push({ role: 'error', text: 'Something went wrong talking to Gemini: ' + err.message + (attachmentUsed ? ' (the attachment was still uploaded — you can ask about it again).' : '') });
+            } finally {
+                aiIsSending = false;
+                document.getElementById('ai-send-btn').disabled = false;
+                renderAiChat();
+                saveAiChatToStorage();
+            }
+        }
+
         // ================= DARK MODE / MOBILE NAV / SHELL NAV =================
         function isDarkMode() { return document.documentElement.classList.contains('dark'); }
         function applyDarkModeIcon() {
@@ -1885,9 +2643,11 @@ If a file clearly isn't from an English mock-test review screen at all, just ski
             document.getElementById('history-view').classList.add('hidden');
             document.getElementById('about-view').classList.add('hidden');
             document.getElementById('backup-view').classList.add('hidden');
+            document.getElementById('ai-analyzer-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             renderFolderCards();
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1897,16 +2657,19 @@ If a file clearly isn't from an English mock-test review screen at all, just ski
             document.getElementById('entries-view').classList.add('hidden');
             document.getElementById('history-view').classList.add('hidden');
             document.getElementById('backup-view').classList.add('hidden');
+            document.getElementById('ai-analyzer-view').classList.add('hidden');
             const view = document.getElementById('about-view');
             view.classList.remove('hidden');
             view.classList.add('flex-1');
             setActiveNav('nav-about-btn');
+            tukkaPushScreen('about');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function hideAboutView() {
             document.getElementById('about-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
         }
 
         function showBackupView() {
@@ -1915,16 +2678,19 @@ If a file clearly isn't from an English mock-test review screen at all, just ski
             document.getElementById('entries-view').classList.add('hidden');
             document.getElementById('history-view').classList.add('hidden');
             document.getElementById('about-view').classList.add('hidden');
+            document.getElementById('ai-analyzer-view').classList.add('hidden');
             const view = document.getElementById('backup-view');
             view.classList.remove('hidden');
             view.classList.add('flex-1');
             setActiveNav('nav-backup-btn');
+            tukkaPushScreen('backup');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function hideBackupView() {
             document.getElementById('backup-view').classList.add('hidden');
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
         }
 
         // ---------- History view: everything added, grouped by the date it was
@@ -1935,11 +2701,13 @@ If a file clearly isn't from an English mock-test review screen at all, just ski
             document.getElementById('entries-view').classList.add('hidden');
             document.getElementById('about-view').classList.add('hidden');
             document.getElementById('backup-view').classList.add('hidden');
+            document.getElementById('ai-analyzer-view').classList.add('hidden');
             const view = document.getElementById('history-view');
             view.classList.remove('hidden');
             view.classList.add('flex-1');
             setActiveNav('nav-history-btn');
             renderHistoryView();
+            tukkaPushScreen('history');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2400,11 +3168,25 @@ If a file clearly isn't from an English mock-test review screen at all, just ski
                         const exams = parsed.data[THIS_APP_PREFIX].exams || {};
                         const own = exams[ENGLISH_EXAM_ID];
                         if (own && Array.isArray(own.entries)) {
-                            entries = own.entries;
+                            // Merge instead of overwrite: any entry that exists only on
+                            // this device (e.g. added while the sign-in token had expired,
+                            // so it never made it up to Drive) must NOT be wiped out just
+                            // because Drive's copy doesn't have it yet. We union both sets
+                            // by their unique id, keep everything, then push the merged
+                            // result back up so Drive catches up too.
+                            const cloudEntries = own.entries;
+                            const cloudIds = new Set(cloudEntries.map(e => e.id));
+                            const localOnly = entries.filter(e => !cloudIds.has(e.id));
+                            const merged = cloudEntries.concat(localOnly);
+                            const hadLocalOnly = localOnly.length > 0;
+                            entries = merged;
                             localStorage.setItem(getStorageKey(), JSON.stringify(entries));
                             renderFolderCards();
                             if (!document.getElementById('group-view').classList.contains('hidden')) openGroupView(currentGroupName);
                             if (!document.getElementById('entries-view').classList.contains('hidden')) renderEntriesList();
+                            // Entries that existed only on this device weren't on Drive —
+                            // sync them up now so a future pull elsewhere doesn't miss them.
+                            if (hadLocalOnly) pushToCloud();
                         }
                     }
                 }
@@ -2423,6 +3205,41 @@ If a file clearly isn't from an English mock-test review screen at all, just ski
             }
         }
 
+        // ================= IN-APP BACK BUTTON / GESTURE HANDLING =================
+        // Screens (group-view, entries-view, history-view, about-view, backup-view)
+        // used to be plain show/hide with no browser history entry, so the phone's
+        // back button/gesture had nothing app-related to undo and jumped straight
+        // to whatever app was previously loaded in the Tukka Meter hub. Now every
+        // screen open pushes a history entry, so back steps through in-app screens
+        // first, and only leaves the app once you're back at the dashboard.
+        let tukkaSuppressPush = false;
+        function tukkaPushScreen(name) {
+            if (tukkaSuppressPush) return;
+            try { history.pushState({ tukkaScreen: name }, '', location.href); } catch (e) {}
+        }
+        // Used when a nav click (not the back button) jumps straight to a screen
+        // that isn't "deeper" than where we were — keeps the history pointer in
+        // sync with what's actually on screen so a later back press behaves right.
+        function tukkaReplaceScreen(name) {
+            if (tukkaSuppressPush) return;
+            try { history.replaceState({ tukkaScreen: name }, '', location.href); } catch (e) {}
+        }
+        window.addEventListener('popstate', (e) => {
+            tukkaSuppressPush = true;
+            const screen = (e.state && e.state.tukkaScreen) || 'home';
+            try {
+                switch (screen) {
+                    case 'group': if (currentGroupName) openGroupView(currentGroupName); else goHome(); break;
+                    case 'entries': if (currentSubfolder) openEntriesView(currentSubfolder); else goHome(); break;
+                    case 'history': showHistoryView(); break;
+                    case 'about': showAboutView(); break;
+                    case 'backup': showBackupView(); break;
+                    case 'ai': showAiAnalyzerView(); break;
+                    default: goHome();
+                }
+            } finally { tukkaSuppressPush = false; }
+        });
+
         // Close mobile nav drawer whenever any nav-rail action is triggered
         document.addEventListener('DOMContentLoaded', () => {
             const rail = document.querySelector('.nav-rail');
@@ -2432,6 +3249,7 @@ If a file clearly isn't from an English mock-test review screen at all, just ski
 
         // App Initialization
         window.addEventListener('DOMContentLoaded', async () => {
+            try { history.replaceState({ tukkaScreen: 'home' }, '', location.href); } catch (e) {}
             loadEntries();
             applyDarkModeIcon();
             if (window.parent && window.parent !== window) {

@@ -1800,10 +1800,40 @@
             });
         }
 
+        // ================= IN-APP BACK BUTTON / GESTURE HANDLING =================
+        // Screens (individual, about, backup) used to be plain show/hide with no
+        // browser history entry, so the phone's back button/gesture had nothing
+        // app-related to undo and jumped straight to whatever app was previously
+        // loaded in the Tukka Meter hub. Now every screen open pushes a history
+        // entry, so back steps through in-app screens first, and only leaves the
+        // app once you're back at the dashboard.
+        let tukkaSuppressPush = false;
+        function tukkaPushScreen(name) {
+            if (tukkaSuppressPush) return;
+            try { history.pushState({ tukkaScreen: name }, '', location.href); } catch (e) {}
+        }
+        function tukkaReplaceScreen(name) {
+            if (tukkaSuppressPush) return;
+            try { history.replaceState({ tukkaScreen: name }, '', location.href); } catch (e) {}
+        }
+        window.addEventListener('popstate', (e) => {
+            tukkaSuppressPush = true;
+            const screen = (e.state && e.state.tukkaScreen) || 'home';
+            try {
+                switch (screen) {
+                    case 'individual': showIndividualView(); break;
+                    case 'about': showAboutView(); break;
+                    case 'backup': showBackupView(); break;
+                    default: goHome();
+                }
+            } finally { tukkaSuppressPush = false; }
+        });
+
         function goHome() {
             hideAllViews();
             document.getElementById('dashboard-main').classList.remove('hidden');
             setActiveNav('nav-home-btn');
+            tukkaReplaceScreen('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1814,6 +1844,7 @@
             if (!selectedIndividualId && mockData.length) selectedIndividualId = sortedMocks()[sortedMocks().length - 1].id;
             renderIndividualSidebar();
             renderIndividualContent();
+            tukkaPushScreen('individual');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1821,6 +1852,7 @@
             hideAllViews();
             document.getElementById('about-view').classList.remove('hidden');
             setActiveNav('nav-about-btn');
+            tukkaPushScreen('about');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1829,6 +1861,7 @@
             hideAllViews();
             document.getElementById('backup-view').classList.remove('hidden');
             setActiveNav('nav-backup-btn');
+            tukkaPushScreen('backup');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -3036,19 +3069,33 @@
                     const text = await readDriveFile(fileId, interactive);
                     const parsed = JSON.parse(text);
                     if (parsed && parsed.data && typeof parsed.data === 'object') {
+                        // Merge instead of overwrite: a mock added while the sign-in
+                        // token had expired never made it up to Drive, so blindly
+                        // replacing local data with what's on Drive would silently
+                        // wipe it out. Union by id, keep everything, then push the
+                        // merged result back up so Drive catches up too.
+                        let hadLocalOnly = false;
                         Object.keys(parsed.data).forEach(prefix => {
                             if (!APP_CATEGORY_NAMES[prefix]) return;
                             const exams = parsed.data[prefix].exams || {};
                             Object.keys(exams).forEach(id => {
                                 const entry = exams[id];
                                 const incomingMocks = Array.isArray(entry.mockData) ? entry.mockData.map(m => ({ id: m.id || genId(), ...m })) : [];
-                                localStorage.setItem(prefix + '_mock_data__' + id, JSON.stringify(incomingMocks));
+                                let existingMocks = [];
+                                try { existingMocks = JSON.parse(localStorage.getItem(prefix + '_mock_data__' + id)) || []; } catch (e) {}
+                                if (!Array.isArray(existingMocks)) existingMocks = [];
+                                const incomingIds = new Set(incomingMocks.map(m => m.id));
+                                const localOnly = existingMocks.filter(m => !incomingIds.has(m.id));
+                                if (localOnly.length) hadLocalOnly = true;
+                                const mergedMocks = incomingMocks.concat(localOnly);
+                                localStorage.setItem(prefix + '_mock_data__' + id, JSON.stringify(mergedMocks));
                                 if (entry.cutoff !== undefined && entry.cutoff !== null) localStorage.setItem(prefix + '_cutoff__' + id, String(entry.cutoff));
                                 else localStorage.removeItem(prefix + '_cutoff__' + id);
                                 if (Array.isArray(entry.resolveItems)) localStorage.setItem(prefix + '_mock_data__' + id + '__resolve', JSON.stringify(entry.resolveItems));
-                                if (prefix === THIS_APP_PREFIX && id === currentExamId) mockData = incomingMocks;
+                                if (prefix === THIS_APP_PREFIX && id === currentExamId) mockData = mergedMocks;
                             });
                         });
+                        if (hadLocalOnly) pushToCloud();
                         migrateMockSubjects();
                         localStorage.setItem(getStorageKey(currentExamId), JSON.stringify(mockData));
                         if (mockData.length) { selectedIndividualId = sortedMocks()[sortedMocks().length - 1].id; }
@@ -3141,6 +3188,7 @@
         });
 
         window.addEventListener('DOMContentLoaded', async () => {
+            try { history.replaceState({ tukkaScreen: 'home' }, '', location.href); } catch (e) {}
             initData();
             applyDarkModeIcon();
             // Make sure the hub shell (parent window) reflects this app's theme
