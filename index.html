@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Tukka Classifier | English, Math, GK & Reasoning Wrong-Question Tracker</title>
+    <title>Tukka Meter | SSC · Railway · Bank Mock Performance Tracker</title>
 
     <!-- PWA setup -->
     <link rel="manifest" href="manifest.json">
@@ -12,7 +12,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Tukka Classifier">
+    <meta name="apple-mobile-web-app-title" content="Tukka Meter">
     <link rel="icon" href="icon-192.png" type="image/png">
     <link rel="apple-touch-icon" href="icon-192.png">
 
@@ -154,7 +154,7 @@
         #exam-grid::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
         html.dark #exam-grid::-webkit-scrollbar-thumb { background: #334155; }
 
-        /* ---- Special exam entry (kept for a possible future standalone add-on) ----
+        /* ---- Special exam entry (e.g. the dedicated CGL Maths Tracker) ----
            Same exam-pill shell, but with its own gradient border/glow (driven by
            the exam's own --cat-a/--cat-b, set per-item rather than per-category),
            a small animated ring, a corner star icon, and a "SPECIAL" chip next
@@ -222,15 +222,15 @@
     <!-- Boot loader shown until we decide: onboarding picker vs. straight into last-used app -->
     <div id="boot-loader">
         <div class="rounded-2xl shadow-glow overflow-hidden w-16 h-16">
-            <img src="icon-512.png" alt="Tukka Classifier" class="w-full h-full object-contain">
+            <img src="icon-512.png" alt="Tukka Meter" class="w-full h-full object-contain">
         </div>
         <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Made by Akarsh K C❤️</p>
-        <h1 class="text-sm font-bold font-display text-slate-800 dark:text-slate-100 text-center">Tukka Classifier</h1>
+        <h1 class="text-sm font-bold font-display text-slate-800 dark:text-slate-100 text-center">Tukka Meter</h1>
         <i class="fa-solid fa-spinner fa-spin text-brand-500 text-base mt-1"></i>
     </div>
 
     <!-- The active category's app lives here, full-viewport -->
-    <iframe id="app-frame" title="Tukka Classifier"></iframe>
+    <iframe id="app-frame" title="Tukka Meter"></iframe>
 
     <!-- Category + exam switcher -->
     <div id="switcher-overlay">
@@ -238,11 +238,11 @@
             <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-3">
                     <div class="rounded-xl shadow-glow overflow-hidden shrink-0 w-11 h-11">
-                        <img src="icon-512.png" alt="Tukka Classifier" class="w-full h-full object-contain">
+                        <img src="icon-512.png" alt="Tukka Meter" class="w-full h-full object-contain">
                     </div>
                     <div>
-                        <h2 class="text-base font-bold font-display text-slate-800 dark:text-slate-100 leading-tight">Tukka Classifier</h2>
-                        <p id="switcher-tagline" class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">Pick English, Maths, GK, Reasoning, or Speed Booster to get started. You can switch between them anytime.</p>
+                        <h2 class="text-base font-bold font-display text-slate-800 dark:text-slate-100 leading-tight">Tukka Meter</h2>
+                        <p id="switcher-tagline" class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">Pick your exam track to get started. You can switch between SSC, Railway, Bank, and other exam tracks anytime.</p>
                     </div>
                 </div>
                 <button id="switcher-close-btn" onclick="closeSwitcher()" class="hidden w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5" aria-label="Close">
@@ -273,8 +273,8 @@
 
     <script>
         // ===================================================================
-        // Tukka Classifier — hub shell
-        // Hosts four self-contained category apps (English / Maths / GK / Reasoning),
+        // Tukka Meter — hub shell
+        // Hosts three self-contained category apps (SSC / Railway / Bank),
         // each with its own isolated localStorage namespace, inside an
         // iframe. This file only handles: which category+exam is active,
         // remembering the last-used one, and the switcher UI.
@@ -301,11 +301,11 @@
         // these values each time, so the file size never grows.
         // ===================================================================
         const ANNOUNCEMENT = {
-            id: 'update-2026-08-13',
-            date: '2026-08-13',
-            endDate: '2026-08-16',
+            id: 'update-2026-08-08',
+            date: '2026-08-08',
+            endDate: '2026-08-09',
             title: "What's new ✨",
-            message: '• Tukka Classifier is now focused on two apps: English Classifier & Maths Classifier\n• New: AI Analyzer chat in both apps — ask Gemini about any logged question\n• New: tap the wand icon on any entry to ask AI about that exact question\n• Maths Classifier now covers 30 topics, regrouped, with formulas, equations & tables rendered properly'
+            message: '• New: CGL Maths Tracker — a dedicated pill in the SSC switcher\n• Various bug fixes'
         };
 
         function getLocalDateStr() {
@@ -337,44 +337,66 @@
         }
 
         const CATEGORIES = {
+            ssc: {
+                id: 'ssc', file: 'apps/ssc.html', examKey: 'cgl_current_exam',
+                name: 'SSC', sub: 'CGL, CHSL, MTS, CPO', icon: 'fa-graduation-cap',
+                colorA: '#ea580c', colorB: '#fb923c',
+                exams: [
+                    { id: 'cgl_maths_tracker', short: 'CGL Maths Tracker', desc: 'Dedicated maths mock & error analytics — for CGL aspirants sharpening quant', icon: 'fa-square-root-variable', special: true, file: 'apps/maths.html', color: { a: '#9333ea', b: '#ec4899' } },
+                    { id: 'cgl_tier1', short: 'CGL Tier 1', desc: 'Combined Graduate Level — Tier 1', icon: 'fa-graduation-cap' },
+                    { id: 'cgl_tier2', short: 'CGL Tier 2', desc: 'Combined Graduate Level — Tier 2', icon: 'fa-layer-group' },
+                    { id: 'chsl_tier1', short: 'CHSL Tier 1', desc: 'Combined Higher Secondary Level — Tier 1', icon: 'fa-school' },
+                    { id: 'chsl_tier2', short: 'CHSL Tier 2', desc: 'Combined Higher Secondary Level — Tier 2', icon: 'fa-school-flag' },
+                    { id: 'mts', short: 'MTS', desc: 'Multi-Tasking Staff', icon: 'fa-people-carry-box' },
+                    { id: 'cpo', short: 'CPO (SI)', desc: 'Central Police Organisation — Sub-Inspector', icon: 'fa-shield-halved' }
+                ]
+            },
+            railway: {
+                id: 'railway', file: 'apps/railway.html', examKey: 'railway_current_exam',
+                name: 'Railway', sub: 'RRB, ALP, JE, RPF', icon: 'fa-train',
+                colorA: '#dc2626', colorB: '#f87171',
+                exams: [
+                    { id: 'ntpc_cbt1', short: 'NTPC CBT 1', desc: 'Non-Technical Popular Categories — Stage 1', icon: 'fa-train' },
+                    { id: 'ntpc_cbt2', short: 'NTPC CBT 2', desc: 'Non-Technical Popular Categories — Stage 2', icon: 'fa-train-subway' },
+                    { id: 'group_d', short: 'Group D', desc: 'Level 1 Posts CBT', icon: 'fa-helmet-safety' },
+                    { id: 'alp_cbt1', short: 'ALP CBT 1', desc: 'Assistant Loco Pilot — Stage 1', icon: 'fa-gauge-high' },
+                    { id: 'alp_cbt2a', short: 'ALP CBT 2A', desc: 'Assistant Loco Pilot — Stage 2, Part A', icon: 'fa-gauge' },
+                    { id: 'tech_gr1', short: 'Tech Gr I', desc: 'Technician Grade I (Signal) CBT', icon: 'fa-tower-broadcast' },
+                    { id: 'tech_gr3', short: 'Tech Gr III', desc: 'Technician Grade III CBT', icon: 'fa-screwdriver-wrench' },
+                    { id: 'je_cbt1', short: 'JE CBT 1', desc: 'Junior Engineer — Stage 1', icon: 'fa-compass-drafting' },
+                    { id: 'je_cbt2', short: 'JE CBT 2', desc: 'Junior Engineer — Stage 2', icon: 'fa-ruler-combined' },
+                    { id: 'rpf_si', short: 'RPF SI', desc: 'Railway Protection Force — Sub-Inspector', icon: 'fa-shield-halved' },
+                    { id: 'rpf_constable', short: 'RPF Constable', desc: 'Railway Protection Force — Constable', icon: 'fa-person-military-rifle' },
+                    { id: 'paramedical', short: 'Paramedical', desc: 'RRB Paramedical Staff CBT', icon: 'fa-kit-medical' },
+                    { id: 'section_controller', short: 'SC / JAA', desc: 'Section Controller / Junior Admin Assistant', icon: 'fa-tower-cell' }
+                ]
+            },
+            bank: {
+                id: 'bank', file: 'apps/bank.html', examKey: 'bank_current_exam',
+                name: 'Bank', sub: 'IBPS, SBI, RRB', icon: 'fa-landmark',
+                colorA: '#2563eb', colorB: '#38bdf8',
+                exams: [
+                    { id: 'ibps_po_pre', short: 'IBPS PO Pre', desc: 'Probationary Officer — Prelims', icon: 'fa-user-tie' },
+                    { id: 'ibps_po_mains', short: 'IBPS PO Mains', desc: 'Probationary Officer — Mains', icon: 'fa-briefcase' },
+                    { id: 'ibps_clerk_pre', short: 'IBPS Clerk Pre', desc: 'Clerical Cadre — Prelims', icon: 'fa-address-card' },
+                    { id: 'ibps_clerk_mains', short: 'IBPS Clerk Mains', desc: 'Clerical Cadre — Mains', icon: 'fa-id-card' },
+                    { id: 'sbi_po_pre', short: 'SBI PO Pre', desc: 'Probationary Officer — Prelims', icon: 'fa-landmark' },
+                    { id: 'sbi_po_mains', short: 'SBI PO Mains', desc: 'Probationary Officer — Mains', icon: 'fa-building-columns' },
+                    { id: 'sbi_clerk_pre', short: 'SBI Clerk Pre', desc: 'Junior Associate — Prelims', icon: 'fa-file-invoice' },
+                    { id: 'sbi_clerk_mains', short: 'SBI Clerk Mains', desc: 'Junior Associate — Mains', icon: 'fa-file-signature' },
+                    { id: 'rrb_po_pre', short: 'RRB PO Pre', desc: 'IBPS RRB Officer Scale I — Prelims', icon: 'fa-train-subway' },
+                    { id: 'rrb_po_mains', short: 'RRB PO Mains', desc: 'IBPS RRB Officer Scale I — Mains', icon: 'fa-train' },
+                    { id: 'rrb_clerk_pre', short: 'RRB Clerk Pre', desc: 'IBPS RRB Office Assistant — Prelims', icon: 'fa-user-group' },
+                    { id: 'rrb_clerk_mains', short: 'RRB Clerk Mains', desc: 'IBPS RRB Office Assistant — Mains', icon: 'fa-people-group' }
+                ]
+            },
             english: {
                 id: 'english', file: 'apps/english.html', examKey: 'english_current_exam',
-                name: 'English', sub: 'Vocabulary, Grammar & Reading', icon: 'fa-language',
+                name: 'Skill Booster', sub: 'English, Maths & more', icon: 'fa-bolt',
                 colorA: '#7c3aed', colorB: '#c084fc',
                 exams: [
-                    { id: 'english_analyzer', short: 'English Classifier', desc: 'Upload mock mistakes — Gemini sorts them into Vocabulary, Grammar & Reading folders automatically, plus an AI chat to ask about any of them', icon: 'fa-language' }
-                ]
-            },
-            maths: {
-                id: 'maths', file: 'apps/maths.html', examKey: 'maths_current_exam',
-                name: 'Maths', sub: '30 topics, wrong-question tracker', icon: 'fa-square-root-variable',
-                colorA: '#9333ea', colorB: '#ec4899',
-                exams: [
-                    { id: 'maths_analyzer', short: 'Maths Classifier', desc: 'Upload mock mistakes — Gemini sorts them into 30 topic folders automatically, with formulas, equations & tables rendered properly, plus an AI chat to ask about any of them', icon: 'fa-square-root-variable' }
-                ]
-            },
-            gk: {
-                id: 'gk', file: 'apps/gk.html', examKey: 'gk_current_exam',
-                name: 'GK', sub: 'Geography, History, Polity & more', icon: 'fa-earth-asia',
-                colorA: '#0891b2', colorB: '#22d3ee',
-                exams: [
-                    { id: 'gk_analyzer', short: 'GK Analyzer', desc: 'Upload mock mistakes — Gemini sorts them into Geography, History, Polity, Economics, Physics, Chemistry, Biology, Environment & Static GK folders automatically, plus an AI chat to ask about any of them', icon: 'fa-earth-asia' }
-                ]
-            },
-            reasoning: {
-                id: 'reasoning', file: 'apps/reasoning.html', examKey: 'reasoning_current_exam',
-                name: 'Reasoning', sub: 'Analogy, Series, Puzzles & more', icon: 'fa-puzzle-piece',
-                colorA: '#4f46e5', colorB: '#818cf8',
-                exams: [
-                    { id: 'reasoning_analyzer', short: 'Reasoning Analyzer', desc: 'Upload mock mistakes — Gemini sorts them into Analogy, Classification, Series, Coding-Decoding, Blood Relations, Direction & Distance, Order & Ranking, Math Operations, Clock & Calendar, Cubes & Dice, Non-Verbal Figures, Syllogism, Venn Diagrams, Statement & Logic & Seating & Puzzles folders automatically, plus an AI chat to ask about any of them', icon: 'fa-puzzle-piece' }
-                ]
-            },
-            speedbooster: {
-                id: 'speedbooster', file: 'apps/speed-booster.html', examKey: 'speedbooster_current_exam',
-                name: 'Speed Booster', sub: 'Timed maths drills & practice', icon: 'fa-bolt',
-                colorA: '#059669', colorB: '#f59e0b',
-                exams: [
-                    { id: 'speedbooster_tool', short: 'Maths Speed Booster', desc: 'Timed drills across 20+ maths topics — simplification, series, percentages, trigonometry, tables and more — with a dashboard tracking your speed and accuracy over time', icon: 'fa-bolt' }
+                    { id: 'english_analyzer', short: 'English Analyzer', desc: 'Upload mock mistakes — Gemini sorts them into Vocabulary, Grammar & Reading folders automatically', icon: 'fa-language' },
+                    { id: 'maths_speed_booster', short: 'Maths Speed Booster', desc: 'Quick calculation drills to sharpen your speed and accuracy', icon: 'fa-bolt', file: 'apps/maths-speed-booster.html' }
                 ]
             }
         };
@@ -387,8 +409,7 @@
         const examGridEl = document.getElementById('exam-grid');
 
         let activeCategory = localStorage.getItem(LAST_CATEGORY_KEY) || null;
-        if (activeCategory && !CATEGORIES[activeCategory]) activeCategory = null; // stale/invalid value from an older version
-        let pickerCategory = activeCategory || 'english'; // which tab the switcher is showing
+        let pickerCategory = activeCategory || 'ssc'; // which tab the switcher is showing
 
         function catVars(cat) { return `--cat-a:${cat.colorA};--cat-b:${cat.colorB};`; }
 
@@ -432,7 +453,7 @@
             const cat = CATEGORIES[catId];
             const ex = cat.exams.find(e => e.id === examId);
             // A "special" exam entry can point at its own standalone app file
-            // (kept for a possible future standalone add-on) instead of living inside
+            // (e.g. the dedicated CGL Maths Tracker) instead of living inside
             // the category's main app — it always gets a fresh full load, since
             // there's no shared switchExam() to hand it off to.
             const targetFile = (ex && ex.file) ? ex.file : cat.file;
@@ -461,18 +482,18 @@
 
         function openSwitcher(onboarding) {
             syncShellDarkModeFromStorage();
-            pickerCategory = activeCategory || 'english';
+            pickerCategory = activeCategory || 'ssc';
             renderCatTabs();
             renderExamGrid();
             overlay.classList.add('open');
             if (onboarding) {
                 overlay.classList.add('onboarding');
                 closeBtn.classList.add('hidden');
-                tagline.textContent = 'Pick English, Maths, GK, Reasoning, or Speed Booster to get started. You can switch between them anytime.';
+                tagline.textContent = 'Pick your exam track to get started. You can switch between SSC, Railway, Bank, and other exam tracks anytime.';
             } else {
                 overlay.classList.remove('onboarding');
                 closeBtn.classList.remove('hidden');
-                tagline.textContent = 'Switch between English, Maths, GK, Reasoning & Speed Booster anytime';
+                tagline.textContent = 'Switch between SSC, Railway, Bank & Skill Booster anytime';
             }
         }
 
